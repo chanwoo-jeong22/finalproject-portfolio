@@ -1,0 +1,82 @@
+.noticeList {
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.noticeList ul {
+    display: flex;
+    justify-content: flex-start;
+    gap: 15px;
+    height: 100%;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    padding-top: 15px;
+
+}
+
+.noticeList ul li {
+    background-color: #F4F5F8;
+    border-radius: 10px;
+    height: 100%;
+    flex: 1 1 18%;
+    min-width: 252px;
+    max-width: calc(20% - 15px);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    padding: 25px;
+}
+
+.noticeList ul li:hover {
+    transform: translateY(-5px);
+}
+
+.noticeList .category {
+    margin-bottom: 20px;
+}
+
+.noticeList .category span {
+    background: #4B515C;
+    color: #fff;
+    border-radius: 50px;
+    padding: 4px 12px 6px;
+    font-size: 12px;
+    display: inline-block;
+}
+
+.noticeList .date {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 6px;
+}
+
+.noticeList .nt_contents {
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-align : justify;
+}
+
+/* 진경 추가 */
+.noticeList_logistic,
+.noticeList_agency {
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+.noticeList_logistic ul,
+.noticeList_agency ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 15.65em);
+    gap: 15px;
+}
+
+.noticeList_logistic ul li,
+.noticeList_agency ul li {
+    min-width: inherit;
+    max-width: inherit;
+    height: 180px;
+}

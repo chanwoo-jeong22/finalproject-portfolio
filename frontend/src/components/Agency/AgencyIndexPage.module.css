@@ -1,0 +1,122 @@
+/* ==========================================================================
+   Container
+   ========================================================================== */
+.container {
+    padding: 20px; /* 상하좌우 전체 여백 확보 */
+}
+
+/* ==========================================================================
+   Notice (공지)
+   ========================================================================== */
+section.notice {
+    margin-top: 30px; /* 공지 섹션 상단 여백 */
+}
+.noticeheader { }
+.noticetitle {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.noticecards {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+}
+.card {
+    width: 100%;
+    padding: 10px 0 40px 20px;
+    border: 2px solid #eee;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease;
+}
+.card:hover { transform: scale(1.05); }
+.carddate {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+.cardcontent {
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+/* ==========================================================================
+   Schedule (입고 일정표) - 물류랑 통일
+   ========================================================================== */
+.schedule { }
+.scheduleTitle {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0; /* 물류랑 동일 */
+}
+
+.scheduleGrid {
+    display: grid;
+    padding: 15px 0 30px; /* 위/아래 간격 통일 */
+    grid-template-columns: repeat(auto-fit, 15.65em);
+    gap: 15px; /* 카드 사이 간격 통일 */
+}
+
+.scheduleCard {
+    background: #fff;
+    border: 1px solid #ccc; /* 물류랑 동일 */
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.03);
+    height: 200px; /* 물류 카드 높이 */
+    width: 100%;
+    box-sizing: border-box; /* 물류와 동일 */
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.scheduleCard:hover {
+    transform: translateY(-5px);
+}
+
+.scheduleDate {
+    font-size: 14px;
+    font-weight: 700;
+    background: #F4F5F8;
+    padding: 12px 20px;
+    border-bottom: 1px solid #eee;
+    border-radius: 10px 10px 0 0;
+}
+.scheduleDow {
+    font-weight: 600;
+    color: #666;
+    margin-left: 4px;
+}
+
+.scheduleList {
+    max-height: 150px;
+    overflow: auto;
+    padding: 20px;
+    list-style: none;
+    margin: 0;
+}
+.scheduleText {
+    flex: 1;
+    text-align: left;
+    color: #222;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.scheduleTime {
+    font-variant-numeric: tabular-nums;
+    color: #333;
+}
+
+.empty { color: #999; }
+
+/* ==========================================================================
+   스크롤 영역 필요 시
+   ========================================================================== */
+.scroll_y {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: calc(100vh - 60px);
+    padding: 50px 50px 50px 0;
+}

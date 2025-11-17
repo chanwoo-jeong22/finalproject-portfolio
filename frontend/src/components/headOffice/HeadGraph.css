@@ -1,0 +1,109 @@
+.main_inner_grid {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 10px;
+}
+
+.main_reset_btn {
+    background: var(--main-color);
+    height: 30px;
+    border-radius: 5px;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+}
+
+.main_reset_btn img {
+    width: 18px;
+}
+
+.graph_area {
+    margin-right: 20px;
+}
+
+/* recharts 요소들의 포커스 테두리 제거 */
+.recharts-responsive-container,
+.recharts-responsive-container *,
+.recharts-wrapper,
+.recharts-wrapper *,
+.recharts-surface,
+.recharts-surface *,
+.recharts-legend,
+.recharts-legend *,
+.recharts-bar,
+.recharts-bar * {
+    outline: none !important;
+    box-shadow: none !important;
+}
+/* 클릭 가능한 요소들의 포커스 상태 제거 */
+.recharts-bar-rectangle:focus,
+.recharts-bar-rectangle:active,
+.recharts-legend-item:focus,
+.recharts-legend-item:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.noOutline,
+.noOutline *,
+.noOutline *:focus,
+.noOutline *:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.tooltip {
+    background-color: #111;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.tooltip .tool_month {
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+.tooltip .tool_order,
+.tooltip .tool_status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+}
+
+/* 진경 수정 */
+.tooltip .tool_order span:last-child {
+    color: #79C0FF;
+    font-weight: 600;
+}
+
+.tooltip .tool_status span:last-child {
+    color: #00F0B7;
+    font-weight: 600;
+}
+/* //진경 수정 */
+
+/* recharts 스타일 오버라이드 */
+.recharts-legend-item-text {
+    font-size: 14px !important;
+    color: #666 !important;
+    font-weight: bold !important;
+}
+
+.recharts-surface,
+.recharts-legend-icon {
+    border-radius: 50px !important;
+}
+
+.recharts-legend-item:nth-child(1) .recharts-legend-icon {
+    border-radius: 50px !important;
+    background-color: #045357 !important;
+}
+
+.recharts-legend-item:nth-child(2) .recharts-legend-icon {
+    border-radius: 50px !important;
+    background-color: #2AC9A3 !important;
+}

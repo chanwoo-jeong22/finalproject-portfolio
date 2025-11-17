@@ -1,0 +1,225 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background: white;
+    padding: 30px 0 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    max-width: 660px;
+    width: 90%;
+    position: relative;
+    max-height: 80vh;
+    min-height: 60vh;
+    overflow-y: auto;
+    animation: fadeIn 0.3s ease-out;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+}
+
+/* 팝업 닫기 버튼 */
+.closeButton {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: color 0.2s;
+    background: url("/src/assets/images/icon_pop_close.svg") no-repeat center;
+}
+
+.closeButton:hover {
+    color: #000;
+}
+
+
+.popupHeader {
+    padding: 0 40px 20px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+
+.popupHeader h3 {
+    font-size: 24px;
+}
+
+.popupBody {
+    padding: 30px 40px;
+}
+
+.pop_category span {
+    display: inline-block;
+    border-radius: 50px;
+    padding: 4px 15px;
+    font-size: 14px;
+    border: 1px solid #000;
+    color: #000;
+}
+
+.pop_category span:first-child {
+    margin-right: 5px;
+}
+
+.pop_date {
+    margin: 30px 0 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+.pop_content {
+    font-size: 16px;
+    line-height: 1.6;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+.popupFooter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+    gap: 5px;
+}
+
+.popupFooter button {
+    min-width: 180px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.popupFooter .modifyBtn {
+    background-color: var(--main-color);
+    color: white;
+}
+
+.popupFooter .deleteBtn,
+.popupFooter .cancelBtn {
+    border: 1px solid #ccc;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.popupFooter .deleteBtn::before {
+    content: "";
+    width: 19px;
+    height: 19px;
+    display: inline-block;
+    background: url("/src/assets/images/icon_delete.svg");
+}
+
+
+/* 수정 폼 스타일 */
+.nt_editForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.nt_editForm .formRow {
+    display: flex;
+    align-items: center;
+}
+
+.nt_editForm .flexRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.nt_editForm .formRow label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 5px;
+}
+
+.nt_editForm .formRow select,
+.nt_editForm .formRow input,
+.nt_editForm .formRow textarea {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    background-color: #fff;
+    color: #000;
+}
+
+.nt_editForm .formRow select:focus,
+.nt_editForm .formRow textarea:focus {
+    outline: none;
+    border-color: #000;
+}
+
+.nt_editForm .formRow select:hover,
+.nt_editForm .formRow textarea:hover {
+    border-color: #000;
+}
+
+.nt_editForm .formRow select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    height: 34px;
+    width: 120px;
+    font-family: inherit;
+    line-height: 1.5;
+    padding: 4px 40px 4px 12px;
+    font-size: 14px;
+}
+
+.nt_editForm .formRow input[type="date"] {
+    width: 128px;
+    height: 34px;
+    padding: 4px 10px;
+}
+
+.nt_editForm .formRow.textarea_mt {
+    margin-top: 10px;
+}
+
+.nt_editForm .formRow textarea {
+    height: 220px;
+    font-family: inherit;
+    line-height: 1.5;
+    width: 100%;
+    resize: none;
+    padding: 12px 16px;
+    font-size: 16px;
+}
+
+.nt_editForm .formRow textarea::placeholder {
+    color: #999;
+    font-size: 14px;
+}
+
+.nt_editForm .formRow .essential {
+    font-size: .75em;
+    color: #aaa;
+    margin-left: 5px;
+    font-weight: 400;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}

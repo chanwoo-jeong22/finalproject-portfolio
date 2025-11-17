@@ -1,0 +1,10 @@
+@charset "utf-8";
+
+* {margin: 0; padding: 0; box-sizing: border-box;}
+li {list-style: none;}
+a {text-decoration: none; color: inherit;}
+img {max-width: 100%; vertical-align: top;}
+button {cursor: pointer; border: none; outline: none;}
+input {outline: none;}
+label {cursor: pointer;}
+body {font-family: "Pretendard", sans-serif; width: 100%; overflow-x: hidden;}

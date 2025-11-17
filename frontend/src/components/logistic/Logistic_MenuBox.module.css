@@ -1,0 +1,250 @@
+/* ==========================================================================
+   Global Reset / Base (모듈 전역 영향 — 기존과 동일 동작)
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+li {
+    list-style: none;
+}
+
+img {
+    max-width: 100%;
+    vertical-align: top;
+}
+
+a {
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   Sidebar
+   ========================================================================== */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: #D8DBE1;
+}
+
+.sidebar nav {
+    margin-top: 60px;
+    padding: 0 20px;
+}
+
+/* 현재 라우트 활성(굵게) 처리용 클래스 (NavLink 사용 시) */
+.active {
+    font-weight: 700;
+}
+
+/* Logo */
+.logo {
+    width: 100%;
+    height: 60px;
+    padding: 24px 30px 0;
+    /*display: flex; align-items: center; justify-content: center;*/
+    /*font-weight: 700;*/
+    /*border-bottom: 3px solid #ffffff;*/
+}
+
+/* 로고 width 진경 수정 */
+.logo img {
+    width: 160px;
+    height: auto;
+    text-align: center;
+}
+
+/* Menu item */
+.centeritem {
+    font-size: 16px;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    text-decoration: none;
+    position: relative;
+    opacity: 0.8;
+    padding: 10px 20px;
+}
+
+.centeritem::before {
+    content: "";
+    display: inline-block;
+    width: 21px;
+    height: 21px;
+    margin-top: 2px;
+}
+
+.centeritem:nth-child(1)::before {
+    background: url("/src/assets/images/lg_nav1.svg") no-repeat center;
+}
+
+.centeritem:nth-child(2)::before {
+    background: url("/src/assets/images/lg_nav2.svg") no-repeat center;
+}
+
+/* 마우스 누르는 순간만 굵게 (기존 동작 유지) 진경 추가 */
+.centeritem:hover {
+    font-weight: 500;
+    opacity: 1;
+}
+
+.active {
+    font-weight: 400;
+    opacity: 1;
+    background: #000;
+    border-radius: 50px;
+    color: #fff !important;
+}
+
+.centeritem.active:nth-child(1)::before {
+    background: url("/src/assets/images/lg_nav1_on.svg") no-repeat center;
+}
+
+.centeritem.active:nth-child(2)::before {
+    background: url("/src/assets/images/lg_nav2_on.svg") no-repeat center;
+}
+
+/* 끝 동그라미 */
+/*.active::after {*/
+/*    content: '';*/
+/*    width: 14px;*/
+/*    height: 14px;*/
+/*    border-radius: 50%;*/
+/*    background: black;*/
+/*    position: absolute;*/
+/*    right: 20px;*/
+/*    top: 50%;*/
+/*    transform: translateY(-50%);*/
+/*}*/
+
+
+/* ==========================================================================
+   Topbar
+   ========================================================================== */
+.topbar {
+    position: fixed;
+    right: 0;
+    left: 280px;
+    top: 0;
+    width: calc(100% - 280px);
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    /*padding-right: 50px; */
+    font-size: 16px;
+    /*border-bottom: 3px solid #ffffff;*/
+    background-color: #D8DBE1;
+}
+
+.topbarinner {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 20px;
+    width: 100%;
+    padding: 0 50px 0 0;
+}
+
+.comname {
+    font-weight: 600;
+    font-size: 15px;
+    background-color: #E8EFFF;
+    border: 1px solid #C5D7F5;
+    color: #27399A;
+    padding: 6px 15px 8px 15px;
+    border-radius: 50px;
+}
+
+.usermenu {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: .8em;
+    color: #666;
+}
+
+.username {
+    font-size: 14px;
+    font-weight: 500;
+    color: #000;
+}
+.username::after {
+    content: "";
+    height: 12px;
+    width: 1px;
+    display: inline-block;
+    background: #000;
+    opacity: .2;
+    margin-left: 15px;
+}
+
+.username img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+    border-radius: 50%;
+}
+
+/*진경 추가*/
+.wrap {
+    display: grid;
+    grid-template-columns: auto 1fr; /* SideBar, TopBar Main */
+    height: 100vh;
+    width: 100%;
+}
+
+.container {
+    display: flex;
+    width: calc(100vw - 280px);
+    height: 100%;
+    margin-left: 280px;
+}
+
+.lg_main {
+    margin-top: 60px;
+    height: calc(100% - 60px);
+    width: 100%;
+    background-color: #D8DBE1;
+}
+
+.content {
+    width: 100%;
+    height: 100%;
+    padding-left: 50px;
+    background-color: #fff;
+    border-radius: 30px 0 0 0;
+}
+
+.scroll_y {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: calc(100vh - 60px);
+    padding: 50px 50px 50px 0;
+}

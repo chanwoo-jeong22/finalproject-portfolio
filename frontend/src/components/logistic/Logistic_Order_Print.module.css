@@ -1,0 +1,134 @@
+/* ====== 고정 폭 컨테이너 ====== */
+.fixedRoot{
+    /* width:1060px; min-width:1060px;  ← 이 두 줄을 교체 */
+    width:100%;
+    min-width:300px;        /* 좁은 화면 허용 */
+    margin:0 auto;
+
+}
+/* ====== 본문 ====== */
+.content{
+    margin:50px;
+    color:#000;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",Arial,"Apple SD Gothic Neo","Nanum Gothic",sans-serif;
+}
+.title{ font-size:20px; font-weight:700; margin-bottom:40px; }
+
+/* ====== 상단 폼 ====== */
+
+.headerGridWrap {
+    overflow-x: auto;   /* 가로 스크롤 */
+    margin-bottom: 40px;
+}
+
+.headerGrid{
+    display: grid;
+    /*grid-template-columns: 70px 260px 80px 260px 260px; !* ✅ 열 정의 *!*/
+    grid-template-rows: repeat(4, 30px);
+    column-gap: 20px;
+    row-gap: 15px;
+    min-width: 1200px;            /* ✅ 전체 최소 가로 */
+    white-space: nowrap;           /* 내용 줄바꿈 방지(스크롤 유도) */
+    /* overflow-x: auto;  ← 제거! 스크롤은 래퍼에서 */
+    align-items: center;
+}
+.headerGrid input,
+.headerGrid select {
+    width: 100%;
+    box-sizing: border-box;   /* ★ 셀을 넘지 않게 */
+}
+
+/* 라벨/인풋 공통 규격 */
+.label{ font-size:14px; }
+.input{
+    height:30px;
+    font-size:12px;
+    border-radius:5px;
+    border:1px solid #000;
+    padding:0 10px;
+    box-sizing:border-box;
+}
+
+/* ── 1행 ── */
+.labelOrderDate { grid-row:1; grid-column:1; }
+.inputOrderDate { grid-row:1; grid-column:2; }
+
+.labelShipDate  { grid-row:1; grid-column:3; }
+.inputShipDate  { grid-row:1; grid-column:4; }
+
+/* 왕버튼 */
+.kingBtns{ grid-row:1; grid-column:5; display:flex; gap:10px; align-items:center; margin-top: 40px; justify-content: center;}
+.king{
+    width:70px; height:70px; border-radius:5px; border:1px solid #000;
+    font-size:14px; font-weight:500; color:#fff; display:flex; align-items:center; justify-content:center;
+    line-height:1.4; cursor:pointer;
+}
+.red{ background:#e20f0f; }
+.black{ background:#000; }
+
+/* ── 2행 ── */
+.labelAgency       { grid-row:2; grid-column:1; }
+.inputAgency       { grid-row:2; grid-column:2; }
+.labelAgencyPhone  { grid-row:2; grid-column:3; }
+.inputAgencyPhone  { grid-row:2; grid-column:4; }
+
+/* ── 3행 (운전기사) ── */
+.labelDriver       { grid-row:3; grid-column:1; }
+.selectDriver      { grid-row:3; grid-column:2; }
+.labelDriverPhone  { grid-row:3; grid-column:3; }
+.inputDriverPhone  { grid-row:3; grid-column:4; }
+.driverCarGroup   { grid-row:3; grid-column:5; display:flex; align-items:center; gap:8px; }
+.inlineLabel      { font-size:16px; }        /* 라벨 모양 통일 */
+.inlineInput      { width:143px; }
+
+.driverStateDot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+.driverStateOn  { background: #1dbf51; } /* 초록 */
+.driverStateOff { background: #ff2b2b; } /* 빨강 */
+/* ── 4행 (우편번호) ── */
+.labelZip  {  grid-row: 4; grid-column: 1;  }
+.wide      {  grid-row: 4;
+    grid-column: 2 / 6;   /* ← 끝까지 확장 */
+    width: 100%;          /* ← 가로 전체 채움 */
+    min-width: unset; }
+
+/* ====== 표 ====== */
+.tableWrap{
+    width: 100%;
+    overflow-x: auto;      /* 가로 스크롤 */
+    overflow-y: auto;      /* 세로 스크롤도 필요하면 */
+    max-height: 50vh;
+    border:1px solid #000;
+}
+.table{
+    width:100%;
+    min-width:1200px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border-collapse: collapse;
+}
+.table th,.table td{
+    border:1px solid #ccc;
+    height:30px;
+    padding:4px 8px;
+    font-size:14px;
+    white-space: none;
+}
+.thSort{ position:relative; padding-right:16px; }
+.thSort::after{
+    content:""; position:absolute; right:6px; top:50%; transform:translateY(-50%);
+    width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent;
+    border-top:6px solid #000;
+}
+.firstHead{ width:30px; }
+.dotCell{ text-align:center; }
+.dot{ display:inline-block; width:16px; height:16px; border-radius:50%; }
+.green{ background:#1dbf51; }
+.redDot{ background:#ff2b2b; }
+.right{ text-align:center; }
+input[type="checkbox"]{ width:15px; height:15px; border:1px solid #ddd; }

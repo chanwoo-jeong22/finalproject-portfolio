@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/table_cell_bg">
+
+    <TextView
+        android:id="@+id/tvOrderDate"
+        android:layout_width="150dp"
+        android:layout_height="35dp"
+        android:gravity="center"
+        android:text="2025-10-10"
+        android:background="@drawable/right_border" />
+
+    <TextView
+        android:id="@+id/tvOrderKey"
+        android:layout_width="300dp"
+        android:layout_height="35dp"
+        android:background="@drawable/right_border"
+        android:gravity="center"
+        android:text="000   " />
+
+    <TextView
+        android:id="@+id/tvOrderStatus"
+        android:layout_width="150dp"
+        android:layout_height="35dp"
+        android:gravity="center"
+        android:text="배송완료"
+        android:background="@drawable/right_border" />
+
+    <TextView
+        android:id="@+id/tvOrderReserve"
+        android:layout_width="150dp"
+        android:layout_height="35dp"
+        android:gravity="center"
+        android:text="2025-10-14"
+        android:background="@drawable/right_border" />
+
+    <TextView
+        android:id="@+id/tvDvName"
+        android:layout_width="150dp"
+        android:layout_height="35dp"
+        android:gravity="center"
+        android:text="홍길동"
+        android:background="@drawable/right_border" />
+
+    <TextView
+        android:id="@+id/tvDvPhone"
+        android:layout_width="200dp"
+        android:layout_height="35dp"
+        android:gravity="center"
+        android:text="010-1234-5678"
+        android:background="@drawable/right_border" />
+
+    <TextView
+        android:id="@+id/tvOrderTotal"
+        android:layout_width="150dp"
+        android:layout_height="35dp"
+        android:gravity="center"
+        android:text="3200"
+        android:background="@drawable/bottom_border" />
+
+</LinearLayout>

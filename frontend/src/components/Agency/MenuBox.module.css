@@ -1,0 +1,217 @@
+/* ------------------------- */
+/* Logistic_SideBar 영역 */
+/* ------------------------- */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;           /* 왼쪽 메뉴 폭 */
+    height: 100vh;          /* 화면 전체 높이 */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: #D8DBE1;
+}
+
+.logo {
+    width: 100%;
+    height: 60px;           /* 로고 박스 높이 */
+    margin-bottom: 60px;     /* 로고 박스와 첫 메뉴 간격 */
+    padding: 24px 30px 0;       /* 좌우 간격 */
+}
+
+.logo img {
+    width: 160px;
+    height: auto;
+    text-align: center;
+}
+
+.sidebar nav {
+    width: 100%;
+    padding: 0 20px;        /* 메뉴 좌우 간격 */
+}
+
+.centeritem {
+    font-size: 16px;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;    /* 메뉴 사이 margin */
+    justify-content: flex-start;
+    gap: 10px;
+    text-decoration: none;
+    opacity: 0.8;
+    padding: 10px 20px;
+    position: relative;
+}
+
+.centeritem::before {
+    content: "";
+    display: inline-block;
+    width: 21px;
+    height: 21px;
+    margin-top: 2px;
+}
+
+.centeritem:hover {
+    font-weight: 500;
+    opacity: 1;
+}
+
+.activeMenu {
+    font-weight: 400;
+    background: #000;
+    border-radius: 50px;
+    color: #fff !important;
+    opacity: 1;
+}
+
+.centeritem:nth-child(1)::before {
+    background: url("/src/assets/images/ag_nav1.svg") no-repeat center;
+}
+
+.centeritem:nth-child(2)::before {
+    background: url("/src/assets/images/ag_nav2.svg") no-repeat center;
+}
+
+.centeritem:nth-child(3)::before {
+    background: url("/src/assets/images/ag_nav3.svg") no-repeat center;
+}
+
+.centeritem:nth-child(4)::before {
+    background: url("/src/assets/images/ag_nav4.svg") no-repeat center;
+}
+
+.activeMenu:nth-child(1)::before {
+    background: url("/src/assets/images/ag_nav1_on.svg") no-repeat center;
+}
+
+.activeMenu:nth-child(2)::before {
+    background: url("/src/assets/images/ag_nav2_on.svg") no-repeat center;
+}
+
+.activeMenu:nth-child(3)::before {
+    background: url("/src/assets/images/ag_nav3_on.svg") no-repeat center;
+}
+
+.activeMenu:nth-child(4)::before {
+    background: url("/src/assets/images/ag_nav4_on.svg") no-repeat center;
+}
+
+/*.activeMenu::after {*/
+/*    content: "";*/
+/*    width: 16px;  !* 동그라미 크기 *!*/
+/*    height: 16px;*/
+/*    border-radius: 50%;*/
+/*    background: #fff;*/
+/*    margin-left: 12px;*/
+/*}*/
+
+/* ------------------------- */
+/* Topbar 영역 */
+/* ------------------------- */
+.topbar {
+    position: fixed;
+    left: 300px;
+    right: 0;
+    top: 0;
+    width: calc(100% - 300px);
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 16px;
+    padding-right: 50px;     /* 마지막 텍스트와 오른쪽 끝단 */
+    background-color: #D8DBE1;
+}
+
+.topbarinner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    padding: 0 50px 0 0;
+}
+
+.usermenu {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-right: 20px;
+}
+
+.comname {
+    font-weight: 400;
+    font-size: 14px;
+    background-color: #11383F;
+    color: #fff;
+    padding: 6px 15px 8px 15px;
+    border-radius: 50px;
+}
+
+.usermenu {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: .8em;
+    color: #666;
+}
+
+.username {
+    font-size: 14px;
+    font-weight: 500;
+    color: #000;
+}
+.username::after {
+    content: "";
+    height: 12px;
+    width: 1px;
+    display: inline-block;
+    background: #000;
+    opacity: .2;
+    margin-left: 15px;
+}
+
+.username img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;      /* 이미지와 이름 margin */
+    border-radius: 50%;
+}
+
+/*진경 추가*/
+.wrap {
+    display: grid;
+    grid-template-columns: auto 1fr; /* SideBar, TopBar Main */
+    height: 100vh;
+    width: 100%;
+}
+
+.container {
+    display: flex;
+    width: calc(100vw - 280px);
+    height: 100%;
+    margin-left: 280px;
+}
+
+.ag_main {
+    margin-top: 60px;
+    height: calc(100% - 60px);
+    width: 100%;
+    background-color: #D8DBE1;
+}
+
+.content {
+    width: 100%;
+    height: 100%;
+    padding-left: 50px;
+    background-color: #fff;
+    border-radius: 30px 0 0 0;
+}
+
+.scroll_y {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: calc(100vh - 60px);
+    padding: 50px 50px 50px 0;
+}

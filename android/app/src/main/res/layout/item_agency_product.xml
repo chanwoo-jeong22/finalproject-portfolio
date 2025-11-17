@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/table_cell_bg">
+
+        <CheckBox
+            android:id="@+id/cbSelect"
+            android:layout_width="50dp"
+            android:layout_height="35dp"
+            android:background="@drawable/right_border"/>
+
+        <TextView
+            android:id="@+id/tvPdNum"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:background="@drawable/right_border"/>
+
+        <TextView
+            android:id="@+id/tvPdProducts"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="60dp"
+            android:paddingEnd="60dp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:background="@drawable/right_border"/>
+
+        <EditText
+            android:id="@+id/etQuantity"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:background="@drawable/right_border"/>
+
+        <TextView
+            android:id="@+id/tvPrice"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:background="@drawable/right_border"/>
+
+        <TextView
+            android:id="@+id/tvTotal"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:background="@drawable/bottom_border"/>
+</LinearLayout>
