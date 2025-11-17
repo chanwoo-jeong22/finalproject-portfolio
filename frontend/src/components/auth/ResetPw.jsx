@@ -1,4 +1,4 @@
-import api from "../../api/api";
+import api from "../../api/api.js";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import styles from "./auth.module.css";
 import {useEffect, useState} from "react";

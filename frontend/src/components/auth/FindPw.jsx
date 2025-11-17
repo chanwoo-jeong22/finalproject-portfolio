@@ -1,4 +1,4 @@
-import api from "../../api/api";
+import api from "../../api/api.js";
 import styles from "./auth.module.css";
 import {useState} from "react";
 

@@ -2,7 +2,7 @@ import {Outlet, useLocation} from "react-router-dom";
 import SideBar from "./SideBar";
 import TopBar from "../Layout/TopBar";
 import {useState, useEffect} from "react";
-import api from "../../api/api.js";
+import api from "../../api/api.ts";
 import style from "../Agency/MenuBox.module.css"; // 진경 수정
 
 export default function AgencyLayout() {

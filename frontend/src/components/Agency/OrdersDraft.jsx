@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import styles from "./Orders.module.css";
 import { AuthContext } from "../../context/AuthContext.jsx";
-import api from "../../api/Api"; // axios 인스턴스 import
+import api from "../../api/api.js"; // axios 인스턴스 import
 import { useNavigate, useOutletContext } from "react-router-dom";
 
 export default function OrdersDraft() {

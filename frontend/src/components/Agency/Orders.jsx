@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import styles from "./Orders.module.css";
-import api from "../../api/api.js";
+import api from "../../api/api.ts";
 
 export default function Orders() {
     const navigate = useNavigate();
