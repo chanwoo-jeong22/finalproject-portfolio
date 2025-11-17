@@ -1,7 +1,7 @@
 import {useState, useEffect, useContext} from "react";
 import headStyles from "./Head_jin.module.css";
 import axios from "axios";
-import {AuthContext} from "../../context/AuthContext.jsx";
+import {AuthContext} from "../../context/AuthContext.tsx";
 import styles from "./main.module.css";
 
 function LogisticStore() {

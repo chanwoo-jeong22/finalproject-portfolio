@@ -2,7 +2,7 @@ import axios from "axios";
 import {useContext, useEffect, useMemo, useRef, useState} from "react";
 import style from "./Logistic_Notice.module.css";
 import Notice from "../notice/Notice.jsx";
-import {AuthContext} from "../../context/AuthContext.jsx";
+import {AuthContext} from "../../context/AuthContext.tsx";
 import HeadPopup from "../headOffice/HeadPopup.jsx";
 import NoticeDetail from "../headOffice/NoticeDetail.jsx";
 

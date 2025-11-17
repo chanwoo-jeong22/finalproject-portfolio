@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import headStyles from "./Head_jin.module.css";
 import UserRegister from "./UserRegister";
 import axios from "axios";
-import { AuthContext } from '../../context/AuthContext.jsx';
+import { AuthContext } from '../../context/AuthContext.tsx';
 
 function UserDelete() {
   const { token } = useContext(AuthContext);

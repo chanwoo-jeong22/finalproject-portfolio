@@ -7,7 +7,7 @@ import HeadPopup from "./HeadPopup.jsx";
 import HeadGraph from "./HeadGraph.jsx";
 
 // 정환 추가
-import { AuthContext } from '../../context/AuthContext.jsx';
+import { AuthContext } from '../../context/AuthContext.tsx';
 // 정환 추가
 
 function HeadMain () {

@@ -2,7 +2,7 @@ import {useContext, useEffect, useMemo, useState} from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import styles from "./Logistic_Order_Print.module.css";
-import {AuthContext} from "../../context/AuthContext.jsx";
+import {AuthContext} from "../../context/AuthContext.tsx";
 
 
 export default function Logistic_Order_Detail() {

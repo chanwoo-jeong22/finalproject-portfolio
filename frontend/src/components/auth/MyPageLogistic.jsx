@@ -1,6 +1,6 @@
 import styles from "./auth.module.css";
 import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 import { useNavigate } from "react-router-dom";
 
 // JWT 디코딩 함수

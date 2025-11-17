@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { useOutletContext, useLocation, useNavigate } from "react-router-dom";
 import api from "../../api/api.js";
 import styles from "./Orders.module.css";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 
 export default function OrderStatus() {
     const { orders, setOrders } = useOutletContext();

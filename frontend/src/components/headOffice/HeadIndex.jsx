@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useContext, useState } from "react";
 
 // AuthContext
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 
 function HeadIndex() {
   const navigate = useNavigate();

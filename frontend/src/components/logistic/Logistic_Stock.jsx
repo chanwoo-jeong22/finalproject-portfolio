@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useContext, useCallback } from "react";
 import axios from "axios";
 import styles from "./Logistic_Order.module.css";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 import style from "./Logistic_MenuBox.module.css"; // 주문과 동일한 방식
 
 export default function Logistic_Stock() {

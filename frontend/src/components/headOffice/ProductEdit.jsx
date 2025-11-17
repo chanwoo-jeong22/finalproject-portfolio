@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 // 정환 수정
-import { useApi } from "../../api/axiosInstance.js";
+import { useApi } from "../../api/axiosInstance.ts";
 // 정환 수정
 
 import styles from './main.module.css';

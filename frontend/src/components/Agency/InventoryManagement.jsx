@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useMemo } from "react";
 import styles from "./Orders.module.css";
 import api from "../../api/api.ts";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 
 export default function InventoryManagement() {
     const { token, userInfo } = useContext(AuthContext);

@@ -5,7 +5,7 @@ import axios from "axios";
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from "recharts";
-import { AuthContext } from '../../context/AuthContext.jsx';
+import { AuthContext } from '../../context/AuthContext.tsx';
 
 
 function HeadGraph() {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import styles from "./Orders.module.css";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 import api from "../../api/api.js"; // axios 인스턴스 import
 import { useNavigate, useOutletContext } from "react-router-dom";
 

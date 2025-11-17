@@ -2,7 +2,7 @@ import styles from "./auth.module.css";
 import user from "../../assets/img/user.png";
 import { useEffect, useState, useContext } from "react";
 import axios from "axios";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 import { useNavigate } from "react-router-dom";
 
 // JWT 디코딩해서 payload 가져오기

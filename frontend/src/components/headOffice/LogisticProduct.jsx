@@ -3,7 +3,7 @@ import {useState, useEffect, useContext} from 'react';
 import axios from 'axios';
 
 // 정환 추가
-import { AuthContext } from '../../context/AuthContext.jsx';
+import { AuthContext } from '../../context/AuthContext.tsx';
 // 정환 추가
 
 function LogisticProduct() {

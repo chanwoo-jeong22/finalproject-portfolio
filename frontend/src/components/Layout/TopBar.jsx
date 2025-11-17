@@ -1,7 +1,7 @@
 import {useContext, useEffect, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
 import style from "../logistic/Logistic_MenuBox.module.css";
-import {AuthContext} from "../../context/AuthContext";
+import {AuthContext} from "../../context/AuthContext.js";
 
 // JWT 디코딩 함수
 function parseJwt(token) {

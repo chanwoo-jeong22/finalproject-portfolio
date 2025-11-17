@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 import styles from "./Orders.module.css";
 import api from "../../api/api.ts";
 

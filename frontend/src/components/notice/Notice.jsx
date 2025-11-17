@@ -3,7 +3,7 @@ import axios from 'axios';
 import styles from './notice.module.css';
 
 // 정환 추가
-import { AuthContext } from '../../context/AuthContext.jsx';
+import { AuthContext } from '../../context/AuthContext.tsx';
 // 정환 추가
 
 const API_URL = 'http://localhost:8080/api/notices';

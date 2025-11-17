@@ -2,7 +2,7 @@
 import {useContext, useEffect, useState} from 'react';
 import axios from 'axios';
 import styles from './main.module.css';
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 
 function Status() {
     const { token } = useContext(AuthContext);

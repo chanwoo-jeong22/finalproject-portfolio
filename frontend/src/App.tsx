@@ -1,31 +1,31 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext.jsx";
+import { AuthProvider } from "./context/AuthContext";
 
 // =========================
 // 인증 관련
 // =========================
-import Login from "./components/auth/Login.jsx";
-import Join from "./components/auth/Join.jsx";
-import FindPw from "./components/auth/FindPw.jsx";
+import Login from "./components/auth/Login";
+import Join from "./components/auth/Join";
+import FindPw from "./components/auth/FindPw";
 import ResetPw from "./components/auth/ResetPw.jsx";
-import MyPageOffice from "./components/auth/MyPageOffice.jsx";
+import MyPageOffice from "./components/auth/MyPageOffice.jsx";``
 import MyPageAgency from "./components/auth/MyPageAgency.jsx";
 import MyPageLogistic from "./components/auth/MyPageLogistic.jsx";
 
 // =========================
 // 본사 영역
 // =========================
-import HeadIndex from "./components/HeadOffice/HeadIndex.jsx";
-import OrderDetail from "./components/HeadOffice/OrderDetail.jsx";
+import HeadIndex from "./components/headOffice/HeadIndex.jsx";
+import OrderDetail from "./components/headOffice/OrderDetail.jsx";
 
 // =========================
 // 물류 영역
 // =========================
-import Logistic_Layout from "./components/Logistic/Logistic_Layout.jsx";
-import Logistic_Main from "./components/Logistic/Logistic_Main.jsx";
-import Logistic_Orders from "./components/Logistic/Logistic_Orders.jsx";
-import Logistic_Stock from "./components/Logistic/Logistic_Stock.jsx";
-import Logistic_Order_Detail from "./components/Logistic/Logistic_Order_Detail.jsx";
+import Logistic_Layout from "./components/logistic/Logistic_Layout.jsx";
+import Logistic_Main from "./components/logistic/Logistic_Main.jsx";
+import Logistic_Orders from "./components/logistic/Logistic_Orders.jsx";
+import Logistic_Stock from "./components/logistic/Logistic_Stock.jsx";
+import Logistic_Order_Detail from "./components/logistic/Logistic_Order_Detail.jsx";
 
 // =========================
 // 대리점 영역

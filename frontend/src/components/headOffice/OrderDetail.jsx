@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import {useContext, useEffect, useState} from "react";
 import axios from "axios";
 import styles from "./OrderDetail.module.css";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 
 export default function OrderDetail() {
     const { token } = useContext(AuthContext);

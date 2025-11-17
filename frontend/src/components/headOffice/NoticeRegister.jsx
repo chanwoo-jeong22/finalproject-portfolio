@@ -5,7 +5,7 @@ import HeadPopup from './HeadPopup';
 import NoticeDetail from './NoticeDetail';
 
 // 정환 추가
-import { AuthContext } from '../../context/AuthContext.jsx';
+import { AuthContext } from '../../context/AuthContext.tsx';
 // 정환 추가
 
 const API_URL = "http://localhost:8080/api/notices";

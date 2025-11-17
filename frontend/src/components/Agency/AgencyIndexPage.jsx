@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useMemo, useRef, useState, useContext } from "react";
 import style from "./AgencyIndexPage.module.css";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 import Notice from "../notice/Notice.jsx";
 import HeadPopup from "../headOffice/HeadPopup.jsx";
 import NoticeDetail from "../headOffice/NoticeDetail.jsx";

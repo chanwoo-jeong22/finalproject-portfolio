@@ -4,7 +4,7 @@ import style from "./Logistic_MenuBox.module.css";
 import axios from "axios";
 
 // 정환 추가
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 // 정환 추가
 
 export default function Logistic_Orders() {
