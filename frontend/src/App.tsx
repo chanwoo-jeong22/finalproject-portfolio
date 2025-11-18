@@ -35,7 +35,7 @@ import AgencyOrders from "./components/Agency/Orders.jsx"; // 이름 충돌 방�
 import OrdersDraft from "./components/Agency/OrdersDraft.jsx";
 import OrderStatus from "./components/Agency/OrderStatus.jsx";
 import InventoryManagement from "./components/Agency/InventoryManagement.jsx";
-import AgencyLayout from "./components/Agency/AgencyLayout.jsx";
+import AgencyLayout from "./components/Agency/AgencyLayout.js";
 
 
 function App() {
