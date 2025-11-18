@@ -7,10 +7,10 @@ import { AuthProvider } from "./context/AuthContext";
 import Login from "./components/auth/Login";
 import Join from "./components/auth/Join";
 import FindPw from "./components/auth/FindPw";
-import ResetPw from "./components/auth/ResetPw.jsx";
-import MyPageOffice from "./components/auth/MyPageOffice.jsx";``
-import MyPageAgency from "./components/auth/MyPageAgency.jsx";
-import MyPageLogistic from "./components/auth/MyPageLogistic.jsx";
+import ResetPw from "./components/auth/ResetPw.js";
+import MyPageOffice from "./components/auth/MyPageOffice.js";``
+import MyPageAgency from "./components/auth/MyPageAgency.js";
+import MyPageLogistic from "./components/auth/MyPageLogistic.js";
 
 // =========================
 // 본사 영역
