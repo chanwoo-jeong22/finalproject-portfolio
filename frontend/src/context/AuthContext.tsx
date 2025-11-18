@@ -1,57 +1,45 @@
 import { createContext, useState, useEffect, ReactNode } from "react";
 import axios from "axios";
 
-// AuthContext의 값 타입 정의
+// 유저 정보 타입 (필요에 따라 확장 가능)
 interface UserInfo {
-    [key: string]: any; // 유저 정보는 자유롭게 확장 가능
+    [key: string]: any;
 }
 
+// AuthContext에서 제공할 상태와 함수 타입 정의
 interface AuthContextType {
     hdId: string | null;
     agId: string | null;
     lgId: string | null;
     token: string | null;
     userInfo: UserInfo;
-    login: (newToken: string, userId: string, role: string) => Promise<void>;
+    login: (token: string, userId: string, role: string) => Promise<void>;
     logout: () => void;
 }
 
-// 초기값은 null로 설정 (사용 시 null 체크 필수)
-export const AuthContext = createContext<AuthContextType | null>(null);
+// 기본값 세팅 (null 또는 빈 함수)
+export const AuthContext = createContext<AuthContextType>({
+    hdId: null,
+    agId: null,
+    lgId: null,
+    token: null,
+    userInfo: {},
+    login: async () => {},
+    logout: () => {},
+});
 
-/**
- * JWT 토큰을 파싱해서 payload를 추출하는 함수
- * @param token JWT 토큰 문자열
- * @returns 파싱된 payload 객체 혹은 null (실패 시)
- */
-function parseJwt(token: string | null): any | null {
-    if (!token) return null;
-    try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        return payload;
-    } catch (err) {
-        console.error("JWT 파싱 실패:", err);
-        return null;
-    }
-}
-
-// AuthProvider의 props 타입 (children은 ReactNode 타입)
+// AuthProvider 컴포넌트 타입 정의
 interface AuthProviderProps {
     children: ReactNode;
 }
 
-/**
- * AuthProvider 컴포넌트
- * 전역 인증 상태 관리용 Context Provider 역할 수행
- */
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-    // 로컬스토리지에서 초기값 가져오기 (있으면 설정, 없으면 null)
+    // 초기 상태는 localStorage에 저장된 값을 불러옴
     const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
     const [hdId, setHdId] = useState<string | null>(() => localStorage.getItem("hdId"));
     const [agId, setAgId] = useState<string | null>(() => localStorage.getItem("agId"));
     const [lgId, setLgId] = useState<string | null>(() => localStorage.getItem("lgId"));
 
-    // 유저 정보 상태, 초기값은 빈 객체
     const [userInfo, setUserInfo] = useState<UserInfo>(() => {
         const stored = localStorage.getItem("userInfo");
         if (stored && stored !== "undefined") {
@@ -64,20 +52,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return {};
     });
 
-    /**
-     * 로그인 처리 함수
-     * 토큰 및 유저ID, 역할에 따라 상태와 로컬스토리지에 저장하고,
-     * 역할에 따라 유저 정보를 API에서 가져와 저장함
-     * @param newToken 로그인 성공 후 받은 JWT 토큰
-     * @param userId 로그인한 유저의 ID
-     * @param role 사용자 역할 (head_office, agency, logistic)
-     */
+    // 로그인 함수: 토큰과 유저 정보 저장, 역할에 따른 ID 분리 관리
     const login = async (newToken: string, userId: string, role: string) => {
         try {
             setToken(newToken);
             localStorage.setItem("token", newToken);
 
-            // 역할별 ID 상태 및 로컬스토리지 저장
             if (role === "head_office") {
                 setHdId(userId);
                 localStorage.setItem("hdId", userId);
@@ -89,7 +69,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 localStorage.setItem("lgId", userId);
             }
 
-            // agency 또는 logistic 역할인 경우 유저 정보를 서버에서 받아 상태에 저장
+            // agency 또는 logistic 일 때만 추가로 유저 정보 서버에서 받아 저장
             if (role === "agency" || role === "logistic") {
                 const type = role === "agency" ? "agency" : "logistic";
                 const res = await axios.get(`http://localhost:8080/api/${type}/mypage/${userId}`, {
@@ -98,18 +78,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 setUserInfo(res.data);
                 localStorage.setItem("userInfo", JSON.stringify(res.data));
             }
-        } catch (err) {
-            console.error("로그인 직후 유저 정보 fetch 실패:", err);
+        } catch (error) {
+            console.error("로그인 후 유저 정보 불러오기 실패", error);
         }
     };
 
-    /**
-     * 로그아웃 처리 함수
-     * 상태와 로컬스토리지에서 인증 관련 정보 모두 삭제,
-     * 로그아웃 후 로그인 페이지로 이동
-     */
+    // 로그아웃 함수: 상태 초기화 및 localStorage 삭제, 로그인 페이지로 이동
     const logout = () => {
-        console.warn("로그아웃 실행: JWT 및 사용자 정보 초기화");
         setToken(null);
         setHdId(null);
         setAgId(null);
@@ -125,11 +100,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         window.location.href = "/login";
     };
 
-    /**
-     * 새로고침 시에도 인증 정보를 유지하기 위해
-     * agId 또는 lgId가 존재하고 토큰도 유효하며 유저 정보가 비어있으면
-     * 서버에서 유저 정보를 다시 받아와 상태에 저장함
-     */
+    // 페이지 새로고침 시 userInfo가 비어있으면 서버에서 다시 받아서 세팅
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
@@ -143,15 +114,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                     setUserInfo(res.data);
                     localStorage.setItem("userInfo", JSON.stringify(res.data));
                 }
-            } catch (err) {
-                console.error("유저 정보 fetch 실패:", err);
+            } catch (error) {
+                console.error("유저 정보 재요청 실패", error);
             }
         };
         fetchUserInfo();
-    }, [agId, lgId, token]);
+    }, [agId, lgId, token, userInfo]);
 
-    // Context.Provider에 상태와 함수를 전달하여
-    // 하위 컴포넌트들이 사용할 수 있게 함
     return (
         <AuthContext.Provider value={{ hdId, agId, lgId, token, userInfo, login, logout }}>
             {children}
