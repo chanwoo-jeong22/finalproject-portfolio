@@ -1,51 +1,62 @@
-import {useContext, useEffect, useState} from "react";
-import axios from "axios";
+import React, { useContext, useEffect, useState } from "react";
+import axios, { AxiosError } from "axios";
 import headStyles from './Head_jin.module.css';
 import HeadPopup from './HeadPopup';
 import NoticeDetail from './NoticeDetail';
-
-// 정환 추가
-import { AuthContext } from '../../context/AuthContext.tsx';
-// 정환 추가
+import { AuthContext } from '../../context/AuthContext';
 
 const API_URL = "http://localhost:8080/api/notices";
 
+interface Notice {
+    ntKey: number;
+    nt_key?: number;
+    id?: number;
+    ntCode?: number;
+    code?: number;
+    ntCategory?: string;
+    category2?: string;
+    ntContent?: string;
+    content?: string;
+    startDate?: string;
+    endDate?: string;
+    atCreated?: string;
+    at_created?: string;
+    isChecked?: boolean;
+}
+
 function NoticeRegister() {
-
-    // 정환 추가
     const { token } = useContext(AuthContext);
-    // 정환 추가
 
-    const [notices, setNotices] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [notices, setNotices] = useState<Notice[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<AxiosError | null>(null);
 
-    const [registerCategory1, setRegisterCategory1] = useState('');
-    const [registerCategory2, setRegisterCategory2] = useState('');
-    const [content, setContent] = useState('');
+    const [registerCategory1, setRegisterCategory1] = useState<string>('');
+    const [registerCategory2, setRegisterCategory2] = useState<string>('');
+    const [content, setContent] = useState<string>('');
 
-    const [searchCategory1, setSearchCategory1] = useState('');
-    const [searchCategory2, setSearchCategory2] = useState('');
-    const [searchDate, setSearchDate] = useState('');
+    const [searchCategory1, setSearchCategory1] = useState<string>('');
+    const [searchCategory2, setSearchCategory2] = useState<string>('');
+    const [searchDate, setSearchDate] = useState<string>('');
     const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD 형식
-    const [startDate, setStartDate] = useState(today);
-    const [endDate, setEndDate] = useState('');
+    const [startDate, setStartDate] = useState<string>(today);
+    const [endDate, setEndDate] = useState<string>('');
 
-    const [isPopupOpen, setIsPopupOpen] = useState(false);
-    const [selectedNotice, setSelectedNotice] = useState(null);
-    const [showDetail, setShowDetail] = useState(false);
-    const [detailNotice, setDetailNotice] = useState(null);
+    const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
+    const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null);
+    const [showDetail, setShowDetail] = useState<boolean>(false);
+    const [detailNotice, setDetailNotice] = useState<Notice | null>(null);
 
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({ key: null, direction: 'asc' });
 
     const isAllChecked = notices.length > 0 && notices.every(item => item.isChecked);
 
-    const handleSelectAll = (e) => {
+    const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         const checked = e.target.checked;
         setNotices(notices.map(item => ({ ...item, isChecked: checked })));
     };
 
-    const handleSelectOne = (rowId) => {
+    const handleSelectOne = (rowId: number | undefined) => {
         setNotices(notices.map(item => {
             const itemId = (item.ntKey ?? item.nt_key ?? item.id);
             return itemId === rowId ? { ...item, isChecked: !item.isChecked } : item;
@@ -53,8 +64,8 @@ function NoticeRegister() {
     };
 
     // 정렬
-    const handleSort = (key) => {
-        let direction = 'asc';
+    const handleSort = (key: string) => {
+        let direction: 'asc' | 'desc' = 'asc';
         if (sortConfig.key === key && sortConfig.direction === 'asc') {
             direction = 'desc';
         }
@@ -62,13 +73,12 @@ function NoticeRegister() {
 
         setNotices((prev) => {
             return [...prev].sort((a, b) => {
-                let aValue, bValue;
+                let aValue: any, bValue: any;
 
                 if (key === 'atCreated') {
                     aValue = (a.atCreated ?? a.at_created) || '';
                     bValue = (b.atCreated ?? b.at_created) || '';
                 } else if (key === 'startDate') {
-                    // 노출기간은 시작일 기준으로 정렬
                     aValue = a.startDate || '';
                     bValue = b.startDate || '';
                 } else if (key === 'ntCode') {
@@ -95,7 +105,7 @@ function NoticeRegister() {
     };
 
     // 상세보기
-    const handleNoticeClick = (notice) => {
+    const handleNoticeClick = (notice: Notice) => {
         setDetailNotice(notice);
         setShowDetail(true);
     };
@@ -107,43 +117,35 @@ function NoticeRegister() {
         fetchNotices({
             category1: searchCategory1,
             category2: searchCategory2,
-            date: searchDate
+            searchDate: searchDate
         });
     };
 
     const handleSaveSuccess = () => {
-        // 상세보기 닫기
         handleCloseDetail();
     };
 
     const handleDeleteSuccess = () => {
-        // 상세보기 닫기
         handleCloseDetail();
     };
 
     // 공지사항 조회
-    const fetchNotices = async (params = {}) => {
-
-        // 정환 추가
+    const fetchNotices = async (params: { category1?: string; category2?: string; searchDate?: string } = {}) => {
         if (!token) return;
-        // 정환 추가
 
         setIsLoading(true);
         setError(null);
         try {
-            let codes = [];
+            let codes: number[] = [];
             if (!params.category1 || params.category1 === "0") {
-                codes = [0,1,2,3]; // 전체
+                codes = [0, 1, 2, 3]; // 전체
             } else {
                 codes = [Number(params.category1), 0];
             }
 
-            const response = await axios.get(API_URL, {
+            const response = await axios.get<Notice[]>(API_URL, {
                 params: { codes },
-
-                // 정환 추가
                 headers: { Authorization: `Bearer ${token}` }
-                // 정환 추가
             });
             let data = response.data;
 
@@ -154,8 +156,7 @@ function NoticeRegister() {
                 data = data.filter(item => (item.atCreated ?? item.at_created)?.split("T")[0] === params.searchDate);
             }
 
-            // 등록일 기준 내림차순 정렬 (최신순)
-            data.sort((a, b) => new Date(b.atCreated ?? b.at_created) - new Date(a.atCreated ?? a.at_created));
+            data.sort((a, b) => new Date(b.atCreated ?? b.at_created || '').getTime() - new Date(a.atCreated ?? a.at_created || '').getTime());
 
             setNotices(data.map(item => ({
                 ...item,
@@ -169,7 +170,7 @@ function NoticeRegister() {
                 atCreated: item.atCreated
             })));
         } catch (err) {
-            setError(err);
+            setError(err as AxiosError);
         } finally {
             setIsLoading(false);
         }
@@ -188,7 +189,7 @@ function NoticeRegister() {
     };
 
     // 공지사항 등록
-    const handleRegisterNotice = async () => {
+    const handleRegisterNotice = async (): Promise<void> => {
         if (!registerCategory1) {
             alert("대분류를 선택해주세요!");
             return;
@@ -198,7 +199,6 @@ function NoticeRegister() {
             return;
         }
 
-        // 날짜 유효성 검증
         const start = startDate ? new Date(startDate) : null;
         const end = endDate ? new Date(endDate) : null;
         const now = new Date();
@@ -214,11 +214,6 @@ function NoticeRegister() {
             return;
         }
 
-        if (start && end && end < start) {
-            alert("종료일은 시작일보다 이후 날짜여야 합니다.");
-            return;
-        }
-
         if (end && end < now) {
             alert("종료일은 오늘 이후 날짜여야 합니다.");
             return;
@@ -226,28 +221,28 @@ function NoticeRegister() {
 
         try {
             let codeToSave = Number(registerCategory1);
-            if (registerCategory1 === "0") codeToSave = 0; // 전체 코드 저장
+            if (registerCategory1 === "0") codeToSave = 0;
 
-            // 종료일 기본값 2개월 뒤
-            let end = endDate;
-            if (!end) {
+            let finalEndDate = endDate;
+            if (!finalEndDate) {
                 const twoMonthsLater = new Date();
                 twoMonthsLater.setMonth(twoMonthsLater.getMonth() + 2);
-                end = twoMonthsLater.toISOString().split("T")[0];
+                finalEndDate = twoMonthsLater.toISOString().split("T")[0];
             }
 
-            await axios.post(API_URL, {
+            await axios.post(
+                API_URL,
+                {
                     ntCode: codeToSave,
                     ntCategory: registerCategory2,
-                    ntContent: content
-                }, {
                     ntContent: content,
                     startDate: startDate || null,
-                    endDate: endDate || null
+                    endDate: finalEndDate || null,
                 },
-                {headers: { Authorization: `Bearer ${token}` }} // 정환 추가
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
             );
-
 
             alert('새 공지사항이 등록되었습니다!');
             setRegisterCategory1('');
@@ -257,17 +252,18 @@ function NoticeRegister() {
             setEndDate('');
             fetchNotices();
 
-        } catch (err) {
+        } catch (err: any) {
             alert("공지사항 등록 실패: " + (err.response?.data?.message || err.message));
         }
     };
 
     // 공지사항 삭제
-    const handleDeleteSelected = async () => {
+    const handleDeleteSelected = async (): Promise<void> => {
         const selectedIds = notices
             .filter(item => item.isChecked)
             .map(item => (item.ntKey ?? item.nt_key ?? item.id))
-            .filter(Boolean);
+            .filter(Boolean) as number[];
+
         if (selectedIds.length === 0) {
             alert("삭제할 공지사항을 선택해주세요!");
             return;
@@ -276,39 +272,38 @@ function NoticeRegister() {
 
         try {
             setIsLoading(true);
-            // 선택된 항목 일괄 삭제 (백엔드: RequestBody List<Integer> ids)
             await axios.delete(API_URL, {
                 data: selectedIds,
-                headers: { Authorization: `Bearer ${token}` } // 정환 추가
+                headers: { Authorization: `Bearer ${token}` }
             });
             alert(`${selectedIds.length}개의 공지사항이 삭제되었습니다.`);
             fetchNotices();
-        } catch (err) {
+        } catch (err: any) {
             alert("공지사항 삭제 실패: " + (err.response?.data?.message || err.message));
         } finally {
             setIsLoading(false);
         }
     };
 
-    const closeNoticeDetail = () => {
+    const closeNoticeDetail = (): void => {
         setIsPopupOpen(false);
         setSelectedNotice(null);
     };
 
     // 한 개 삭제
-    const handleDeleteOne = async (notice) => {
+    const handleDeleteOne = async (notice: Notice | null): Promise<void> => {
         if (!notice?.ntKey) return;
         if (!window.confirm('해당 공지사항을 삭제하시겠습니까?')) return;
         try {
             setIsLoading(true);
             await axios.delete(API_URL, {
                 data: [notice.ntKey],
-                headers: { Authorization: `Bearer ${token}` } // 진경 추가
+                headers: { Authorization: `Bearer ${token}` }
             });
             alert('삭제되었습니다.');
             closeNoticeDetail();
             fetchNotices();
-        } catch (err) {
+        } catch (err: any) {
             alert('공지사항 삭제 실패: ' + (err.response?.data?.message || err.message));
         } finally {
             setIsLoading(false);
@@ -316,7 +311,7 @@ function NoticeRegister() {
     };
 
     // 공지사항 수정
-    const handleModifyOne = async (notice) => {
+    const handleModifyOne = async (notice: Notice | null): Promise<void> => {
         if (!notice?.ntKey) return;
         const newCategory = prompt('소분류를 입력하세요 (주문/출고/배송/제품현황):', notice.ntCategory || '');
         if (newCategory === null) return;
@@ -328,11 +323,11 @@ function NoticeRegister() {
                 ntCode: notice.ntCode,
                 ntCategory: newCategory,
                 ntContent: newContent,
-            }, { headers: { Authorization: `Bearer ${token}` } }); // 진경 추가
+            }, { headers: { Authorization: `Bearer ${token}` } });
             alert('수정되었습니다.');
             closeNoticeDetail();
             fetchNotices();
-        } catch (err) {
+        } catch (err: any) {
             alert('공지사항 수정 실패: ' + (err.response?.data?.message || err.message));
         } finally {
             setIsLoading(false);
@@ -372,20 +367,31 @@ function NoticeRegister() {
 
                             <div className={headStyles.section}>
                                 <h5>노출 기간</h5>
-                                <input type="date" className={`${headStyles.select_input} ${headStyles.input_w150}`} value={startDate} onChange={e => setStartDate(e.target.value)} />
+                                <input
+                                    type="date"
+                                    className={`${headStyles.select_input} ${headStyles.input_w150}`}
+                                    value={startDate}
+                                    onChange={e => setStartDate(e.target.value)} />
                                 <span>~</span>
-                                <input type="date" className={`${headStyles.select_input} ${headStyles.input_w150}`} value={endDate} onChange={e => setEndDate(e.target.value)} />
+                                <input
+                                    type="date"
+                                    className={`${headStyles.select_input} ${headStyles.input_w150}`}
+                                    value={endDate}
+                                    onChange={e => setEndDate(e.target.value)} />
                                 <span className={headStyles.essential}>* 2개월 후 자동 삭제</span>
                             </div>
                         </div>
                         <div className={headStyles.right_select}>
-                            <button className={`${headStyles.btn} ${headStyles.register} ${headStyles.bg_green}`} onClick={handleRegisterNotice}>등록</button>
+                            <button
+                                className={`${headStyles.btn} ${headStyles.register} ${headStyles.bg_green}`}
+                                onClick={handleRegisterNotice}>등록</button>
                         </div>
                     </div>
-                    <textarea className={headStyles.notice_input_text}
-                              placeholder="내용을 입력하세요"
-                              value={content}
-                              onChange={(e) => setContent(e.target.value)} />
+                    <textarea
+                        className={headStyles.notice_input_text}
+                        placeholder="내용을 입력하세요"
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)} />
                 </section>
 
                 {/* 공지사항 리스트 */}
@@ -395,17 +401,19 @@ function NoticeRegister() {
                             <div className={headStyles.left_select}>
                                 <div className={headStyles.section}>
                                     <h5>분류</h5>
-                                    <select className={headStyles.select_w120}
-                                            value={searchCategory1}
-                                            onChange={(e) => setSearchCategory1(e.target.value)}>
+                                    <select
+                                        className={headStyles.select_w120}
+                                        value={searchCategory1}
+                                        onChange={(e) => setSearchCategory1(e.target.value)}>
                                         <option value="">전체</option>
                                         <option value="1">본사</option>
                                         <option value="2">물류</option>
                                         <option value="3">대리점</option>
                                     </select>
-                                    <select className={headStyles.select_w120}
-                                            value={searchCategory2}
-                                            onChange={(e) => setSearchCategory2(e.target.value)}>
+                                    <select
+                                        className={headStyles.select_w120}
+                                        value={searchCategory2}
+                                        onChange={(e) => setSearchCategory2(e.target.value)}>
                                         <option value="">전체</option>
                                         <option value="주문">주문</option>
                                         <option value="출고">출고</option>
@@ -415,20 +423,23 @@ function NoticeRegister() {
                                 </div>
                                 <div className={headStyles.section}>
                                     <h5>등록날짜</h5>
-                                    <input type="date"
-                                           className={`${headStyles.select_input} ${headStyles.input_w150}`}
-                                           value={searchDate}
-                                           onChange={(e) => setSearchDate(e.target.value)} />
+                                    <input
+                                        type="date"
+                                        className={`${headStyles.select_input} ${headStyles.input_w150}`}
+                                        value={searchDate}
+                                        onChange={(e) => setSearchDate(e.target.value)} />
                                 </div>
                             </div>
                             <div className={headStyles.right_select}>
                                 <button className={`${headStyles.btn} ${headStyles.search}`} onClick={handleSearch}>검색</button>
-                                <button className={`${headStyles.btn} ${headStyles.reset}`} onClick={() => {
-                                    setSearchCategory1('');
-                                    setSearchCategory2('');
-                                    setSearchDate('');
-                                    fetchNotices();
-                                }}>초기화</button>
+                                <button
+                                    className={`${headStyles.btn} ${headStyles.reset}`}
+                                    onClick={() => {
+                                        setSearchCategory1('');
+                                        setSearchCategory2('');
+                                        setSearchDate('');
+                                        fetchNotices();
+                                    }}>초기화</button>
                                 <button className={`${headStyles.btn} ${headStyles.delete}`} onClick={handleDeleteSelected}>삭제</button>
                             </div>
                         </div>
@@ -455,11 +466,12 @@ function NoticeRegister() {
                                         : ""
                                 }`}>
                                     등록 날짜
-                                    <button className={headStyles.table_sort_icon}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleSort("atCreated");
-                                            }}>
+                                    <button
+                                        className={headStyles.table_sort_icon}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSort("atCreated");
+                                        }}>
                                     </button>
                                 </th>
                                 <th className={`${headStyles.table_th_sortable} ${
@@ -469,121 +481,95 @@ function NoticeRegister() {
                                             : headStyles.table_th_desc)
                                         : ""
                                 }`}>
-                                    노출기간
-                                    <button className={headStyles.table_sort_icon}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleSort("startDate");
-                                            }}>
+                                    노출 기간 (시작일)
+                                    <button
+                                        className={headStyles.table_sort_icon}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSort("startDate");
+                                        }}>
                                     </button>
                                 </th>
-                                <th className={`${headStyles.table_th_sortable} ${
-                                    sortConfig.key === "ntCode"
-                                        ? (sortConfig.direction === "asc"
-                                            ? headStyles.table_th_asc
-                                            : headStyles.table_th_desc)
-                                        : ""
-                                }`}>
-                                    대분류
-                                    <button className={headStyles.table_sort_icon}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleSort("ntCode");
-                                            }}>
-                                    </button>
-                                </th>
-                                <th className={`${headStyles.table_th_sortable} ${
-                                    sortConfig.key === "ntCategory"
-                                        ? (sortConfig.direction === "asc"
-                                            ? headStyles.table_th_asc
-                                            : headStyles.table_th_desc)
-                                        : ""
-                                }`}>
-                                    소분류
-                                    <button className={headStyles.table_sort_icon}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleSort("ntCategory");
-                                            }}>
-                                    </button>
-                                </th>
-                                <th className={headStyles.nt_th_content}>내용</th>
+                                <th>대분류</th>
+                                <th>소분류</th>
+                                <th>내용</th>
+                                <th>관리</th>
                             </tr>
                             </thead>
                             <tbody>
-                            {isLoading ? (
+                            {isLoading && (
                                 <tr>
-                                    <td colSpan="6" className={headStyles.none_list}>로딩중...</td>
+                                    <td colSpan={7}>로딩중...</td>
                                 </tr>
-                            ) : error ? (
-                                <tr>
-                                    <td colSpan="6" className={headStyles.none_list}>
-                                        데이터를 불러오는데 실패했습니다: {error.message}
-                                    </td>
-                                </tr>
-                            ) : notices.length === 0 ? (
-                                <tr>
-                                    <td colSpan="6" className={headStyles.none_list}>조회된 공지사항이 없어요.</td>
-                                </tr>
-                            ) : (
-                                notices.map(item => {
-                                    const rowId = (item.ntKey ?? item.nt_key ?? item.id);
-                                    return (
-                                        <tr key={rowId} className={item.isChecked ? headStyles.checkedRow : ''}>
-                                            <td className={headStyles.t_check_box}>
-                                                <input
-                                                    type="checkbox"
-                                                    id={`check-${rowId}`}
-                                                    checked={item.isChecked}
-                                                    onChange={() => handleSelectOne(rowId)} />
-                                                <label htmlFor={`check-${rowId}`}></label>
-                                            </td>
-                                            <td>{(item.atCreated ?? item.atCreated)?.split("T")[0]}</td>
-                                            <td>{item.startDate && item.endDate && (
-                                                <p className={headStyles.display_date}>
-                                                    {item.startDate} ~ {item.endDate}
-                                                </p>
-                                            )}</td>
-                                            <td>{(item.ntCode ?? item.code) === 1 ? "본사" : (item.ntCode ?? item.code) === 2 ? "물류" : ((item.ntCode ?? item.code) === 3 ? "대리점" : "전체")}</td>
-                                            <td>{item.ntCategory ?? item.category2}</td>
-                                            <td>
-                                                <div className={headStyles.flex_between}>
-                                                    <p className={headStyles.ellipsis}>{item.ntContent ?? item.content}</p>
-                                                    <button onClick={() => handleNoticeClick(item)} className={headStyles.clickContent}>상세보기</button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
                             )}
+                            {!isLoading && notices.length === 0 && (
+                                <tr>
+                                    <td colSpan={7}>등록된 공지사항이 없습니다.</td>
+                                </tr>
+                            )}
+                            {!isLoading && notices.map((notice) => {
+                                const itemId = notice.ntKey ?? notice.nt_key ?? notice.id;
+                                if (!itemId) return null;
+                                return (
+                                    <tr key={itemId}>
+                                        <td className={headStyles.t_check_box}>
+                                            <input
+                                                type="checkbox"
+                                                checked={notice.isChecked ?? false}
+                                                onChange={() => handleSelectOne(itemId)} />
+                                        </td>
+                                        <td>{(notice.atCreated ?? notice.at_created)?.split("T")[0]}</td>
+                                        <td>{notice.startDate}</td>
+                                        <td>{notice.ntCode ?? notice.code}</td>
+                                        <td>{notice.ntCategory ?? notice.category2}</td>
+                                        <td>
+                                            <button
+                                                className={headStyles.btn_link}
+                                                onClick={() => handleNoticeClick(notice)}>
+                                                {notice.ntContent ?? notice.content}
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button
+                                                className={headStyles.btn_modify}
+                                                onClick={() => handleModifyOne(notice)}>수정</button>
+                                            <button
+                                                className={headStyles.btn_delete}
+                                                onClick={() => handleDeleteOne(notice)}>삭제</button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                             </tbody>
                         </table>
                     </div>
                 </section>
+
             </div>
 
-            <HeadPopup isOpen={isPopupOpen} onClose={closeNoticeDetail}>
-                {selectedNotice && (
-                    <NoticeDetail
-                        noticeDetail={selectedNotice}
-                        onDelete={() => handleDeleteOne(selectedNotice)}
-                        onModify={() => handleModifyOne(selectedNotice)}
-                    />
-                )}
-            </HeadPopup>
+            {showDetail && detailNotice && detailNotice.ntKey && (
+                <NoticeDetail
+                    // NoticeDetail 컴포넌트가 기대하는 prop 이름 noticeDetail로 넘김
+                    noticeDetail={detailNotice}
 
-            {/* 상세보기 팝업 (수정/삭제 가능) */}
-            {showDetail && detailNotice && (
-                <HeadPopup isOpen={showDetail} onClose={handleCloseDetail}>
-                    <NoticeDetail
-                        noticeDetail={detailNotice}
-                        onDelete={handleDeleteSuccess}
-                        onSave={handleSaveSuccess}
-                    />
-                </HeadPopup>
+                    // onClose 콜백
+                    onClose={handleCloseDetail}
+
+                    // onSaveSuccess → onSave로 이름 변경
+                    onSave={handleSaveSuccess}
+
+                    // onDeleteSuccess → onDelete로 이름 변경
+                    onDelete={handleDeleteSuccess}
+                />
             )}
+
+
+            {isPopupOpen && selectedNotice && selectedNotice.ntKey && (
+                <HeadPopup notice={selectedNotice} onClose={closeNoticeDetail} />
+            )}
+
         </div>
-    )
+    );
 }
 
 export default NoticeRegister;

@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import NoticeRegister from "./NoticeRegister.jsx";
+import NoticeRegister from "./NoticeRegister.tsx";
 import HeadMain from "./HeadMain.jsx";
 import UserDelete from "./UserDelete.jsx";
 import UserRegister from "./UserRegister.jsx";

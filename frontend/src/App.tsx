@@ -30,7 +30,7 @@ import Logistic_Order_Detail from "./components/logistic/Logistic_Order_Detail.j
 // =========================
 // 대리점 영역
 // =========================
-import AgencyIndexPage from "./components/Agency/AgencyIndexPage.jsx";
+import AgencyIndexPage from "./components/Agency/AgencyIndexPage.js";
 import AgencyOrders from "./components/Agency/Orders.jsx"; // 이름 충돌 방지
 import OrdersDraft from "./components/Agency/OrdersDraft.jsx";
 import OrderStatus from "./components/Agency/OrderStatus.jsx";

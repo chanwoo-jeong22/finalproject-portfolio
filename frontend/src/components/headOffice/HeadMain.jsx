@@ -1,8 +1,8 @@
 import {useState, useRef, useContext} from 'react'; // useState import
 import { useNavigate } from 'react-router-dom';
 import headStyles from "./Head_jin.module.css";
-import Notice from "../notice/Notice.jsx";
-import NoticeDetail from "./NoticeDetail.jsx";
+import Notice from "../notice/Notice.tsx";
+import NoticeDetail from "./NoticeDetail.tsx";
 import HeadPopup from "./HeadPopup.jsx";
 import HeadGraph from "./HeadGraph.jsx";
 
