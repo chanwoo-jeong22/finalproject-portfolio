@@ -1,0 +1,314 @@
+/* Page LogisticLayout */
+.page {
+    white-space: nowrap;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: calc(100vh - 60px);
+    padding: 50px 50px 50px 0;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+}
+
+
+/* Title */
+.title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 40px;
+}
+
+/* Form */
+.form {
+    display: flex;
+    flex-direction: column;
+    row-gap: 15px;
+    font-size: 16px;
+    overflow-x: auto;
+    width: 100%;
+}
+.row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    column-gap: 20px;
+    row-gap: 15px;
+
+}
+.field {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+    flex-direction: row;
+}
+.field label {
+    cursor: text;
+    font-size: 14px;
+}
+.inline {
+    display: flex;
+    align-items: center;
+    column-gap: 5px;
+}
+.row input,
+.row select {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+    border-radius: 5px;
+    border: 1px solid #000;
+    background: #fff;
+    min-width: 100px;
+}
+.smallInput {
+    width: 80px;
+    min-width: 70px;
+}
+.tilde {
+    padding: 0 4px;
+    color: #666;
+}
+.btnDark {
+    width: 50px;
+    height: 30px;
+    font-size: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background: #111;
+    color: #fff;
+}
+
+/* Table */
+.tableWrap {
+    width: 100%;
+    /* 부모가 flex/grid면 줄바꿈용: */
+    /*min-width: 0;*/
+
+    border: 1px solid #000;
+    background: #fff;
+
+    /* x, y 모두 스크롤 가능 */
+    overflow: auto;
+    /* 세로 스크롤 한도 (화면/헤더 여백에 맞춰 숫자 조정) */
+    max-height: calc(100vh - 120px);
+    margin-top: 30px;
+    /*margin-bottom: 10px;*/
+}
+.tableWrap .table {
+    border-collapse: collapse;
+    width: 100%;  /* 내용만큼 확장 → x 스크롤 유도 */
+    min-width: 1000px;
+}
+
+.tableWrap .table thead th {
+    background: #f3f3f3;
+    font-weight: 600;
+    height: 30px;
+    padding: 0 8px;
+    border-right: 1px solid #ccc;
+}
+.tableWrap .table thead th:last-child {
+    border-right: none;
+}
+.tableWrap .table input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    border: 1px solid #ddd;
+    accent-color: #111;
+}
+.tableWrap .table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tableWrap .table td:nth-child(4),
+.tableWrap .table th:nth-child(4){
+    max-width : 150px;
+}
+
+/* 진경 추가 */
+.tableWrap .table tr th,
+.tableWrap .table tr td {
+    font-size: 12px;
+}
+
+.tableWrap .table tr th::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background-color: #ccc;
+}
+
+.tableWrap .table tr:first-child td {
+    border-top: none;
+}
+
+.tableWrap .table tr th div {
+    position: relative;
+}
+
+.tableWrap .table tr th p {
+    text-align: center;
+}
+
+.tableWrap .table tr th button {
+    font-size: 9px;
+    border-radius: 2px;
+    position: absolute;
+    right: 8px;
+}
+
+.tableWrap .table tr th div > button {
+    right: 0;
+}
+/* // 진경 추가 */
+
+.formScroll {
+    width: 100%;
+    /*min-width: 1000px;*/
+    overflow-x: auto;   /* 가로 스크롤 */
+    overflow-y: auto;
+}
+
+/* 실제 콘텐츠 최소 너비 보장 */
+.formInner {
+    width: 100%; /* !* 요구사항 *!*/
+}
+
+.thSort {
+    white-space: nowrap; /* 줄바꿈 방지 */
+    text-align: center;  /* 가운데 정렬 (옵션) */
+}
+
+
+
+
+.right {
+    text-align: right;
+}
+.left {
+    text-align: left;
+}
+
+/* 보기 버튼 */
+.viewHead {
+    text-align: right;
+    padding-right: 10px;
+    border-bottom: 1px solid #000;
+    border-left: 1px solid #000;
+}
+.viewCell {
+    text-align: center;
+    width: 100px;
+}
+.viewBtn {
+    padding: 2px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 50px;
+    background: #fff;
+    cursor: pointer;
+    color: #007079;
+}
+.viewBtn:hover {
+    background: #EDF7F3;
+}
+
+/* Modal */
+.modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal {
+    width: min(860px, 92vw);
+    max-height: 84vh;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+}
+.modalTitle {
+    font-size: 18px;
+    font-weight: 800;
+}
+.modalMeta {
+    display: flex;
+    gap: 16px;
+    color: #666;
+    margin-top: 6px;
+    font-size: 13px;
+}
+.modalClose {
+    border: 1px solid #111;
+    background: #fff;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: 700;
+}
+.modalBody {
+    padding: 14px 18px 20px;
+    overflow: auto;
+}
+.modalTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+.modalTable th,
+.modalTable td {
+    border: 1px solid #ddd;
+    padding: 10px 12px;
+    height: 30px;
+}
+.dot {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid #999;
+}
+.green {
+    background: #1dbf51;
+}
+.red {
+    background: #ff3b30;
+}
+.totalRow {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    align-items: baseline;
+    margin-top: 14px;
+    font-size: 16px;
+}
+.totalRow strong {
+    font-size: 22px;
+    font-weight: 900;
+}
+
+/* Misc */
+.empty {
+    color: #999;
+}
+
+.headerGridWrap[readonly] {
+    cursor : default;
+}

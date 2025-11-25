@@ -73,6 +73,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     // Authorization 헤더에서 JWT 추출
     final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+    System.out.println(header);
 
     if (header != null && header.startsWith("Bearer ")) {
       String token = header.substring(7);

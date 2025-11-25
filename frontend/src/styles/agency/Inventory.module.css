@@ -1,0 +1,171 @@
+/* ==========================================================================
+   Page LogisticLayout
+   ========================================================================== */
+.page {
+    width: 100%;
+    padding: 120px 50px 50px 340px;
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   Title
+   ========================================================================== */
+.title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 40px;
+}
+
+/* ==========================================================================
+   Form (검색/입력 행)
+   ========================================================================== */
+.form {
+    display: flex;
+    flex-direction: column;
+    row-gap: 15px;
+    font-size: 16px;
+}
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 20px;
+    row-gap: 15px;
+}
+.field {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+}
+.field label {
+    cursor: text;
+}
+.inline {
+    display: flex;
+    align-items: center;
+    column-gap: 5px;
+}
+
+/* 입력/셀렉트 공통 규격 */
+.row input,
+.row select {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+    border-radius: 5px;
+    border: 1px solid #000;
+    background: #fff;
+}
+
+/* 작은 입력 (수량/단가/총액 등) */
+.smallInput {
+    width: 80px;
+    min-width: 70px;
+}
+
+/* 버튼 규격 */
+.btnDark {
+    width: 45px;
+    height: 30px;
+    font-size: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background: #111;
+    color: #fff;
+}
+
+/* ==========================================================================
+   Action Buttons
+   ========================================================================== */
+.actionBar {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.actionBtn {
+    width: 75px;
+    height: 75px;
+    border-radius: 5px;
+    font-size: 20px;
+    font-weight: 700;
+    border: 1px solid #000;
+    background: #fff;
+    cursor: pointer;
+}
+.actionBtn:hover {
+    background: #f4f4f4;
+}
+
+/* ==========================================================================
+   Table (목록/카탈로그/입고주문)
+   ========================================================================== */
+.tableWrap {
+    position: relative;
+    height: 360px;
+    max-height: 360px;
+    width: 100%;
+    min-width: 200px;
+    border: 1px solid #000;
+    background: #fff;
+    overflow-y: auto;
+    overflow-x: auto;
+    margin-top: 40px;
+    margin-bottom: 50px;
+}
+.table {
+    width: 100%;
+    min-width: 1000px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.table thead th {
+    background: #fff;
+    text-align: left;
+    font-weight: 700;
+    height: 30px;
+    padding: 0 18px 0 10px;
+    border-bottom: 1px solid #000;
+    border-right: 1px solid #000;
+}
+.table thead th:last-child {
+    border-right: none;
+}
+.table input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    border: 1px solid #ddd;
+    accent-color: #111;
+}
+.table td {
+    border-bottom: 1px solid #eee;
+    padding: 0 10px;
+    height: 30px;
+    font-size: 14px;
+}
+.right {
+    text-align: right;
+}
+
+/* ==========================================================================
+   수량 입력 칸
+   ========================================================================== */
+.cellInput {
+    width: 100%;
+    height: 28px;
+    border: none;
+
+    padding: 2px 6px;
+    box-sizing: border-box;
+}
+.cellInputRight {
+    text-align: right;
+}
+
+/* ==========================================================================
+   Misc
+   ========================================================================== */
+.empty {
+    color: #999;
+}
