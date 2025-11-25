@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useMemo, useState, useContext, useRef } from "react";
+import { useEffect, useMemo, useState, useContext, useRef } from "react";
 import style from "../../styles/agency/agency-indexpage.module.css";
 import { AuthContext } from "../../context/auth-context";
 import Notice from "../../components/notice/index.js";
@@ -90,6 +90,7 @@ export default function Index() {
 
   return (
     <>
+    <div className={style.container}>
       {/* ===== 도착 일정표 섹션 ===== */}
       <section className={style.schedule}>
         <h2 className={style.scheduleTitle}>입고 예정일</h2>
@@ -139,6 +140,7 @@ export default function Index() {
           </HeadPopup>
         )}
       </section>
+      </div>
     </>
   );
 }

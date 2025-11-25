@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import popupStyles from "../../styles/head/head-popup.module.css";
+import styles from "../../styles/head/head-popup.module.css";
 
 // 공지사항 상세 타입 정의
 interface NoticeDetailProps {
@@ -167,32 +167,32 @@ function NoticeDetail({
     return (
         <>
             {/* 팝업 헤더 */}
-            <div className={popupStyles.popupHeader}>
+            <div className={styles.popupHeader}>
                 <h3>공지사항</h3>
             </div>
 
             {/* 팝업 본문 */}
-            <div className={popupStyles.popupBody}>
+            <div className={styles.popupBody}>
                 {!isEditing ? (
                     <>
                         {/* 공지사항 분류 및 소분류 */}
-                        <p className={popupStyles.pop_category}>
+                        <p className={styles.pop_category}>
                             <span># {codeLabel}</span>
                             <span># {editCategory || noticeDetail.ntCategory || noticeDetail.category2 || ""}</span>
                         </p>
 
                         {/* 생성일 */}
-                        <p className={popupStyles.pop_date}>
+                        <p className={styles.pop_date}>
                             {(noticeDetail.atCreated ?? noticeDetail.at_created ?? "").split("T")[0]}
                         </p>
 
                         {/* 내용 */}
-                        <div className={popupStyles.pop_content}>{editContent}</div>
+                        <div className={styles.pop_content}>{editContent}</div>
                     </>
                 ) : (
                     // 수정 모드 폼
-                    <div className={popupStyles.nt_editForm}>
-                        <div className={`${popupStyles.formRow} ${popupStyles.flexRow}`}>
+                    <div className={styles.nt_editForm}>
+                        <div className={`${styles.formRow} ${styles.flexRow}`}>
                             <label>분류</label>
                             <select value={editCode} onChange={(e) => setEditCode(Number(e.target.value))}>
                                 <option value={0}>전체</option>
@@ -209,15 +209,15 @@ function NoticeDetail({
                             </select>
                         </div>
 
-                        <div className={`${popupStyles.formRow} ${popupStyles.flexRow}`}>
+                        <div className={`${styles.formRow} ${styles.flexRow}`}>
                             <label>노출 기간</label>
                             <input type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} />
                             <span>~</span>
                             <input type="date" value={editEndDate} onChange={(e) => setEditEndDate(e.target.value)} />
-                            <span className={popupStyles.essential}>* 종료일 후 자동 삭제</span>
+                            <span className={styles.essential}>* 종료일 후 자동 삭제</span>
                         </div>
 
-                        <div className={`${popupStyles.formRow} ${popupStyles.textarea_mt}`}>
+                        <div className={`${styles.formRow} ${styles.textarea_mt}`}>
               <textarea
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
@@ -230,26 +230,26 @@ function NoticeDetail({
             </div>
 
             {/* 팝업 푸터 */}
-            <div className={popupStyles.popupFooter}>
+            <div className={styles.popupFooter}>
                 {readOnly ? (
-                    <button className={popupStyles.modifyBtn} onClick={onClose}>
+                    <button className={styles.modifyBtn} onClick={onClose}>
                         확인
                     </button>
                 ) : !isEditing ? (
                     <>
-                        <button className={popupStyles.modifyBtn} onClick={() => setIsEditing(true)} disabled={isLoading}>
+                        <button className={styles.modifyBtn} onClick={() => setIsEditing(true)} disabled={isLoading}>
                             수정
                         </button>
-                        <button className={popupStyles.deleteBtn} onClick={handleDelete} disabled={isLoading}>
+                        <button className={styles.deleteBtn} onClick={handleDelete} disabled={isLoading}>
                             삭제
                         </button>
                     </>
                 ) : (
                     <>
-                        <button className={popupStyles.modifyBtn} onClick={handleSave} disabled={isLoading}>
+                        <button className={styles.modifyBtn} onClick={handleSave} disabled={isLoading}>
                             {isLoading ? "저장 중..." : "저장"}
                         </button>
-                        <button className={popupStyles.cancelBtn} onClick={() => setIsEditing(false)} disabled={isLoading}>
+                        <button className={styles.cancelBtn} onClick={() => setIsEditing(false)} disabled={isLoading}>
                             취소
                         </button>
                     </>

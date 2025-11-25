@@ -71,9 +71,9 @@ function TopBar() {
 
     const myPageLink =
         userType === "agency"
-            ? "/mypageAgency"
+            ? "/agency/mypage"
             : userType === "logistic"
-                ? "/mypageLogistic"
+                ? "/logistic/mypage"
                 : "/";
 
     const companyName =
