@@ -6,7 +6,6 @@ import NoticeDetail from "../../components/common/notice-detail.js";
 import HeadPopup from "./head-popup.jsx";
 import HeadGraph from "./head-graph.jsx";
 
-import { AuthContext } from '../../context/auth-context';
 
 function HeadMain () {
     const navigate = useNavigate();

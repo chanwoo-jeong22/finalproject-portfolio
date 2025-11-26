@@ -3,7 +3,6 @@ import axios, { AxiosError } from "axios";
 import headStyles from '../../../styles/head/head.module.css';
 import HeadPopup from '../../../components/head/head-popup';
 import NoticeDetail from '../../../components/common/notice-detail.js';
-import { AuthContext } from '../../../context/auth-context';
 
 const API_URL = "http://localhost:8080/api/notices";
 

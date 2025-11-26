@@ -2,7 +2,6 @@ import {useState, useEffect, useMemo, useContext} from "react";
 import axios from "axios";
 import headStyles from "../../../styles/head/head.module.css";
 import PdImgZoom from "../../../components/head/pdlmgzoom/index";
-import { AuthContext } from "../../../context/auth-context";
 
 function AgencyItems() {
     const { token } = useContext(AuthContext);

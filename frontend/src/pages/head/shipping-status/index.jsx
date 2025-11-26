@@ -2,7 +2,6 @@
 import {useContext, useEffect, useState} from 'react';
 import axios from 'axios';
 import styles from '../../../styles/main.module.css';
-import { AuthContext } from "../../../context/auth-context.tsx";
 
 function ShippingStatus() {
     const { token } = useContext(AuthContext);

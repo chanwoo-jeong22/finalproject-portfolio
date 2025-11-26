@@ -5,9 +5,6 @@ import layoutStyles from "../../styles/layout.module.css";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useContext, useState } from "react";
 
-// AuthContext
-import { AuthContext } from "../../context/auth-context.js";
-
 function HeadIndex() {
   const navigate = useNavigate();
   const { token, hdId } = useContext(AuthContext);

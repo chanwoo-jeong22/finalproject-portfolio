@@ -1,56 +1,64 @@
-import api from "../../../api/api";
+// styles 임포트 (CSS 모듈)
 import styles from "../../../styles/login/login.module.css";
-import { useState, ChangeEvent, FormEvent } from "react";
 
+// React 및 훅 관련 임포트
+import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
+
+// Redux 커스텀 훅 임포트 (타입 안전한 dispatch와 selector)
+import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
+
+// password slice의 thunk action과 리셋 액션 임포트
+import { findPassword, resetStatus } from "../../../redux/slices/password-slice";
+
+/**
+ * FindPassword 컴포넌트 (비밀번호 찾기 페이지)
+ * - 아이디, 이메일 입력받아 비밀번호 재설정 메일 요청
+ * - 상태관리는 Redux를 사용하여 전역 상태로 관리
+ */
 function FindPassword() {
-    // 입력한 아이디 상태
+    // Redux dispatch 함수 (타입 안전)
+    const dispatch = useAppDispatch();
+
+    // Redux store에서 password slice 상태 가져오기
+    const { status, error, result } = useAppSelector((state) => state.password);
+
+    // 아이디와 이메일 로컬 상태 관리 (입력값을 컨트롤하기 위해 필요)
     const [userId, setUserId] = useState<string>("");
-    // 입력한 이메일 상태
     const [email, setEmail] = useState<string>("");
-    // 처리 결과 상태 (noUser, fail, success, 또는 초기 "")
-    const [status, setStatus] = useState<"noUser" | "fail" | "success" | "">("");
-    // 로딩 중인지 여부
-    const [loading, setLoading] = useState<boolean>(false);
 
-    // 폼 제출 이벤트 핸들러
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault(); // 페이지 새로고침 막기
-        setLoading(true);   // 로딩 시작
-        setStatus("");      // 상태 초기화
+    /**
+     * 컴포넌트 언마운트 시 상태 초기화 (리셋)
+     * - 비밀번호 찾기 페이지를 떠날 때 상태 초기화하여
+     *   이전 요청 결과가 남지 않도록 방지
+     */
+    useEffect(() => {
+        return () => {
+            dispatch(resetStatus());
+        };
+    }, [dispatch]);
 
-        if (!userId || !email) {
-            // 아이디 또는 이메일이 없으면 에러 상태 세팅 후 종료
-            setStatus("noUser");
-            setLoading(false);
-            return;
-        }
-
-        try {
-            // 백엔드에 비밀번호 찾기 요청
-            const res = await api.post("/auth/findPw", { userId, email });
-            // 성공 여부에 따라 상태 업데이트
-            if (res.data.success) {
-                setStatus("success");
-            } else {
-                setStatus("noUser");
-            }
-        } catch (error) {
-            // 에러 발생 시 상태 fail로 세팅
-            console.error("비밀번호 찾기 에러:", error);
-            setStatus("fail");
-        } finally {
-            setLoading(false); // 로딩 종료
-        }
-    };
-
-    // 아이디 input 변경 핸들러
+    // 아이디 입력값 변경 핸들러
     const handleUserIdChange = (e: ChangeEvent<HTMLInputElement>) => {
         setUserId(e.target.value);
     };
 
-    // 이메일 input 변경 핸들러
+    // 이메일 입력값 변경 핸들러
     const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
         setEmail(e.target.value);
+    };
+
+    // 폼 제출 이벤트 핸들러
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        // 입력값 검증 (빈 값 체크)
+        if (!userId || !email) {
+            alert("아이디와 이메일을 모두 입력해주세요.");
+            return;
+        }
+
+        // Redux thunk 액션 dispatch로 비밀번호 찾기 요청
+        dispatch(findPassword({ userId, email }));
     };
 
     return (
@@ -62,6 +70,7 @@ function FindPassword() {
                 <h2 className={styles.title}>비밀번호 찾기</h2>
                 <form onSubmit={handleSubmit}>
                     <div className={styles.find_contents}>
+                        {/* 아이디 입력 */}
                         <div className={styles.contents}>
                             <p>아이디</p>
                             <input
@@ -71,6 +80,8 @@ function FindPassword() {
                                 onChange={handleUserIdChange}
                             />
                         </div>
+
+                        {/* 이메일 입력 */}
                         <div className={styles.contents}>
                             <p>이메일</p>
                             <input
@@ -80,22 +91,24 @@ function FindPassword() {
                                 onChange={handleEmailChange}
                             />
                         </div>
+
+                        {/* 상태별 메시지 표시 영역 */}
                         <div className={styles.inco}>
-                            {status === "noUser" && (
+                            {result === "noUser" && (
                                 <span className={styles.red}>
                   입력하신 정보와 일치하는 계정을 찾을 수 없습니다.
                   <br />
                   아이디와 이메일을 다시 확인해주세요.
                 </span>
                             )}
-                            {status === "fail" && (
+                            {result === "fail" && (
                                 <span className={styles.red}>
                   메일 발송에 실패했습니다.
                   <br />
                   잠시 후 다시 시도해주세요.
                 </span>
                             )}
-                            {status === "success" && (
+                            {result === "success" && (
                                 <span className={styles.green}>
                   입력하신 이메일로 비밀번호 재설정 링크를
                   <br />
@@ -106,9 +119,19 @@ function FindPassword() {
                   (스팸메일함도 확인 부탁드립니다.)
                 </span>
                             )}
+
+                            {/* 로딩 중 표시 */}
+                            {status === "loading" && <span>메일 전송 중...</span>}
+
+                            {/* 에러 발생 시 메시지 */}
+                            {status === "failed" && error && (
+                                <span className={styles.red}>오류: {error}</span>
+                            )}
                         </div>
-                        <button type="submit" disabled={loading}>
-                            {loading ? "메일 전송 중..." : "비밀번호 찾기"}
+
+                        {/* 제출 버튼, 로딩 중일 때 비활성화 */}
+                        <button type="submit" disabled={status === "loading"}>
+                            비밀번호 찾기
                         </button>
                     </div>
                 </form>

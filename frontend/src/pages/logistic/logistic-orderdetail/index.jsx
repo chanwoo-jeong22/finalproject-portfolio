@@ -2,8 +2,6 @@ import {useContext, useEffect, useMemo, useState} from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import styles from "../../../styles/logistic/logistic-order-detail.module.css";
-import {AuthContext} from "../../../context/auth-context.tsx";
-
 
 export default function LogisticOrderDetail() {
     const { orKey } = useParams();

@@ -1,5 +1,4 @@
 import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../context/auth-context"; // tsx면 .ts 제거
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import layoutStyles from "../styles/layout.module.css";

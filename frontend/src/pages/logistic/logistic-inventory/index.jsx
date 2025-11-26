@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect, useContext, useCallback } from "react";
 import axios from "axios";
 import styles from "../../../styles/logistic/logistic-order.module.css";
-import { AuthContext } from "../../../context/auth-context.tsx";
 
 export default function LogisticInventory() {
     // 검색 폼

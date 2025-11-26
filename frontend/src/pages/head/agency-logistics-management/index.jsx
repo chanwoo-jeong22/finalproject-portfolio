@@ -2,7 +2,6 @@ import { useState, useContext, useEffect } from "react";
 import headStyles from "../../../styles/head/head.module.css";
 import UserRegister from "../../../components/head/userregister/index.jsx";
 import axios from "axios";
-import { AuthContext } from '../../../context/auth-context';
 
 function AgencyLogisticsManagement() {
   const { token } = useContext(AuthContext);

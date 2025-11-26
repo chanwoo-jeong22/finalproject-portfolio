@@ -7,9 +7,9 @@ import React, {
     useContext,
     Ref,
 } from "react";
+
 import axios from "axios";
 import styles from "../../styles/notice.module.css";
-import { AuthContext } from "../../context/auth-context";
 
 // 타입 정의
 interface NoticeData {

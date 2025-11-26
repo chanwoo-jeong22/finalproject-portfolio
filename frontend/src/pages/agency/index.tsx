@@ -1,10 +1,11 @@
 import axios from "axios";
-import { useEffect, useMemo, useState, useContext, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../redux/store"; // store.ts에서 RootState import
 import style from "../../styles/agency/agency-indexpage.module.css";
-import { AuthContext } from "../../context/auth-context";
-import Notice from "../../components/notice/index.js";
+import Notice from "../../components/notice/index";
 import HeadPopup from "../../components/head/head-popup";
-import NoticeDetail from "../../components/common/notice-detail.js";
+import NoticeDetail from "../../components/common/notice-detail";
 import { toIsoDate } from "../../func/parse";
 import { getNextBizDays } from "../../func/common";
 
@@ -19,13 +20,13 @@ interface SchedulesByDate {
 }
 
 export default function Index() {
-  const { token } = useContext(AuthContext);
+  // Redux에서 토큰 조회
+  const token = useSelector((state: RootState) => state.auth.token);
 
-  const [selectedNotice, setSelectedNotice] = useState(null);
+  const [selectedNotice, setSelectedNotice] = useState<any | null>(null);
   const [showDetail, setShowDetail] = useState(false);
-  const noticeRef = useRef(null);
+  const noticeRef = useRef<any>(null);
 
-  // 입고 일정 5일만 표시 (물류쪽처럼 5일 고정)
   const days = useMemo(() => getNextBizDays(7).slice(0, 5), []);
 
   const [schedulesByDate, setSchedulesByDate] = useState<SchedulesByDate>({});
@@ -36,45 +37,46 @@ export default function Index() {
     const from = toIsoDate(days[0]);
     const to = toIsoDate(days[days.length - 1]);
 
-    axios.get("/api/agencyorder/schedule", {
-      params: { from, to },
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => {
-      const rows = res.data?.data ?? res.data ?? [];
-      const byDate: SchedulesByDate = {};
+    axios
+      .get("/api/agencyorder/schedule", {
+        params: { from, to },
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        const rows = res.data?.data ?? res.data ?? [];
+        const byDate: SchedulesByDate = {};
 
-      rows.forEach((r: any) => {
-        if (r.orStatus === "배송완료") return;
+        rows.forEach((r: any) => {
+          if (r.orStatus === "배송완료") return;
 
-        const iso = String(r.orReserve ?? r.or_reserve ?? "").slice(0, 10);
-        if (!iso) return;
+          const iso = String(r.orReserve ?? r.or_reserve ?? "").slice(0, 10);
+          if (!iso) return;
 
-        const key = iso.replace(/-/g, ".");
-        if (!byDate[key]) byDate[key] = [];
+          const key = iso.replace(/-/g, ".");
+          if (!byDate[key]) byDate[key] = [];
 
-        const items = r.items ?? [];
-        const firstItemName =
-          items.length > 0
-            ? items[0].name ?? items[0].oiProducts ?? "미정"
-            : r.orProducts?.split(",")[0] ?? "미정";
+          const items = r.items ?? [];
+          const firstItemName =
+            items.length > 0
+              ? items[0].name ?? items[0].oiProducts ?? "미정"
+              : r.orProducts?.split(",")[0] ?? "미정";
 
-        const extraCount = Math.max(
-          (items.length || r.orProducts?.split(",").length || 1) - 1,
-          0
-        );
+          const extraCount = Math.max(
+            (items.length || r.orProducts?.split(",").length || 1) - 1,
+            0
+          );
 
-        const title =
-          extraCount > 0
-            ? `📦 ${firstItemName} 외 ${extraCount}건 입고 예정 (주문번호 ${r.orderNumber})`
-            : `📦 ${firstItemName} 입고 예정 (주문번호 ${r.orderNumber})`;
+          const title =
+            extraCount > 0
+              ? `📦 ${firstItemName} 외 ${extraCount}건 입고 예정 (주문번호 ${r.orderNumber})`
+              : `📦 ${firstItemName} 입고 예정 (주문번호 ${r.orderNumber})`;
 
-        byDate[key].push({ title });
-      });
+          byDate[key].push({ title });
+        });
 
-      setSchedulesByDate(byDate);
-    })
-    .catch(console.error);
+        setSchedulesByDate(byDate);
+      })
+      .catch(console.error);
   }, [days, token]);
 
   const handleNoticeClick = (notice: any) => {
@@ -90,56 +92,63 @@ export default function Index() {
 
   return (
     <>
-    <div className={style.container}>
-      {/* ===== 도착 일정표 섹션 ===== */}
-      <section className={style.schedule}>
-        <h2 className={style.scheduleTitle}>입고 예정일</h2>
-        <div className={style.scheduleGrid}>
-          {days.map(d => {
-            const key = d.toISOString().slice(0,10).replace(/-/g, ".");
-            const items = schedulesByDate[key] || [];
-            const dow = KOR_DOW[d.getDay()];
-            return (
-              <article key={key} className={style.scheduleCard}>
-                <div className={style.scheduleDate}>
-                  {key} <span className={style.scheduleDow}>({dow})</span>
-                </div>
-                <ul className={style.scheduleList}>
-                  {items.length === 0 ? (
-                    <li className={style.empty}>일정이 없습니다.</li>
-                  ) : (
-                    items.map((it, i) => (
-                      <li key={i}>
-                        <span className={style.scheduleText}>{it.title}</span>
-                      </li>
-                    ))
-                  )}
-                </ul>
-              </article>
-            );
-          })}
-        </div>
-      </section>
+      <div className={style.container}>
+        {/* ===== 도착 일정표 섹션 ===== */}
+        <section className={style.schedule}>
+          <h2 className={style.scheduleTitle}>입고 예정일</h2>
+          <div className={style.scheduleGrid}>
+            {days.map((d) => {
+              const key = d
+                .toISOString()
+                .slice(0, 10)
+                .replace(/-/g, ".");
+              const items = schedulesByDate[key] || [];
+              const dow = KOR_DOW[d.getDay()];
+              return (
+                <article key={key} className={style.scheduleCard}>
+                  <div className={style.scheduleDate}>
+                    {key} <span className={style.scheduleDow}>({dow})</span>
+                  </div>
+                  <ul className={style.scheduleList}>
+                    {items.length === 0 ? (
+                      <li className={style.empty}>일정이 없습니다.</li>
+                    ) : (
+                      items.map((it, i) => (
+                        <li key={i}>
+                          <span className={style.scheduleText}>{it.title}</span>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </article>
+              );
+            })}
+          </div>
+        </section>
 
-      {/* ===== 공지사항 섹션 ===== */}
-      <section className={style.notice}>
-        <h3 className={style.noticetitle}>공지사항</h3>
-        {token ? (
-          <Notice ref={noticeRef} role="agency" onNoticeClick={handleNoticeClick} />
-        ) : (
-          <div>현재 공지사항이 없습니다.</div>
-        )}
-
-        {showDetail && selectedNotice && (
-          <HeadPopup isOpen={showDetail} onClose={handleCloseDetail}>
-            <NoticeDetail
-              noticeDetail={selectedNotice}
-              readOnly={true}
-              onClose={handleCloseDetail}
+        {/* ===== 공지사항 섹션 ===== */}
+        <section className={style.notice}>
+          <h3 className={style.noticetitle}>공지사항</h3>
+          {token ? (
+            <Notice
+              ref={noticeRef}
+              role="agency"
+              onNoticeClick={handleNoticeClick}
             />
-          </HeadPopup>
-        )}
-      </section>
+          ) : (
+            <div>현재 공지사항이 없습니다.</div>
+          )}
+
+          {showDetail && selectedNotice && (
+            <HeadPopup isOpen={showDetail} onClose={handleCloseDetail}>
+              <NoticeDetail
+                noticeDetail={selectedNotice}
+                readOnly={true}
+                onClose={handleCloseDetail}
+              />
+            </HeadPopup>
+          )}
+        </section>
       </div>
     </>
   );

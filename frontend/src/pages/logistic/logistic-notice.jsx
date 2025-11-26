@@ -2,7 +2,6 @@ import axios from "axios";
 import {useContext, useEffect, useMemo, useRef, useState} from "react";
 import style from "../../styles/logistic/logistic-notice.module.css";
 import Notice from "../../components/notice/index.js";
-import {AuthContext} from "../../context/auth-context.tsx";
 import HeadPopup from "../../components/head/head-popup.jsx";
 import NoticeDetail from "../../components/common/notice-detail.tsx";
 import { fmtDate, getNextBizDays } from "../../func/common.ts";

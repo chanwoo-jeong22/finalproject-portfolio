@@ -1,6 +1,5 @@
 import styles from "../../../styles/login/login.module.css";
 import { useEffect, useState, useContext, ChangeEvent, FormEvent } from "react";
-import { AuthContext } from "../../../context/auth-context";
 import { useNavigate } from "react-router-dom";
 
 // JWT 토큰 payload 타입 정의

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/auth-context";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
 
 // =========================
 // 인증 관련
@@ -37,10 +38,9 @@ import OrderStatus from "./pages/agency/order-status/index";
 import Inventory from "./pages/agency/inventory/index";
 import AgencyLayout from "./layouts/agency-layout";
 
-
 function App() {
     return (
-        <AuthProvider>
+        <Provider store={store}>
             <BrowserRouter>
                 <Routes>
                     {/* 인증 */}
@@ -75,7 +75,7 @@ function App() {
                     </Route>
                 </Routes>
             </BrowserRouter>
-        </AuthProvider>
+        </Provider>
     );
 }
 

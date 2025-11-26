@@ -2,10 +2,6 @@ import styles from '../../../styles/main.module.css';
 import {useState, useEffect, useContext} from 'react';
 import axios from 'axios';
 
-// 정환 추가
-import { AuthContext } from '../../../context/auth-context';
-// 정환 추가
-
 function AgencyProductStatus() {
 
     const [products, setProducts] = useState([]);

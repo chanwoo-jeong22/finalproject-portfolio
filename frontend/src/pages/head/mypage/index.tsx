@@ -2,7 +2,6 @@ import styles from "../../../styles/login/login.module.css";
 import user from "../../../assets/img/user.png";
 import { useEffect, useState, useContext, ChangeEvent, FormEvent } from "react";
 import axios from "axios";
-import { AuthContext } from "../../../context/auth-context";
 import { useNavigate } from "react-router-dom";
 
 // JWT 토큰을 디코딩해서 payload 객체 리턴하는 함수
