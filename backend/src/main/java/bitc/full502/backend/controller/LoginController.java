@@ -27,9 +27,12 @@ public class LoginController {
    * @return token + (agency 로그인 시 agencyId)
    */
   @PostMapping
-  public Map<String, Object> login(@RequestParam String sep,
-                                   @RequestParam String loginId,
-                                   @RequestParam String loginPw) {
+  public Map<String, Object> login(@RequestBody LoginDTO loginDTO) {
+    String sep = loginDTO.getSep();
+    String loginId = loginDTO.getLoginId();
+    String loginPw = loginDTO.getLoginPw();
+
+    System.out.println("check.........................."+loginDTO);
 
     LoginService.LoginResult result = loginService.login(sep, loginId, loginPw);
     if (result == null) {
