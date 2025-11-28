@@ -3,6 +3,7 @@ import { useOutletContext, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import api from "../../../api/api";
 import styles from "../../../styles/agency/orders.module.css";
+import { confirmOrder } from "../../../redux/slices/agency/thunks";
 
 // Redux 루트 상태 타입 (auth 부분만 정의)
 interface RootState {
@@ -118,12 +119,12 @@ export default function OrderStatus() {
   useEffect(() => {
     if (!newOrder?.items?.length) return;
 
-    const items = newOrder.items.map((item) => ({
-      sku: item.sku ?? item.pdKey ?? "정보 없음",
-      name: item.name ?? item.rdProducts ?? "정보 없음",
-      qty: item.qty ?? item.rdQuantity ?? 0,
-      price: item.price ?? item.rdPrice ?? 0,
-    }));
+      const items = (newOrder.items as (OrderItem & Partial<typeof confirmOrder>)[]).map((item) => ({
+          sku: item.sku ?? "정보 없음",
+          name: item.name ?? "정보 없음",
+          qty: item.qty ?? 0,
+          price: item.price ?? 0,
+      }));
 
     const totalAmount = items.reduce((sum, item) => sum + item.qty * item.price, 0);
     const orderNumberUI = newOrder.orderNumber;

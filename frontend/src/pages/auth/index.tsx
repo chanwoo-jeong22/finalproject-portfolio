@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import styles from "../../styles/login/login.module.css";
 import logo from "../../assets/img/logo.png";
 import { useAppDispatch } from "../../redux/hooks";
-import { login as loginThunk } from "../../redux/slices/auth-slice";
+import { login as loginThunk } from "../../redux/slices/auth/auth-slice";
+import { store } from "../../redux/store"
 
 function Login() {
     const [sep, setSep] = useState<"head_office" | "agency" | "logistic">("head_office");
@@ -22,20 +23,22 @@ function Login() {
         }
 
         try {
+            console.log("로그인 시도")
             // redux thunk를 dispatch로 호출
             const resultAction = await dispatch(
-                loginThunk({ token: "", userId: userIdInput, role: sep })
+                loginThunk({ userId: userIdInput, userPassword:userPw, role: sep })
                 // token은 빈값으로 전달해도 되고, 로그인 슬라이스 내에서 api 호출 할 때 다시 요청하는 구조면 수정 필요
             );
 
             if (loginThunk.fulfilled.match(resultAction)) {
+                      const currentToken = store.getState().auth.token;
+                      
                 // 로그인 성공 시 권한에 따른 페이지 이동
                 if (sep === "head_office") navigate("/head");
                 else if (sep === "agency") navigate("/agency");
                 else if (sep === "logistic") navigate("/logistic");
-            } else {
-                // 로그인 실패 시 메시지 처리
-                alert("로그인에 실패했습니다.");
+            } else if (loginThunk.rejected.match(resultAction)) {
+                alert(resultAction.payload || "로그인에 실패했습니다.");
             }
         } catch (err) {
             alert("로그인 중 오류가 발생했습니다.");
@@ -106,7 +109,7 @@ function Login() {
                         <div className={styles.login_bottom}>
                             <button className={styles.login_btn} type="submit">로그인</button>
                             <Link to="/find-password" className={styles.link_pass}>비밀번호를 잊으셨나요?</Link>
-                            <Link to="/sing-up" className={styles.link_join}>회원가입</Link>
+                            <Link to="/sign-up" className={styles.link_join}>회원가입</Link>
                         </div>
                     </div>
                 </form>

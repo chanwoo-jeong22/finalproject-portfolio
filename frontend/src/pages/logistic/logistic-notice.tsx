@@ -1,11 +1,13 @@
 import axios from "axios";
-import {useContext, useEffect, useMemo, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import style from "../../styles/logistic/logistic-notice.module.css";
 import Notice from "../../components/notice/index.js";
 import HeadPopup from "../../components/head/head-popup.jsx";
 import NoticeDetail from "../../components/common/notice-detail.tsx";
 import { fmtDate, getNextBizDays } from "../../func/common.ts";
 import { toIsoDate } from "../../func/parse.ts";
+import { useSelector } from "react-redux";
+import {RootState} from '../../redux/store.ts'
 
 const KOR_DOW = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -17,8 +19,7 @@ function LogisticNotice() {
     const [showDetail, setShowDetail] = useState(false);
     const noticeRef = useRef(null);
 
-
-    const { token } = useContext(AuthContext);
+    const token = useSelector((state: RootState) => state.auth.token)
     console.log("HeadMain 렌더링");
     console.log("HeadMain token:", token);
 

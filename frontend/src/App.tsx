@@ -1,9 +1,15 @@
+// src/App.tsx
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Provider } from "react-redux";
+
+// Redux 관련
+import { Provider, useDispatch, useSelector } from "react-redux";
+import type { RootState, AppDispatch } from "./redux/store";
 import { store } from "./redux/store";
+import { reloadUserInfo } from "./redux/slices/auth/auth-slice";
 
 // =========================
-// 인증 관련
+// 인증 관련 페이지들
 // =========================
 import Login from "./pages/auth/index";
 import SignUp from "./pages/auth/sign-up/index";
@@ -38,45 +44,85 @@ import OrderStatus from "./pages/agency/order-status/index";
 import Inventory from "./pages/agency/inventory/index";
 import AgencyLayout from "./layouts/agency-layout";
 
+/**
+ * AppWithAuth 컴포넌트
+ * - Redux store에서 토큰 상태를 읽고,
+ * - 토큰이 있으면 reloadUserInfo 액션을 dispatch해
+ *   서버에서 사용자 정보를 재조회합니다.
+ * - 라우팅(React Router) 설정을 담당합니다.
+ */
+function AppWithAuth() {
+  // Redux dispatch에 AppDispatch 타입 명시 (Thunk 액션에 맞게)
+  const dispatch = useDispatch<AppDispatch>();
+
+  // Redux store에서 현재 로그인 토큰 조회
+  const token = useSelector((state: RootState) => state.auth.token);
+
+  // 토큰이 바뀔 때마다 사용자 정보 재조회 실행
+  useEffect(() => {
+    if (token) {
+      // 토큰이 있으면 유저 정보 새로고침 시도
+      dispatch(reloadUserInfo());
+    }
+  }, [token, dispatch]);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* =========================
+            인증 관련 라우트
+        ========================= */}
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/find-password" element={<FindPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/head/mypage" element={<MyPageHead />} />
+        <Route path="/agency/mypage" element={<MyPageAgency />} />
+        <Route path="/logistic/mypage" element={<MyPageLogistic />} />
+
+        {/* =========================
+            본사 영역 라우트
+        ========================= */}
+        <Route path="/head/*" element={<HeadIndex />} />
+        <Route path="/agencyorder-popup/:orKey" element={<OrderDetail />} />
+
+        {/* =========================
+            물류 영역 라우트
+        ========================= */}
+        <Route path="/logistic" element={<LogisticLayout />}>
+          <Route index element={<LogisticIndex />} />
+          <Route path="orderful-fillment" element={<OrderfulFillment />} />
+          <Route path="logistic-inventory" element={<LogisticInventory />} />
+        </Route>
+        <Route path="/logistic-orderdetail/:orKey" element={<LogisticOrderDetail />} />
+
+        {/* =========================
+            대리점 영역 라우트
+        ========================= */}
+        <Route path="/agency" element={<AgencyLayout />}>
+          <Route index element={<Index />} />
+          <Route path="order-management" element={<OrderManagement />} />
+          <Route path="order-draft" element={<OrderDraft />} />
+          <Route path="order-status" element={<OrderStatus />} />
+          <Route path="inventory" element={<Inventory />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+/**
+ * 최상위 App 컴포넌트
+ * - Redux Provider로 store 공급
+ * - 인증 및 라우팅을 담당하는 AppWithAuth 렌더링
+ */
 function App() {
-    return (
-        <Provider store={store}>
-            <BrowserRouter>
-                <Routes>
-                    {/* 인증 */}
-                    <Route path="/" element={<Login />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/sing-up" element={<SignUp />} />
-                    <Route path="/find-password" element={<FindPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/head/mypage" element={<MyPageHead />} />
-                    <Route path="/agency/mypage" element={<MyPageAgency />} />
-                    <Route path="/logistic/mypage" element={<MyPageLogistic />} />
-
-                    {/* 본사 영역 */}
-                    <Route path="/head/*" element={<HeadIndex />} />
-                    <Route path="/agencyorder-popup/:orKey" element={<OrderDetail />} />
-
-                    {/* 물류 영역 */}
-                    <Route path="/logistic" element={<LogisticLayout />}>
-                        <Route index element={<LogisticIndex />} />
-                        <Route path="orderful-fillment" element={<OrderfulFillment />} />
-                        <Route path="logistic-inventory" element={<LogisticInventory />} />
-                    </Route>
-                    <Route path="/logistic-orderdetail/:orKey" element={<LogisticOrderDetail />} />
-
-                    {/* 대리점 영역 */}
-                    <Route path="/agency" element={<AgencyLayout />}>
-                        <Route index element={<Index />} />
-                        <Route path="order-management" element={<OrderManagement />} />
-                        <Route path="order-draft" element={<OrderDraft />} />
-                        <Route path="order-status" element={<OrderStatus />} />
-                        <Route path="inventory" element={<Inventory />} />
-                    </Route>
-                </Routes>
-            </BrowserRouter>
-        </Provider>
-    );
+  return (
+    <Provider store={store}>
+      <AppWithAuth />
+    </Provider>
+  );
 }
 
 export default App;

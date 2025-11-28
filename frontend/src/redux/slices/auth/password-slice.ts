@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../../api/api";
+import api from "../../../api/api";
 
 // 비밀번호 관련 상태 타입 정의
 interface PasswordState {

@@ -1,11 +1,9 @@
-import {useState, useEffect, useContext} from "react";
+import { useState, useEffect } from "react";
 import headStyles from "../../../styles/head/head.module.css";
 import axios from "axios";
-import {AuthContext} from "../../../context/auth-context";
 import styles from "../../../styles/main.module.css";
 
 function LogisticInbound() {
-    const {token} = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
     const [products, setProducts] = useState([]); // 현재 표시되는 제품 데이터
     const [allProducts, setAllProducts] = useState([]); // 전체 데이터 저장

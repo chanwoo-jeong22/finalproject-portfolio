@@ -2,6 +2,9 @@ import { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import layoutStyles from "../styles/layout.module.css";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../redux/store";
+import { logout } from "../redux/slices/auth/auth-slice";
 
 // JWT payload 타입 정의
 interface JwtPayload {
@@ -30,8 +33,10 @@ function parseJwt(token: string | null): JwtPayload | null {
 
 function Header() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    const { token, logout } = useContext(AuthContext);
+    const token = useSelector((state : RootState) => state.auth.token)
+
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
     useEffect(() => {
@@ -50,7 +55,7 @@ function Header() {
     }, [token]);
 
     const handleLogout = () => {
-        logout(); // 인자 없이 호출
+        dispatch(logout()) // 인자 없이 호출
         navigate("/");
     };
 

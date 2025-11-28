@@ -2,8 +2,9 @@ import styles from "../../../styles/login/login.module.css";
 import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import user from '../../../assets/img/user.png';
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../../../redux/hooks";  // redux 훅 import
-import { signUp as signUpThunk } from "../../../redux/slices/auth-slice"; // 회원가입 thunk import
+import { useAppDispatch } from "../../../redux/hooks";  
+import { signUp as signUpThunk } from "../../../redux/slices/auth/auth-slice";
+import api from "../../../api/api"; // axios 인스턴스 import
 
 interface FormData {
     position: string;
@@ -18,7 +19,7 @@ interface FormData {
 
 function SignUp() {
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();  // redux dispatch 준비
+    const dispatch = useAppDispatch();
 
     const [formData, setFormData] = useState<FormData>({
         position: "",
@@ -31,19 +32,16 @@ function SignUp() {
         profile: null,
     });
 
-    // 유효성 상태 관리 (아이디, 이메일, 비밀번호 매칭 등)
     const [userIdValid, setUserIdValid] = useState<"empty" | "duplicate" | "valid" | "error" | null>(null);
     const [emailValid, setEmailValid] = useState<boolean | null>(null);
     const [pwMatch, setPwMatch] = useState<boolean | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
 
-    // 입력값 변경 핸들러
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // 프로필 이미지 변경 + 메모리 해제
     const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
         if (file) {
@@ -54,7 +52,6 @@ function SignUp() {
         }
     };
 
-    // 아이디 중복 체크 함수 (API 호출 부분은 필요시 thunk로도 분리 가능)
     const checkUserId = async () => {
         const id = formData.userId.trim();
         if (!id) {
@@ -62,16 +59,14 @@ function SignUp() {
             return;
         }
         try {
-            // 직접 api 호출 유지 (단, thunk로 분리 가능)
-            const res = await fetch(`/api/users/check-id?loginId=${id}`);
-            const data = await res.json();
-            setUserIdValid(data ? "duplicate" : "valid");
-        } catch {
+            const res = await api.get<boolean>(`/users/check-id?loginId=${id}`);
+            // API가 true면 중복, false면 사용 가능이라고 가정
+            setUserIdValid(res.data ? "duplicate" : "valid");
+        } catch (error) {
             setUserIdValid("error");
         }
     };
 
-    // 이메일 중복 체크 함수
     const checkEmail = async () => {
         const email = formData.email.trim();
         if (!email) {
@@ -79,29 +74,25 @@ function SignUp() {
             return;
         }
         try {
-            const res = await fetch(`/api/users/check-email?email=${email}`);
-            const data = await res.json();
-            setEmailValid(data.valid);
-            if (!data.valid) alert("이미 등록된 이메일입니다.");
+            const res = await api.get<{ valid: boolean }>(`/users/check-email?email=${email}`);
+            setEmailValid(res.data.valid);
+            if (!res.data.valid) alert("이미 등록된 이메일입니다.");
         } catch {
             alert("이메일 중복 체크 실패");
         }
     };
 
-    // 비밀번호 일치 여부 자동 체크 (useEffect)
     useEffect(() => {
         setPwMatch(
             formData.confirmUserPw ? formData.userPw === formData.confirmUserPw : null
         );
     }, [formData.userPw, formData.confirmUserPw]);
 
-    // 회원가입 제출 핸들러
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         const { position, userName, userId, userPw, confirmUserPw, phone, email } = formData;
 
-        // 유효성 검사 (모든 항목, 비밀번호 일치, 아이디/이메일 유효성)
         if (!position || !userName || !userId || !userPw || !confirmUserPw || !phone || !email) {
             alert("모든 항목을 입력해주세요.");
             return;
@@ -121,7 +112,6 @@ function SignUp() {
             return;
         }
 
-        // FormData에 JSON과 이미지 묶어서 전송 준비
         const sendData = new FormData();
         const jsonBlob = new Blob([JSON.stringify({
             hdName: userName,
@@ -136,12 +126,10 @@ function SignUp() {
         if (formData.profile) sendData.append("profile", formData.profile);
 
         try {
-            // Redux thunk에 formData 전송
             const resultAction = await dispatch(signUpThunk(sendData));
-
             if (signUpThunk.fulfilled.match(resultAction)) {
                 alert("회원가입이 완료되었습니다.\n로그인 화면으로 이동합니다.");
-                navigate("/");  // 가입 성공 후 로그인 화면 이동
+                navigate("/");
             } else {
                 alert("회원가입에 실패했습니다.");
             }

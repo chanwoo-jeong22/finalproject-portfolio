@@ -1,7 +1,7 @@
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import axios from "axios";
-import { useEffect, useMemo, useState, useRef } from "react";
 import { useSelector } from "react-redux";
-import type { RootState } from "../../redux/store"; // store.ts에서 RootState import
+import type { RootState } from "../../redux/store";
 import style from "../../styles/agency/agency-indexpage.module.css";
 import Notice from "../../components/notice/index";
 import HeadPopup from "../../components/head/head-popup";
@@ -12,144 +12,146 @@ import { getNextBizDays } from "../../func/common";
 const KOR_DOW = ["일", "월", "화", "수", "목", "금", "토"];
 
 interface ScheduleItem {
-  title: string;
+    title: string;
 }
 
 interface SchedulesByDate {
-  [date: string]: ScheduleItem[];
+    [date: string]: ScheduleItem[];
 }
 
 export default function Index() {
-  // Redux에서 토큰 조회
-  const token = useSelector((state: RootState) => state.auth.token);
+    // Redux에서 인증 토큰 조회
+    const token = useSelector((state: RootState) => state.auth.token);
 
-  const [selectedNotice, setSelectedNotice] = useState<any | null>(null);
-  const [showDetail, setShowDetail] = useState(false);
-  const noticeRef = useRef<any>(null);
+    // 선택된 공지사항과 상세보기 상태
+    const [selectedNotice, setSelectedNotice] = useState<any | null>(null);
+    const [showDetail, setShowDetail] = useState(false);
 
-  const days = useMemo(() => getNextBizDays(7).slice(0, 5), []);
+    // Notice 컴포넌트 리프레시용 ref
+    const noticeRef = useRef<{ refresh: () => void } | null>(null);
 
-  const [schedulesByDate, setSchedulesByDate] = useState<SchedulesByDate>({});
+    // 오늘 포함 다음 7 영업일 중 앞 5일 날짜 배열 (useMemo 최적화)
+    const days = useMemo(() => getNextBizDays(7).slice(0, 5), []);
 
-  useEffect(() => {
-    if (!token) return;
+    // 날짜별 입고 예정 일정 저장 상태
+    const [schedulesByDate, setSchedulesByDate] = useState<SchedulesByDate>({});
 
-    const from = toIsoDate(days[0]);
-    const to = toIsoDate(days[days.length - 1]);
+    // 입고 예정 일정 API 호출 및 상태 업데이트
+    useEffect(() => {
+        if (!token) return;
 
-    axios
-      .get("/api/agencyorder/schedule", {
-        params: { from, to },
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        const rows = res.data?.data ?? res.data ?? [];
-        const byDate: SchedulesByDate = {};
+        const from = toIsoDate(days[0]);
+        const to = toIsoDate(days[days.length - 1]);
 
-        rows.forEach((r: any) => {
-          if (r.orStatus === "배송완료") return;
+        axios
+            .get("/api/agencyorder/schedule", {
+                params: { from, to },
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            .then((res) => {
+                const rows = res.data?.data ?? res.data ?? [];
+                const byDate: SchedulesByDate = {};
 
-          const iso = String(r.orReserve ?? r.or_reserve ?? "").slice(0, 10);
-          if (!iso) return;
+                rows.forEach((r: any) => {
+                    if (r.orStatus === "배송완료") return;
 
-          const key = iso.replace(/-/g, ".");
-          if (!byDate[key]) byDate[key] = [];
+                    const iso = String(r.orReserve ?? r.or_reserve ?? "").slice(0, 10);
+                    if (!iso) return;
 
-          const items = r.items ?? [];
-          const firstItemName =
-            items.length > 0
-              ? items[0].name ?? items[0].oiProducts ?? "미정"
-              : r.orProducts?.split(",")[0] ?? "미정";
+                    const key = iso.replace(/-/g, ".");
 
-          const extraCount = Math.max(
-            (items.length || r.orProducts?.split(",").length || 1) - 1,
-            0
-          );
+                    if (!byDate[key]) byDate[key] = [];
 
-          const title =
-            extraCount > 0
-              ? `📦 ${firstItemName} 외 ${extraCount}건 입고 예정 (주문번호 ${r.orderNumber})`
-              : `📦 ${firstItemName} 입고 예정 (주문번호 ${r.orderNumber})`;
+                    const items = r.items ?? [];
+                    const firstItemName =
+                        items.length > 0
+                            ? items[0].name ?? items[0].oiProducts ?? "미정"
+                            : r.orProducts?.split(",")[0] ?? "미정";
 
-          byDate[key].push({ title });
-        });
+                    const extraCount = Math.max(
+                        (items.length || r.orProducts?.split(",").length || 1) - 1,
+                        0
+                    );
 
-        setSchedulesByDate(byDate);
-      })
-      .catch(console.error);
-  }, [days, token]);
+                    const title =
+                        extraCount > 0
+                            ? `📦 ${firstItemName} 외 ${extraCount}건 입고 예정 (주문번호 ${r.orderNumber})`
+                            : `📦 ${firstItemName} 입고 예정 (주문번호 ${r.orderNumber})`;
 
-  const handleNoticeClick = (notice: any) => {
-    setSelectedNotice(notice);
-    setShowDetail(true);
-  };
+                    byDate[key].push({ title });
+                });
 
-  const handleCloseDetail = () => {
-    if (noticeRef.current) noticeRef.current.refresh();
-    setShowDetail(false);
-    setSelectedNotice(null);
-  };
+                setSchedulesByDate(byDate);
+            })
+            .catch(console.error);
+    }, [days, token]);
 
-  return (
-    <>
-      <div className={style.container}>
-        {/* ===== 도착 일정표 섹션 ===== */}
-        <section className={style.schedule}>
-          <h2 className={style.scheduleTitle}>입고 예정일</h2>
-          <div className={style.scheduleGrid}>
-            {days.map((d) => {
-              const key = d
-                .toISOString()
-                .slice(0, 10)
-                .replace(/-/g, ".");
-              const items = schedulesByDate[key] || [];
-              const dow = KOR_DOW[d.getDay()];
-              return (
-                <article key={key} className={style.scheduleCard}>
-                  <div className={style.scheduleDate}>
-                    {key} <span className={style.scheduleDow}>({dow})</span>
-                  </div>
-                  <ul className={style.scheduleList}>
-                    {items.length === 0 ? (
-                      <li className={style.empty}>일정이 없습니다.</li>
-                    ) : (
-                      items.map((it, i) => (
-                        <li key={i}>
-                          <span className={style.scheduleText}>{it.title}</span>
-                        </li>
-                      ))
-                    )}
-                  </ul>
-                </article>
-              );
-            })}
-          </div>
-        </section>
+    // 공지사항 클릭 시 상세보기 열기
+    const handleNoticeClick = (notice: any) => {
+        setSelectedNotice(notice);
+        setShowDetail(true);
+    };
 
-        {/* ===== 공지사항 섹션 ===== */}
-        <section className={style.notice}>
-          <h3 className={style.noticetitle}>공지사항</h3>
-          {token ? (
-            <Notice
-              ref={noticeRef}
-              role="agency"
-              onNoticeClick={handleNoticeClick}
-            />
-          ) : (
-            <div>현재 공지사항이 없습니다.</div>
-          )}
+    // 상세보기 닫기 및 리프레시
+    const handleCloseDetail = () => {
+        if (noticeRef.current) noticeRef.current.refresh();
+        setShowDetail(false);
+        setSelectedNotice(null);
+    };
 
-          {showDetail && selectedNotice && (
-            <HeadPopup isOpen={showDetail} onClose={handleCloseDetail}>
-              <NoticeDetail
-                noticeDetail={selectedNotice}
-                readOnly={true}
-                onClose={handleCloseDetail}
-              />
-            </HeadPopup>
-          )}
-        </section>
-      </div>
-    </>
-  );
+    return (
+        <div className={style.container}>
+            {/* 입고 예정일 일정표 섹션 */}
+            <section className={style.schedule}>
+                <h2 className={style.scheduleTitle}>입고 예정일</h2>
+                <div className={style.scheduleGrid}>
+                    {days.map((d) => {
+                        const key = d.toISOString().slice(0, 10).replace(/-/g, ".");
+                        const items = schedulesByDate[key] || [];
+                        const dow = KOR_DOW[d.getDay()];
+
+                        return (
+                            <article key={key} className={style.scheduleCard}>
+                                <div className={style.scheduleDate}>
+                                    {key} <span className={style.scheduleDow}>({dow})</span>
+                                </div>
+                                <ul className={style.scheduleList}>
+                                    {items.length === 0 ? (
+                                        <li className={style.empty}>일정이 없습니다.</li>
+                                    ) : (
+                                        items.map((it, i) => (
+                                            <li key={i}>
+                                                <span className={style.scheduleText}>{it.title}</span>
+                                            </li>
+                                        ))
+                                    )}
+                                </ul>
+                            </article>
+                        );
+                    })}
+                </div>
+            </section>
+
+            {/* 공지사항 섹션 */}
+            <section className={style.notice}>
+                <h3 className={style.noticetitle}>공지사항</h3>
+                {token ? (
+                    <Notice ref={noticeRef} role="agency" onNoticeClick={handleNoticeClick} />
+                ) : (
+                    <div>현재 공지사항이 없습니다.</div>
+                )}
+
+                {/* 공지사항 상세 팝업 */}
+                {showDetail && selectedNotice && (
+                    <HeadPopup isOpen={showDetail} onClose={handleCloseDetail}>
+                        <NoticeDetail
+                            noticeDetail={selectedNotice}
+                            readOnly={true}
+                            onClose={handleCloseDetail}
+                        />
+                    </HeadPopup>
+                )}
+            </section>
+        </div>
+    );
 }

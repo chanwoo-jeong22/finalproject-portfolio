@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import style from "../../styles/logistic/logistic-menubox.module.css";
+import style from "../styles/logistic/logistic-menubox.module.css";
 import { useAppSelector, useAppDispatch } from "../redux/hooks";
-import { logout } from "../redux/slices/auth-slice";
+import { logout } from "../redux/slices/auth/auth-slice";
 
 // JWT 디코딩 함수
 function parseJwt(token: string | null): { role?: string; sub?: string } | null {

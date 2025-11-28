@@ -1,16 +1,11 @@
 import { useEffect, useState } from 'react';
 
-// 정환 수정
-import { useApi } from "../../../api/axios-instance.ts";
-// 정환 수정
+import api from "../../../api/api.js";
 
 import styles from '../../../styles/main.module.css';
 
 function ProductManagement() {
 
-    // 정환 수정
-    const api = useApi();
-    // 정환 수정
 
     const [allProducts, setAllProducts] = useState([]);
     const [products, setProducts] = useState([]);
