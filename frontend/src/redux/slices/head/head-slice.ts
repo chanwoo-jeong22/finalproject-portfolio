@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '../../../api/api';  // 공통 axios 인스턴스 import
 
-// 공지사항 타입 (HeadMain과 동일하게 맞춤)
+// 공지사항 타입
 export interface NoticeType {
   ntKey: number;
   ntCode?: number;
@@ -15,14 +15,20 @@ export interface NoticeType {
   [key: string]: any;
 }
 
-// API 주소 (환경에 맞게 수정)
-const API_URL = '/notices';  // api 인스턴스에 baseURL 이미 있으므로 상대 경로로
+// API 상대 경로
+const API_URL = '/notices';
 
-// 비동기 thunk: 공지사항 목록 조회
-export const fetchNotices = createAsyncThunk<NoticeType[], void>(
+// 🟦 codes 배열을 받아서 호출하도록 변경
+export const fetchNotices = createAsyncThunk<
+  NoticeType[],
+  number[]          // <-- 파라미터로 number[] 받음
+>(
   'head/fetchNotices',
-  async () => {
-    const response = await api.get<NoticeType[]>(API_URL);
+  async (codes) => {
+    // 예: /notices?codes=1&codes=2&codes=3
+    const response = await api.get<NoticeType[]>(API_URL, {
+      params: { codes },
+    });
     return response.data;
   }
 );
@@ -65,5 +71,4 @@ const headSlice = createSlice({
 });
 
 export const { clearError } = headSlice.actions;
-
 export default headSlice.reducer;

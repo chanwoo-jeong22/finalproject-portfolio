@@ -3,7 +3,7 @@ import HeadMenu from "../../components/head/head-menu.jsx";
 import Router from "../../components/head/router/index.jsx";
 import layoutStyles from "../../styles/layout.module.css";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useContext, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import {RootState} from "../../redux/store";
 

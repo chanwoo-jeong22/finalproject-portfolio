@@ -57,14 +57,29 @@ function AppWithAuth() {
 
   // Redux store에서 현재 로그인 토큰 조회
   const token = useSelector((state: RootState) => state.auth.token);
+  const hdId = useSelector((state: RootState) => state.auth.hdId);
+  const agId = useSelector((state: RootState) => state.auth.agId);
+  const lgId = useSelector((state: RootState) => state.auth.lgId);
 
-  // 토큰이 바뀔 때마다 사용자 정보 재조회 실행
+  let userId = null;
+  let role = null;
+
+  if (hdId) {
+    userId = hdId;
+    role = "head_office";
+  } else if (agId) {
+    userId = agId;
+    role = "agency";
+  } else if (lgId) {
+    userId = lgId;
+    role = "logistic";
+  }
+
   useEffect(() => {
-    if (token) {
-      // 토큰이 있으면 유저 정보 새로고침 시도
-      dispatch(reloadUserInfo());
+    if (token && userId && role) {
+      dispatch(reloadUserInfo({ token, role, userId }));
     }
-  }, [token, dispatch]);
+  }, [token, userId, role, dispatch]);
 
   return (
     <BrowserRouter>

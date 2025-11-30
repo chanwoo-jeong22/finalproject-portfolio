@@ -43,7 +43,7 @@ const HeadMain: React.FC = () => {
   // 토큰이 있을 때 공지사항 리스트 조회 요청 디스패치
   useEffect(() => {
     if (token) {
-      dispatch(fetchNotices());
+      dispatch(fetchNotices([2]));
     }
   }, [dispatch, token]);
 
