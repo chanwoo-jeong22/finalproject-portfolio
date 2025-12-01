@@ -1,15 +1,16 @@
-import React, {
+import  {
     useEffect,
     useMemo,
     useState,
     forwardRef,
     useImperativeHandle,
-    useContext,
     Ref,
 } from "react";
 
-import axios from "axios";
+import api from "../../api/api";
 import styles from "../../styles/notice.module.css";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 // 타입 정의
 interface NoticeData {
@@ -45,7 +46,7 @@ const Notice = forwardRef<NoticeHandle, NoticeProps>(function Notice(
 ) {
     const [items, setItems] = useState<NoticeItem[]>([]);
     const [error, setError] = useState<Error | null>(null);
-    const { token } = useContext(AuthContext);
+    const token = useSelector((state: RootState) => state.auth.token)
 
     const codes = useMemo(() => {
         const map = { head_office: 1, logistic: 2, agency: 3 };
@@ -55,9 +56,8 @@ const Notice = forwardRef<NoticeHandle, NoticeProps>(function Notice(
 
     const fetchList = async () => {
         try {
-            const res = await axios.get(API_URL, {
+            const res = await api.get(API_URL, {
                 params: { codes },
-                headers: { Authorization: `Bearer ${token}` },
             });
 
             const rawData: NoticeData[] = res.data?.data ?? res.data ?? [];

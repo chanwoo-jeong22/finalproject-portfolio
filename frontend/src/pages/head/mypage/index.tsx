@@ -22,8 +22,13 @@ function MyPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  // Redux에서 인증 정보, 유저 정보 가져오기
+  // Redux에서 인증 토큰과 역할별 userId (hdId, agId, lgId) 가져오기
   const token = useSelector((state: RootState) => state.auth.token);
+  const hdId = useSelector((state: RootState) => state.auth.hdId);
+  const agId = useSelector((state: RootState) => state.auth.agId);
+  const lgId = useSelector((state: RootState) => state.auth.lgId);
+
+  // 유저 상세 정보는 userInfo에서 가져와서 폼 초기화에 씀
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
 
   const [loading, setLoading] = useState(true);
@@ -41,7 +46,7 @@ function MyPage() {
   const [pwMatch, setPwMatch] = useState<boolean | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
-  // userInfo가 바뀔 때 formData 초기화
+  // userInfo가 바뀔 때마다 폼 데이터를 초기화
   useEffect(() => {
     if (userInfo && Object.keys(userInfo).length > 0) {
       setFormData({
@@ -65,33 +70,56 @@ function MyPage() {
     }
   }, [userInfo]);
 
-  // 컴포넌트 첫 마운트 시, 유저 정보 재조회
+  // 컴포넌트 마운트 시 유저 정보를 다시 불러옴
   useEffect(() => {
     if (!token) {
       alert("로그인이 필요합니다.");
       navigate("/login");
       return;
     }
-    dispatch(reloadUserInfo())
+
+    // 역할과 userId를 token과 함께 reloadUserInfo 액션에 넘겨서 호출
+    let userId: string | null = null;
+    let role: string | null = null;
+
+    if (hdId) {
+      userId = hdId;
+      role = "head_office";
+    } else if (agId) {
+      userId = agId;
+      role = "agency";
+    } else if (lgId) {
+      userId = lgId;
+      role = "logistic";
+    }
+
+    if (!userId || !role) {
+      alert("유효하지 않은 사용자 정보입니다. 다시 로그인해주세요.");
+      navigate("/login");
+      return;
+    }
+
+    // thunk 호출 시 인자(token, userId, role)를 꼭 넘겨야 오류가 안남
+    dispatch(reloadUserInfo({ token, userId, role }))
       .unwrap()
       .catch(() => {
         // reloadUserInfo 실패 시는 slice에서 로그아웃 처리함
       });
-  }, [dispatch, token, navigate]);
+  }, [dispatch, token, hdId, agId, lgId, navigate]);
 
-  // 비밀번호 확인 체크
+  // 비밀번호 일치 여부 체크
   useEffect(() => {
     if (!formData.confirmUserPw) setPwMatch(null);
     else setPwMatch(formData.userPw === formData.confirmUserPw);
   }, [formData.userPw, formData.confirmUserPw]);
 
-  // 입력값 변경 핸들러
+  // 입력 폼 상태 업데이트 핸들러
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 프로필 파일 변경 핸들러
+  // 프로필 이미지 파일 선택 핸들러
   const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setFormData((prev) => ({ ...prev, profile: file }));
@@ -115,7 +143,7 @@ function MyPage() {
     }
   };
 
-  // 폼 제출 핸들러
+  // 폼 제출 처리 핸들러
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -131,7 +159,7 @@ function MyPage() {
       return;
     }
 
-    // 서버에 보낼 FormData 생성
+    // 서버 전송용 FormData 객체 생성 (jsonBlob과 프로필 이미지 포함)
     const sendData = new FormData();
     const jsonBlob = new Blob(
       [
@@ -149,13 +177,16 @@ function MyPage() {
     if (formData.profile) sendData.append("profile", formData.profile);
 
     try {
-      if (!userInfo.hdId) throw new Error("유저 ID 정보가 없습니다.");
+      // userId는 Redux에서 역할별 id중 하나가 존재해야 함
+      let userId = userInfo.hdId || userInfo.agId || userInfo.lgId;
+      if (!userId) throw new Error("유저 ID 정보가 없습니다.");
 
-      await api.put(`/head/mypage/${userInfo.hdId}`, sendData, {
+      await api.put(`/head/mypage/${userId}`, sendData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+
       alert("회원 정보가 수정되었습니다.");
       navigate("/head");
     } catch (err: any) {

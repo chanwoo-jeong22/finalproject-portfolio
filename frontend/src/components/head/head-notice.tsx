@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import headStyles from "../../styles/head/head.module.css";
+import noticeStyles from "../../styles/notice.module.css"
 import NoticeDetail from "../../components/common/notice-detail";
 import HeadPopup from "./head-popup";
 import HeadGraph from "./head-graph";
@@ -43,7 +44,7 @@ const HeadMain: React.FC = () => {
   // 토큰이 있을 때 공지사항 리스트 조회 요청 디스패치
   useEffect(() => {
     if (token) {
-      dispatch(fetchNotices([2]));
+      dispatch(fetchNotices([0, 1, 2, 3]));
     }
   }, [dispatch, token]);
 
@@ -55,7 +56,7 @@ const HeadMain: React.FC = () => {
 
   // 더보기 버튼 클릭 시 공지사항 등록 페이지로 이동
   const handleMoreClick = () => {
-    navigate("/head/NoticeRegister");
+    navigate("/head/NoticeRegistration");
   };
 
   // 상세 팝업 닫기 핸들러
@@ -99,22 +100,27 @@ const HeadMain: React.FC = () => {
             ) : notices.length === 0 ? (
               <div>공지사항이 없습니다.</div>
             ) : (
-              <ul>
-                {notices.slice(0, 5).map((notice) => (
-                  <li
-                    key={notice.ntKey}
-                    onClick={() => handleNoticeClick(notice)}
-                    style={{
-                      cursor: "pointer",
-                      padding: "8px 0",
-                      borderBottom: "1px solid #ccc",
-                    }}
-                  >
-                    {notice.ntCategory ?? notice.category2 ?? "기타"} -{" "}
-                    {notice.ntContent ?? "내용 없음"}
-                  </li>
-                ))}
-              </ul>
+              <div className={noticeStyles.noticeList}>
+                <ul>
+                  {notices.slice(0, 5).map((notice) => (
+                    <li
+                      key={notice.ntKey}
+                      onClick={() => handleNoticeClick(notice)}
+                      style={{ cursor: "pointer" }} // pointer만 남김
+                    >
+                      <div className={noticeStyles.category}>
+                        <span>{notice.ntCategory ?? notice.category2 ?? "기타"}</span>
+                      </div>
+                      <div className={noticeStyles.date}>
+                        {notice.startDate ?? "날짜 없음"}
+                      </div>
+                      <div className={noticeStyles.nt_contents}>
+                        {notice.ntContent ?? "내용 없음"}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )
           ) : (
             <div>로그인이 필요합니다.</div>

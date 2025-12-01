@@ -13,11 +13,14 @@ import OrderCheck from "../../../pages/head/order-check/index";
 import AgencyProductStatus from "../../../pages/head/agency-product-status/index";
 import LogisticInbound from "../../../pages/head/logistic-inbound/index";
 import ShippingStatus from "../../../pages/head/shipping-status/index";
+import MyPageHead from "../../../pages/head/mypage/index";  // 경로는 상황에 맞게 조정
+
 
 function Router() {
   return (
     <Routes>
       <Route index element={<HeadMain />} />
+      <Route path="mypage" element={<MyPageHead />} />
       <Route path="ProductManagement" element={<ProductManagement />} />
       <Route path="AgencyProduct" element={<AgencyProduct />} />
       <Route path="LogisticProduct" element={<LogisticProduct />} />

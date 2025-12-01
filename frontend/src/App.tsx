@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useEffect } from "react";
+import React, { useEffect,  useMemo } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Redux 관련
@@ -15,7 +15,6 @@ import Login from "./pages/auth/index";
 import SignUp from "./pages/auth/sign-up/index";
 import FindPassword from "./pages/auth/find-password/index";
 import ResetPassword from "./pages/auth/reset-password";
-import MyPageHead from "./pages/head/mypage/index";
 import MyPageAgency from "./pages/agency/mypage/index";
 import MyPageLogistic from "./pages/logistic/mypage/index";
 
@@ -52,34 +51,22 @@ import AgencyLayout from "./layouts/agency-layout";
  * - 라우팅(React Router) 설정을 담당합니다.
  */
 function AppWithAuth() {
-  // Redux dispatch에 AppDispatch 타입 명시 (Thunk 액션에 맞게)
   const dispatch = useDispatch<AppDispatch>();
 
-  // Redux store에서 현재 로그인 토큰 조회
   const token = useSelector((state: RootState) => state.auth.token);
   const hdId = useSelector((state: RootState) => state.auth.hdId);
   const agId = useSelector((state: RootState) => state.auth.agId);
   const lgId = useSelector((state: RootState) => state.auth.lgId);
 
-  let userId = null;
-  let role = null;
-
-  if (hdId) {
-    userId = hdId;
-    role = "head_office";
-  } else if (agId) {
-    userId = agId;
-    role = "agency";
-  } else if (lgId) {
-    userId = lgId;
-    role = "logistic";
-  }
-
   useEffect(() => {
-    if (token && userId && role) {
-      dispatch(reloadUserInfo({ token, role, userId }));
+    if (token && hdId) {
+      dispatch(reloadUserInfo({ token, userId: hdId, role: "head_office" }));
+    } else if (token && agId) {
+      dispatch(reloadUserInfo({ token, userId: agId, role: "agency" }));
+    } else if (token && lgId) {
+      dispatch(reloadUserInfo({ token, userId: lgId, role: "logistic" }));
     }
-  }, [token, userId, role, dispatch]);
+  }, [token, hdId, agId, lgId, dispatch]);
 
   return (
     <BrowserRouter>
@@ -92,7 +79,6 @@ function AppWithAuth() {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/find-password" element={<FindPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/head/mypage" element={<MyPageHead />} />
         <Route path="/agency/mypage" element={<MyPageAgency />} />
         <Route path="/logistic/mypage" element={<MyPageLogistic />} />
 

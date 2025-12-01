@@ -21,15 +21,20 @@ api.interceptors.request.use(
       return config;
     }
 
-    let token = store.getState().auth.token || localStorage.getItem("token");
+    // localStorage 직접 참조 제거하고 Redux 상태만 사용
+let token = store.getState().auth.token;
 
-    console.log("[api.ts] 요청 인터셉터 - 토큰:", token);
+if (!token) {
+  console.log("[api.ts] 요청 인터셉터 - 토큰 없음", config.url);
+} else {
+  console.log("[api.ts] 요청 인터셉터 - 토큰:", token, "URL:", config.url);
+  if (config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+}
 
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+console.log('config check....................', config);
 
-    console.log('config check....................', config)
 
     return config;
   },
@@ -48,6 +53,7 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     if (error.response) {
       const status = error.response.status;
+      console.log(error)
 
       if (status === 401 || status === 403) {
         console.warn("[api.ts] 응답 인터셉터 - 인증 오류 발생, 자동 로그아웃 처리");

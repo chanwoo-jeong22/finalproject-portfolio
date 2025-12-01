@@ -1,202 +1,238 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, ChangeEvent } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../../redux/store";
+import api from "../../../api/api";
+import styles from "../../../styles/main.module.css";
 
-import api from "../../../api/api.js";
+// 제품 타입 정의 (API 데이터 구조에 맞게 수정)
+interface Product {
+  pdKey: number;
+  pdCategory: string;
+  pdNum: string;
+  pdProducts: string;
+  pdPrice: number;
+  pdImage?: string;
+}
 
-import styles from '../../../styles/main.module.css';
+interface SearchType {
+  pdNum: string;
+  pdProducts: string;
+  pdPrice: string;
+}
+
+interface NewProductType {
+  pdCategory: string;
+  pdNum: string;
+  pdProducts: string;
+  pdPrice: string | number;
+  pdImage: string;
+}
 
 function ProductManagement() {
+  // Redux에서 토큰 가져오기
+  const token = useSelector((state: RootState) => state.auth.token);
 
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [search, setSearch] = useState<SearchType>({ pdNum: "", pdProducts: "", pdPrice: "" });
+  const [newProduct, setNewProduct] = useState<NewProductType>({
+    pdCategory: "",
+    pdNum: "",
+    pdProducts: "",
+    pdPrice: "",
+    pdImage: "",
+  });
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [sortField, setSortField] = useState<keyof Product | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-    const [allProducts, setAllProducts] = useState([]);
-    const [products, setProducts] = useState([]);
-    const [selectedIds, setSelectedIds] = useState([]);
-    const [search, setSearch] = useState({ pdNum: '', pdProducts: '', pdPrice: '' });
-    const [newProduct, setNewProduct] = useState({ pdCategory: '', pdNum: '', pdProducts: '', pdPrice: '', pdImage: '' });
-    const [editProduct, setEditProduct] = useState(null);
-    const [showModal, setShowModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [newImageFile, setNewImageFile] = useState(null);
-    const [editImageFile, setEditImageFile] = useState(null);
-    const [sortField, setSortField] = useState(null);
-    const [sortOrder, setSortOrder] = useState('asc');
+  const fetchProducts = async () => {
+    try {
+      const res = await api.get<Product[]>("/products");
 
-    const fetchProducts = async () => {
-        try {
-            console.log('token:', localStorage.getItem('token'));
-            // 정환 수정
-            const res = await api.get('/api/products');
-            // 정환 수정
+      const sorted = res.data.sort((a, b) => {
+        if (a.pdNum < b.pdNum) return 1;
+        if (a.pdNum > b.pdNum) return -1;
+        return 0;
+      });
 
-            const sorted = res.data.sort((a, b) => {
-                if (a.pdNum < b.pdNum) return 1;
-                if (a.pdNum > b.pdNum) return -1;
-                return 0;
-            });
+      setAllProducts(sorted);
+      setProducts(sorted);
+      setSortField("pdNum");
+      setSortOrder("desc");
+    } catch (err) {
+      console.error(err);
+      alert("제품 조회 실패");
+    }
+  };
 
-            setAllProducts(sorted);
-            setProducts(sorted);
-            setSortField('pdNum');
-            setSortOrder('desc');
-        } catch (err) {
-            console.error(err);
-            alert('제품 조회 실패');
-        }
-    };
+  useEffect(() => {
+    fetchProducts();
+  }, [token]);
 
-    useEffect(() => {
-        (async () => {
-            await fetchProducts();
-        })();
-    }, []);
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
+    );
+  };
 
-    const toggleSelect = (id) => {
-        setSelectedIds(prev =>
-            prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]
-        );
-    };
+  const handleDelete = async () => {
+    if (!window.confirm("선택한 제품을 정말 삭제하시겠습니까?")) return;
+    try {
+      await api.delete("/api/products/delete", {
+        data: selectedIds,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
 
-    const handleDelete = async () => {
-        if (!window.confirm('선택한 제품을 정말 삭제하시겠습니까?')) return;
-        try {
-            // 정환 수정
-            await api.delete('/api/products/delete', { data: selectedIds });
-            // 정환 수정
+      alert("삭제 완료!");
+      setSelectedIds([]);
+      await fetchProducts();
+    } catch (err) {
+      console.error(err);
+      alert("삭제 실패");
+    }
+  };
 
-            alert('삭제 완료!');
-            setSelectedIds([]);
-            await fetchProducts();
-        } catch (err) {
-            console.error(err);
-            alert('삭제 실패');
-        }
-    };
+  const handleSearch = () => {
+    const filtered = allProducts.filter((p) => {
+      const pdPriceNum = Number(search.pdPrice);
+      return (
+        (!search.pdNum || p.pdNum.includes(search.pdNum)) &&
+        (!search.pdProducts || p.pdProducts.includes(search.pdProducts)) &&
+        (!search.pdPrice || p.pdPrice === pdPriceNum)
+      );
+    });
+    setProducts(filtered);
+  };
 
-    const handleSearch = () => {
-        const filtered = allProducts.filter(p =>
-            (!search.pdNum || p.pdNum.includes(search.pdNum)) &&
-            (!search.pdProducts || p.pdProducts.includes(search.pdProducts)) &&
-            (!search.pdPrice || p.pdPrice === Number(search.pdPrice))
-        );
-        setProducts(filtered);
-    };
+  const handleRegister = async () => {
+    const { pdCategory, pdNum, pdProducts, pdPrice } = newProduct;
 
-    const handleRegister = async () => {
-        const { pdCategory, pdNum, pdProducts, pdPrice } = newProduct;
+    if (!pdCategory || !pdProducts || !pdPrice || !newImageFile) {
+      alert("모든 필드(카테고리, 제품명, 단가, 이미지)를 입력해주세요.");
+      return;
+    }
 
-        if (!pdCategory || !pdProducts || !pdPrice || !newImageFile) {
-            alert('모든 필드(카테고리, 제품명, 단가, 이미지)를 입력해주세요.');
-            return;
-        }
+    try {
+      const formData = new FormData();
+      formData.append("pd_category", pdCategory);
+      formData.append("pd_num", pdNum);
+      formData.append("pd_products", pdProducts);
+      formData.append("pd_price", pdPrice.toString());
+      formData.append("pd_image", newImageFile);
 
-        try {
-            const formData = new FormData();
-            formData.append('pd_category', pdCategory);
-            formData.append('pd_num', pdNum);
-            formData.append('pd_products', pdProducts);
-            formData.append('pd_price', pdPrice.toString());
-            formData.append('pd_image', newImageFile);
-
-            // 정환 수정
-            await api.post('/api/products/create', formData);
-            // 정환 수정
-
-            alert('등록 완료!');
-            setNewProduct({ pdCategory: '', pdNum: '', pdProducts: '', pdPrice: '', pdImage: '' });
-            setNewImageFile(null);
-            setShowModal(false);
-            await fetchProducts();
-
-        } catch (err) {
-            console.error(err);
-            if (err.response && err.response.data) {
-                alert(JSON.stringify(err.response.data, null, 2));
-            } else {
-                alert('등록 실패');
+      await api.post("/api/products/create", formData, {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
             }
-        }
-    };
+          : { "Content-Type": "multipart/form-data" },
+      });
 
-    const handleUpdate = async () => {
-        if (!editProduct) return;
+      alert("등록 완료!");
+      setNewProduct({ pdCategory: "", pdNum: "", pdProducts: "", pdPrice: "", pdImage: "" });
+      setNewImageFile(null);
+      setShowModal(false);
+      await fetchProducts();
+    } catch (err) {
+      console.error(err);
+      alert("등록 실패");
+    }
+  };
 
-        const { pdCategory, pdNum, pdProducts, pdPrice, pdKey } = editProduct;
+  const handleUpdate = async () => {
+    if (!editProduct) return;
 
-        if (!pdCategory || !pdProducts || !pdPrice) {
-            alert('모든 필드(카테고리, 제품명, 단가)를 입력해주세요.');
-            return;
-        }
+    const { pdCategory, pdNum, pdProducts, pdPrice, pdKey } = editProduct;
 
-        try {
-            const formData = new FormData();
-            formData.append('pd_key', pdKey.toString());
-            formData.append('pd_num', pdNum);
-            formData.append('pd_category', pdCategory);
-            formData.append('pd_products', pdProducts);
-            formData.append('pd_price', pdPrice.toString());
-            if (editImageFile) formData.append('pd_image', editImageFile);
+    if (!pdCategory || !pdProducts || !pdPrice) {
+      alert("모든 필드(카테고리, 제품명, 단가)를 입력해주세요.");
+      return;
+    }
 
-            // 정환 수정
-            await api.post('/api/products/update', formData);
-            // 정환 수정
+    try {
+      const formData = new FormData();
+      formData.append("pd_key", pdKey.toString());
+      formData.append("pd_num", pdNum);
+      formData.append("pd_category", pdCategory);
+      formData.append("pd_products", pdProducts);
+      formData.append("pd_price", pdPrice.toString());
+      if (editImageFile) formData.append("pd_image", editImageFile);
 
-            alert('수정 완료!');
-            setShowEditModal(false);
-            setEditImageFile(null);
-            await fetchProducts();
-        } catch (err) {
-            console.error(err?.response || err);
-            alert(err?.response?.data || '수정 실패');
-        }
-    };
-
-    const openEditModal = (product) => {
-        console.log('Clicked product:', product);
-        setEditProduct({ ...product });
-        setShowEditModal(true);
-    };
-
-    const handleNewImageChange = (e) => {
-        const file = e.target.files[0];
-        setNewImageFile(file);
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-            if (reader.result != null) {
-                setNewProduct(prev => ({ ...prev, pdImage: reader.result.toString() }));
+      await api.post("/api/products/update", formData, {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
             }
-        };
+          : { "Content-Type": "multipart/form-data" },
+      });
 
-        reader.readAsDataURL(file);
+      alert("수정 완료!");
+      setShowEditModal(false);
+      setEditImageFile(null);
+      await fetchProducts();
+    } catch (err) {
+      console.error(err);
+      alert("수정 실패");
+    }
+  };
+
+  const openEditModal = (product: Product) => {
+    setEditProduct({ ...product });
+    setShowEditModal(true);
+  };
+
+  const handleNewImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setNewImageFile(file);
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        setNewProduct((prev) => (prev? { ...prev, pdImage: reader.result ? reader.result?.toString() : "" } : prev));
     };
+    reader.readAsDataURL(file);
+  };
 
-    const handleEditImageChange = (e) => {
-        const file = e.target.files[0];
-        setEditImageFile(file);
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => setEditProduct(prev => ({ ...prev, pdImage: reader.result }));
-        reader.readAsDataURL(file);
+  const handleEditImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setEditImageFile(file);
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        setEditProduct((prev) => (prev ? { ...prev, pdImage: reader.result?.toString() } : prev));
     };
+    reader.readAsDataURL(file);
+  };
 
-    const handleSort = (field) => {
-        let order = 'asc';
-        if (sortField === field) order = sortOrder === 'asc' ? 'desc' : 'asc';
-        setSortField(field);
-        setSortOrder(order);
+  const handleSort = (field: keyof Product) => {
+    let order: "asc" | "desc" = "asc";
+    if (sortField === field) order = sortOrder === "asc" ? "desc" : "asc";
+    setSortField(field);
+    setSortOrder(order);
 
-        const sorted = [...products].sort((a, b) => {
-            if (a[field] < b[field]) return order === 'asc' ? -1 : 1;
-            if (a[field] > b[field]) return order === 'asc' ? 1 : -1;
-            return 0;
-        });
-        setProducts(sorted);
-    };
+    const sorted = [...products].sort((a, b) => {
+        const aVal = a[field]!;
+        const bVal = b[field]!;
+      if (aVal < bVal) return order === "asc" ? -1 : 1;
+      if (aVal > bVal) return order === "asc" ? 1 : -1;
+      return 0;
+    });
+    setProducts(sorted);
+  };
 
-    // 초기화 버튼 : 진경 추가
-    const handleReset = () => {
-        setSearch({ pdNum: '', pdProducts: '', pdPrice: '' }); // 검색 필드 초기화
-        setProducts(allProducts); // 전체 제품으로 초기화
-    };
+  const handleReset = () => {
+    setSearch({ pdNum: "", pdProducts: "", pdPrice: "" });
+    setProducts(allProducts);
+  };
 
     return (
         <div className={styles.contents_main}>
@@ -211,7 +247,7 @@ function ProductManagement() {
                                 <input
                                     type="text"
                                     className={styles.input1}
-                                    value={search[field]}
+                                    value={search[field as 'pdNum' |'pdProducts' | 'pdPrice']}
                                     onChange={(e) => setSearch({ ...search, [field]: e.target.value })}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') handleSearch();
@@ -232,40 +268,40 @@ function ProductManagement() {
             <div className={styles.table_container}>
                 <table className={`${styles.table} ${styles.head_product_list}`}>
                     <thead>
-                    <tr>
-                        <th className={styles.t_w40}>
-                            <input
-                                type="checkbox"
-                                onChange={(e) => setSelectedIds(e.target.checked ? products.map(p => Number(p.pdKey)) : [])}
-                                checked={selectedIds.length === products.length && products.length > 0}
-                            />
-                        </th>
-                        {['pdNum','pdCategory','pdProducts','pdPrice'].map((field) => (
-                            <th key={field} onClick={() => handleSort(field)}>
-                                <div>
-                                    <p>{field==='pdNum'?'품번':field==='pdCategory'?'카테고리':field==='pdProducts'?'제품명':'단가'}</p>
-                                    <button>{sortField===field ? (sortOrder==='asc'?'▲':'▼'):'▼'}</button>
-                                </div>
-                            </th>
-                        ))}
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {products.map((p) => (
-                        <tr key={p.pdKey} className={selectedIds.includes(Number(p.pdKey)) ? styles.checkedRow : ''}>
-                            <td className={styles.t_w40}>
+                        <tr>
+                            <th className={styles.t_w40}>
                                 <input
                                     type="checkbox"
-                                    checked={selectedIds.includes(Number(p.pdKey))}
-                                    onChange={() => toggleSelect(Number(p.pdKey))}
+                                    onChange={(e) => setSelectedIds(e.target.checked ? products.map(p => Number(p.pdKey)) : [])}
+                                    checked={selectedIds.length === products.length && products.length > 0}
                                 />
-                            </td>
-                            <td onClick={() => openEditModal(p)}>{p.pdNum}</td>
-                            <td onClick={() => openEditModal(p)}>{p.pdCategory}</td>
-                            <td className={styles.t_left} onClick={() => openEditModal(p)}>{p.pdProducts}</td>
-                            <td className={styles.t_right} onClick={() => openEditModal(p)}>{Number(p.pdPrice).toLocaleString()}원</td>
+                            </th>
+                            {['pdNum', 'pdCategory', 'pdProducts', 'pdPrice'].map((field) => (
+                                <th key={field} onClick={() => handleSort(field as 'pdNum' | 'pdCategory' | 'pdProducts' | 'pdPrice')}>
+                                    <div>
+                                        <p>{field === 'pdNum' ? '품번' : field === 'pdCategory' ? '카테고리' : field === 'pdProducts' ? '제품명' : '단가'}</p>
+                                        <button>{sortField === field ? (sortOrder === 'asc' ? '▲' : '▼') : '▼'}</button>
+                                    </div>
+                                </th>
+                            ))}
                         </tr>
-                    ))}
+                    </thead>
+                    <tbody>
+                        {products.map((p) => (
+                            <tr key={p.pdKey} className={selectedIds.includes(Number(p.pdKey)) ? styles.checkedRow : ''}>
+                                <td className={styles.t_w40}>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.includes(Number(p.pdKey))}
+                                        onChange={() => toggleSelect(Number(p.pdKey))}
+                                    />
+                                </td>
+                                <td onClick={() => openEditModal(p)}>{p.pdNum}</td>
+                                <td onClick={() => openEditModal(p)}>{p.pdCategory}</td>
+                                <td className={styles.t_left} onClick={() => openEditModal(p)}>{p.pdProducts}</td>
+                                <td className={styles.t_right} onClick={() => openEditModal(p)}>{Number(p.pdPrice).toLocaleString()}원</td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -316,7 +352,7 @@ function ProductManagement() {
                                     className={styles.pop_input}
                                     type="text"
                                     value={newProduct.pdProducts}
-                                    onChange={(e) => setNewProduct({...newProduct, pdProducts: e.target.value})}
+                                    onChange={(e) => setNewProduct({ ...newProduct, pdProducts: e.target.value })}
                                 />
 
                                 <label className={styles.pop_stitle}>단가</label>
@@ -326,7 +362,7 @@ function ProductManagement() {
                                     value={newProduct.pdPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     onChange={(e) => {
                                         const rawValue = e.target.value.replace(/,/g, ''); // 콤마 제거
-                                        if (!isNaN(rawValue)) {
+                                        if (!String(rawValue)) {
                                             setNewProduct({ ...newProduct, pdPrice: rawValue });
                                         }
                                     }}
@@ -337,15 +373,15 @@ function ProductManagement() {
                                 <div className={styles.img_box}>
                                     {newProduct.pdImage && <img src={newProduct.pdImage} alt="preview" />}
                                     {!newProduct.pdImage && (
-                                      <p className={styles.img_up_text}>
-                                          파일 선택 버튼을 눌러 파일을 직접 선택해 주세요.
-                                      </p>
+                                        <p className={styles.img_up_text}>
+                                            파일 선택 버튼을 눌러 파일을 직접 선택해 주세요.
+                                        </p>
                                     )}
                                 </div>
                                 <label className={styles.pop_img_btn}>
                                     파일 선택
                                     <input type="file" accept="image/*" onChange={handleNewImageChange}
-                                           className={styles.hidden}/>
+                                        className={styles.hidden} />
                                 </label>
                             </div>
                         </div>
@@ -421,8 +457,8 @@ function ProductManagement() {
                                     value={editProduct.pdPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     onChange={(e) => {
                                         const rawValue = e.target.value.replace(/,/g, ''); // 콤마 제거
-                                        if (!isNaN(rawValue)) {
-                                            setEditProduct({ ...editProduct, pdPrice: rawValue });
+                                        if (!String(rawValue)) {
+                                            setEditProduct({ ...editProduct, pdPrice: parseInt(rawValue) });
                                         }
                                     }}
                                 />
@@ -443,19 +479,18 @@ function ProductManagement() {
                                         />
                                     )}
                                     {!editProduct.pdImage && (
-                                      <p className={styles.img_up_text}>
-                                          파일 선택 버튼을 눌러 파일을 직접 선택해 주세요.
-                                      </p>
+                                        <p className={styles.img_up_text}>
+                                            파일 선택 버튼을 눌러 파일을 직접 선택해 주세요.
+                                        </p>
                                     )}
                                 </div>
                                 <label className={styles.pop_img_btn}>
                                     파일 선택
-                                    <input type="file" accept="image/*" onChange={handleEditImageChange} className={styles.hidden}/>
+                                    <input type="file" accept="image/*" onChange={handleEditImageChange} className={styles.hidden} />
                                 </label>
                             </div>
                         </div>
                         <div className={styles.modal_buttons}>
-                            {/*진경 버튼 클래스명 변경*/}
                             <button onClick={handleUpdate} className={styles.pop_btn_register}>수정</button>
                             <button
                                 onClick={() => {

@@ -1,13 +1,13 @@
-import axios from "axios";
+import api from "../../api/api";
 import {useEffect, useMemo, useRef, useState} from "react";
 import style from "../../styles/logistic/logistic-notice.module.css";
 import Notice from "../../components/notice/index.js";
 import HeadPopup from "../../components/head/head-popup.jsx";
-import NoticeDetail from "../../components/common/notice-detail.tsx";
-import { fmtDate, getNextBizDays } from "../../func/common.ts";
-import { toIsoDate } from "../../func/parse.ts";
+import NoticeDetail from "../../components/common/notice-detail";
+import { fmtDate, getNextBizDays } from "../../func/common";
+import { toIsoDate } from "../../func/parse";
 import { useSelector } from "react-redux";
-import {RootState} from '../../redux/store.ts'
+import { RootState } from "../../redux/store"
 
 const KOR_DOW = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -47,7 +47,7 @@ function LogisticNotice() {
     const days = useMemo(() => getNextBizDays(5), []);
 
     useEffect(() => {
-        axios.get('api/notices', {params: {codes: [0, 2]}})
+        api.get('api/notices', {params: {codes: [0, 2]}})
             .then(res => {
                 const rows = res.data?.data ?? res.data ?? [];
                 setNotices(rows.map(n => ({
@@ -68,7 +68,7 @@ function LogisticNotice() {
         const from = days[0];
         const to   = days[days.length - 1];
 
-        axios.get('/api/agencyorder/schedule/mine', {
+        api.get('/api/agencyorder/schedule/mine', {
             params: { from: toIsoDate(from), to: toIsoDate(to) },
             headers: { Authorization: `Bearer ${token}` }
         })

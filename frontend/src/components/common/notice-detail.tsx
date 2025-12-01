@@ -1,5 +1,3 @@
-// src/components/common/notice-detail.tsx
-
 import React, { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks"; // hooks.ts 경로 맞게
 import {

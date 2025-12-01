@@ -16,17 +16,18 @@ function HeadIndex() {
   const [currentHdId, setCurrentHdId] = useState(hdId || localStorage.getItem("hdId"));
 
   useEffect(() => {
-    if (!token) {
-      navigate("/");
-    } else {
-      // hdId 상태가 없으면 localStorage에서 가져오기
-      if (!currentHdId) {
-        const storedHdId = localStorage.getItem("hdId");
-        if (storedHdId) setCurrentHdId(storedHdId);
-      }
-      console.log("로그인 상태임", "userId : ", currentHdId);
+  if (!token) {
+    navigate("/");
+  } else {
+    if (!currentHdId) {
+      const storedHdId = localStorage.getItem("hdId");
+      if (storedHdId) setCurrentHdId(storedHdId);
     }
-  }, [token, hdId, currentHdId]);
+    console.log("로그인 상태임", "userId : ", currentHdId);
+  }
+  // currentHdId 빼고 hdId와 token만 의존성에 둠
+}, [token, hdId]);
+
 
   return (
     <div className={layoutStyles.wrap}>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import axios from "axios";
+import api from "../api/api";
 import { Link, useNavigate } from "react-router-dom";
 import layoutStyles from "../styles/layout.module.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -40,19 +40,17 @@ function Header() {
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
     useEffect(() => {
-        if (token) {
-            const payload = parseJwt(token);
-            const hdId = payload?.sub;
+  if (token) {
+    const payload = parseJwt(token);
+    const hdId = payload?.sub;
 
-            if (hdId) {
-                axios.get<UserInfo>(`http://localhost:8080/api/head/mypage/${hdId}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                })
-                    .then(res => setUserInfo(res.data))
-                    .catch(err => console.error("유저 정보 가져오기 실패:", err));
-            }
-        }
-    }, [token]);
+    if (hdId) {
+      api.get<UserInfo>(`/head/mypage/${hdId}`)
+        .then(res => setUserInfo(res.data))
+        .catch(err => console.error("유저 정보 가져오기 실패:", err));
+    }
+  }
+}, [token]);
 
     const handleLogout = () => {
         dispatch(logout()) // 인자 없이 호출
