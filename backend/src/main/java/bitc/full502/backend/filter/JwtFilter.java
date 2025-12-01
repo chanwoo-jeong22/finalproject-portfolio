@@ -32,7 +32,8 @@ public class JwtFilter extends OncePerRequestFilter {
   private static final List<String> EXCLUDE_URLS = List.of(
       "/api/login",
       "/api/users/register",
-      "/api/agencyorder/draft" // 인증 없이 허용할 경로 추가 가능
+      "/api/agencyorder/draft",
+      "/uploads/" // 인증 없이 허용할 경로 추가 가능
   );
 
   @Override
