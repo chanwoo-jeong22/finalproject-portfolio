@@ -3,7 +3,7 @@ import { useOutletContext, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import api from "../../../api/api";
 import styles from "../../../styles/agency/orders.module.css";
-import { confirmOrder } from "../../../redux/slices/agency/thunks";
+import { confirmOrder } from "../../../redux/slices/agency/order-management/thunks";
 
 // Redux 루트 상태 타입 (auth 부분만 정의)
 interface RootState {

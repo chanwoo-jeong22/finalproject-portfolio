@@ -21,14 +21,15 @@ const initialState: AuthState = {
   userInfo: JSON.parse(localStorage.getItem("userInfo") || "{}"),
 };
 
-// 1) 로그인 Thunk
+// 1) 로그인 Thunk: 로그인 후 userInfo까지 자동으로 가져옴
 export const login = createAsyncThunk(
   "auth/login",
   async (
     { userId, userPassword, role }: { userId: string; userPassword: string; role: string },
-    { rejectWithValue }
+    { rejectWithValue, dispatch }
   ) => {
     try {
+      // 1) 로그인 요청
       const loginRes = await api.post("/login", {
         sep: role,
         loginId: userId,
@@ -38,16 +39,32 @@ export const login = createAsyncThunk(
       const token = loginRes.data.token;
       const loggedUserId = loginRes.data.userId;
 
-      let userInfo = {};
+      // 2) 로그인 성공하면 userInfo 재조회 요청 (토큰 헤더 포함)
+      let url = "";
+      if (role === "head_office") {
+        url = `/head/mypage/${loggedUserId}`;
+      } else if (role === "agency") {
+        url = `/agency/mypage/${loggedUserId}`;
+      } else if (role === "logistic") {
+        url = `/logistic/mypage/${loggedUserId}`;
+      } else {
+        return rejectWithValue("Invalid role");
+      }
+
+      const userInfoRes = await api.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const userInfo = userInfoRes.data;
 
       return { token, userId: loggedUserId, role, userInfo };
-    } catch (err) {
-      return rejectWithValue("로그인 후 유저정보 불러오기 실패");
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
 
-// 2) 유저 정보 재조회 Thunk (인자로 받도록 변경)
+// 2) reloadUserInfo Thunk는 유지 (필요시 별도 호출 가능)
 export const reloadUserInfo = createAsyncThunk(
   "auth/reloadUserInfo",
   async (
@@ -117,6 +134,7 @@ const authSlice = createSlice({
       state.token = token;
       localStorage.setItem("token", token);
 
+      // 역할별 ID 저장
       if (role === "head_office") {
         state.hdId = userId;
         localStorage.setItem("hdId", userId);
@@ -130,8 +148,6 @@ const authSlice = createSlice({
 
       state.userInfo = userInfo;
       localStorage.setItem("userInfo", JSON.stringify(userInfo));
-
-      
     });
 
     builder.addCase(reloadUserInfo.fulfilled, (state, action) => {

@@ -33,6 +33,11 @@ const agencySlice = createSlice({
                 state.selectedForAdd = state.lineItems.map(item => item.id);
             }
         },
+
+        clearSelectForAdd(state) {
+            state.selectedForAdd = [];
+        },
+
         toggleSelectRegistered(state, action: PayloadAction<string>) {
             const id = action.payload;
             if (state.selectedRegistered.includes(id)) {
@@ -126,6 +131,7 @@ const agencySlice = createSlice({
 export const {
     toggleSelectForAdd,
     toggleSelectAllForAdd,
+    clearSelectForAdd,
     toggleSelectRegistered,
     toggleSelectAllRegistered,
     addRegisteredItems,

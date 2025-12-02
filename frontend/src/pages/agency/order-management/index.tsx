@@ -11,19 +11,20 @@ import {
     updateRegisteredQty,
     deleteSelectedRegistered,
     setExpectedDate,
-} from "../../../redux/slices/agency/agency-slice";
+    clearSelectForAdd,
+} from "../../../redux/slices/agency/order-management/agency-slice";
 import {
     fetchAgencyProducts,
     saveDraft,
     confirmOrder
-} from '../../../redux/slices/agency/thunks'
+} from '../../../redux/slices/agency/order-management/thunks'
 
 export default function OrderManagement() {
     const dispatch = useDispatch<AppDispatch>();
 
     // Redux state
     const token = useSelector((state: RootState) => state.auth.token);
-    const agencyId = useSelector((state: RootState) => state.auth.agId);
+    const agencyId = useSelector((state: RootState) => state.auth.userInfo.agKey);
 
     const {
         lineItems,
@@ -62,14 +63,16 @@ export default function OrderManagement() {
 
     // 검색 필터 적용
     const handleSearch = () => {
-        const filtered = lineItems.filter(
-            (p) =>
-                (sku ? p.sku.includes(sku) : true) &&
-                (name ? p.name.includes(name) : true)
-        );
-        setFilteredLineItems(filtered);
-        dispatch(toggleSelectAllForAdd()); // 전체선택 초기화
-    };
+    const filtered = lineItems.filter(
+        (p) =>
+            (sku ? p.sku.includes(sku) : true) &&
+            (name ? p.name.includes(name) : true)
+    );
+    setFilteredLineItems(filtered);
+    dispatch(clearSelectForAdd()); // 선택 초기화: 전체 선택 해제
+};
+
+
 
     // 선택 토글 핸들러들
     const onToggleSelectForAdd = (id: string) => {

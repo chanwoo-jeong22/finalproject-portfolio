@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slices/auth/auth-slice";
-import agencyReducer from "./slices/agency";
+import agencyReducer from "./slices/agency/order-management/agency-slice";
 import passwordReducer from "./slices/auth/password-slice";
 import headReducer from "./slices/head/head-slice";
 import headGraphReducer from "./slices/head/headgraph-slice";
