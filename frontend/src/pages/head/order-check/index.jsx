@@ -101,7 +101,6 @@ function Order() {
         }
     };
 
-    // width=1100으로 수정 : 진경
     const openOrderPopup = (orKey) => {
         const url = `${window.location.origin}/agencyorder-popup/${orKey}`;
         window.open(

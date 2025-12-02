@@ -13,7 +13,7 @@ import OrderCheck from "../../../pages/head/order-check/index";
 import AgencyProductStatus from "../../../pages/head/agency-product-status/index";
 import LogisticInbound from "../../../pages/head/logistic-inbound/index";
 import ShippingStatus from "../../../pages/head/shipping-status/index";
-import MyPageHead from "../../../pages/head/mypage/index";  // 경로는 상황에 맞게 조정
+import MyPageHead from "../../../pages/head/mypage/index";
 
 
 function Router() {

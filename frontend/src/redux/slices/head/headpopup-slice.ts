@@ -3,7 +3,7 @@ import React from "react";
 
 interface HeadPopupState {
   isOpen: boolean;
-  content: React.ReactNode | null;  // 팝업에 표시할 React 요소 또는 null
+  content: React.ReactNode | null; 
 }
 
 const initialState: HeadPopupState = {
