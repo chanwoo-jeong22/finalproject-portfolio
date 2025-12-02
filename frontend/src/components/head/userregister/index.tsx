@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, FormEvent } from "react";
-import api from "../../../api/api"; // axios 인스턴스
+import api from "../../../api/api"; // 공통 axios 인스턴스
 import headStyles from '../../../styles/head/head.module.css';
 
 declare global {
@@ -10,8 +10,9 @@ declare global {
   }
 }
 
+// 부모 컴포넌트에서 받는 props 타입 정의
 interface UserRegisterProps {
-  onClose?: () => void;
+  onClose?: () => void; // 모달 닫기 함수
   onRegisterSuccess?: (user: {
     userKey: number;
     userId: string;
@@ -20,29 +21,33 @@ interface UserRegisterProps {
     tel: string;
     type: "agency" | "logistic";
   }) => void;
+  token?: string | null; // 인증 토큰 (추가)
 }
 
+// 내부 form 상태 타입 정의
 interface FormState {
-  type: "대리점" | "물류업체";
-  userId: string;
-  userName: string;
-  tel: string;
-  loginId: string;
-  userPw1: string;
-  userPw2: string;
-  address1: string;
-  address2: string;
-  zip: string;
-  email: string;
+  type: "대리점" | "물류업체";  // 라디오 버튼 값
+  userId: string;               // 업체명
+  userName: string;             // 대표자명
+  tel: string;                  // 전화번호
+  loginId: string;              // 로그인 아이디
+  userPw1: string;              // 비밀번호
+  userPw2: string;              // 비밀번호 확인
+  address1: string;             // 기본 주소
+  address2: string;             // 상세 주소
+  zip: string;                  // 우편번호
+  email: string;                // 이메일
 }
 
-type IdCheckStatus = "available" | "unavailable" | null;
-type EmailValidStatus = boolean | null;
+type IdCheckStatus = "available" | "unavailable" | null;  // 아이디 중복 체크 상태
+type EmailValidStatus = boolean | null;                  // 이메일 유효성 상태
 
 function UserRegister({
   onClose = () => {},
   onRegisterSuccess = () => {},
+  token = null,
 }: UserRegisterProps) {
+  // 폼 상태 관리
   const [form, setForm] = useState<FormState>({
     type: "대리점",
     userId: "",
@@ -57,15 +62,18 @@ function UserRegister({
     email: ""
   });
 
+  // 아이디 중복 확인 상태
   const [idCheckStatus, setIdCheckStatus] = useState<IdCheckStatus>(null);
+  // 이메일 유효성 상태
   const [emailValid, setEmailValid] = useState<EmailValidStatus>(null);
 
+  // input onChange 이벤트 처리
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  // 아이디 중복 확인
+  // 아이디 중복 확인 API 호출
   const handleCheckId = async () => {
     if (!form.loginId.trim()) {
       alert("아이디를 입력해주세요.");
@@ -81,7 +89,7 @@ function UserRegister({
     }
   };
 
-  // 이메일 중복 확인
+  // 이메일 중복 확인 API 호출
   const handleCheckEmail = async () => {
     if (!form.email.trim()) {
       setEmailValid(false);
@@ -100,11 +108,11 @@ function UserRegister({
     }
   };
 
-  // 회원가입 제출
+  // 폼 제출 (업체 등록)
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // 필수 입력 체크
+    // 모든 입력 값 필수 체크
     for (const key in form) {
       if ((form as any)[key].trim() === "") {
         alert("모든 항목을 입력해주세요.");
@@ -112,38 +120,40 @@ function UserRegister({
       }
     }
 
-    // 비밀번호 일치 확인
+    // 비밀번호 일치 여부 체크
     if (form.userPw1 !== form.userPw2) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
 
     try {
-      // 업체명 중복 체크
+      // 업체명 중복 체크 API 호출
       const companyRes = await api.get<boolean>("/users/check-company", { params: { userId: form.userId } });
       if (companyRes.data) {
         alert("이미 등록된 업체명입니다.");
         return;
       }
 
-      // 아이디 중복 체크
+      // 아이디 중복 여부 체크
       if (idCheckStatus === "unavailable") {
         alert("이미 사용 중인 아이디입니다.");
         return;
       }
 
-      // 이메일 중복 체크
+      // 이메일 중복 여부 체크
       if (emailValid === false) {
         alert("이미 등록된 이메일입니다.");
         return;
       }
 
+      // 전체 주소 조합
       const fullAddress = `${form.address1} ${form.address2}`;
 
-      // payload 생성
+      // API 요청용 payload, url 변수 초기화
       let payload: Record<string, any> = {};
       let apiUrl = "";
 
+      // 대리점 / 물류업체 분기 처리
       if (form.type === "대리점") {
         payload = {
           agName: form.userId,
@@ -170,11 +180,15 @@ function UserRegister({
         apiUrl = "/logistic/register";
       }
 
-      const res = await api.post(apiUrl, payload);
+      // 토큰을 헤더에 넣어 API 요청
+      const res = await api.post(apiUrl, payload, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
 
       if (res.status === 200) {
         alert("업체 등록이 완료되었습니다.");
 
+        // 등록 성공 시 부모 컴포넌트 콜백 호출
         onRegisterSuccess({
           userKey: Date.now(),
           userId: form.userId,
@@ -184,6 +198,7 @@ function UserRegister({
           type: form.type === "대리점" ? "agency" : "logistic",
         });
 
+        // 폼 초기화 및 상태 초기화
         setForm({
           type: "대리점",
           userId: "",
@@ -207,7 +222,7 @@ function UserRegister({
     }
   };
 
-  // 주소 검색 (다음 주소 API)
+  // 다음 주소 검색 API 호출 함수
   const handleAddressSearch = () => {
     new window.daum.Postcode({
       oncomplete: function (data: { address: string; zonecode: string }) {
@@ -220,6 +235,7 @@ function UserRegister({
     }).open();
   };
 
+  // 비밀번호 확인 입력 상태 및 일치 여부 체크
   const pwTouched = form.userPw2.length > 0;
   const isPwMatch = form.userPw1 === form.userPw2 && pwTouched;
 
@@ -227,7 +243,7 @@ function UserRegister({
     <div className={headStyles.inner}>
       <h2 className={headStyles.joinTitle}>업체 등록</h2>
       <form className={headStyles.joinFrm} onSubmit={handleSubmit}>
-        {/* 라디오 버튼 */}
+        {/* 업체 구분 라디오 버튼 */}
         <div className={headStyles.radioBtnGroup} role="group" aria-label="업체 선택">
           <input
             type="radio"

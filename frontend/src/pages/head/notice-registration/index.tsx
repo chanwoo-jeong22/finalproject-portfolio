@@ -1,12 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
-import axios, { AxiosError } from "axios";
-import headStyles from '../../../styles/head/head.module.css';
-import HeadPopup from '../../../components/head/head-popup';
-import NoticeDetail from '../../../components/common/notice-detail.js';
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../redux/store";
-
-const API_URL = "http://localhost:8080/api/notices";
+import api from "../../../api/api"; // api.ts 임포트
+import headStyles from '../../../styles/head/head.module.css';
+import HeadPopup from '../../../components/head/head-popup';
+import NoticeDetail from '../../../components/common/notice-detail';
 
 interface Notice {
     ntKey: number;
@@ -26,11 +24,12 @@ interface Notice {
 }
 
 function NoticeRegistration() {
+    // Redux에서 토큰 조회
     const token = useSelector((state: RootState) => state.auth.token);
 
     const [notices, setNotices] = useState<Notice[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<AxiosError | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const [registerCategory1, setRegisterCategory1] = useState<string>('');
     const [registerCategory2, setRegisterCategory2] = useState<string>('');
@@ -48,6 +47,14 @@ function NoticeRegistration() {
     const [showDetail, setShowDetail] = useState<boolean>(false);
     const [detailNotice, setDetailNotice] = useState<Notice | null>(null);
 
+    const category1Map: { [key: number]: string } = {
+        0: '전체',
+        1: '본사',
+        2: '물류',
+        3: '대리점',
+    };
+
+
     const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({ key: null, direction: 'asc' });
 
     const isAllChecked = notices.length > 0 && notices.every(item => item.isChecked);
@@ -64,7 +71,7 @@ function NoticeRegistration() {
         }));
     };
 
-    // 정렬
+    // 정렬 함수
     const handleSort = (key: string) => {
         let direction: 'asc' | 'desc' = 'asc';
         if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -105,16 +112,16 @@ function NoticeRegistration() {
         });
     };
 
-    // 상세보기
+    // 상세보기 버튼 클릭 시
     const handleNoticeClick = (notice: Notice) => {
         setDetailNotice(notice);
         setShowDetail(true);
     };
 
+    // 상세보기 닫기
     const handleCloseDetail = () => {
         setShowDetail(false);
         setDetailNotice(null);
-        // 목록 새로고침
         fetchNotices({
             category1: searchCategory1,
             category2: searchCategory2,
@@ -130,24 +137,28 @@ function NoticeRegistration() {
         handleCloseDetail();
     };
 
-    // 공지사항 조회
+    // 공지사항 조회 함수 (api.ts 사용, 토큰 자동 헤더 포함 가정)
     const fetchNotices = async (params: { category1?: string; category2?: string; searchDate?: string } = {}) => {
-        if (!token) return;
+    if (!token) return;
 
-        setIsLoading(true);
-        setError(null);
-        try {
-            let codes: number[] = [];
-            if (!params.category1 || params.category1 === "0") {
-                codes = [0, 1, 2, 3]; // 전체
-            } else {
-                codes = [Number(params.category1), 0];
-            }
+    setIsLoading(true);
+    setError(null);
 
-            const response = await axios.get<Notice[]>(API_URL, {
-                params: { codes },
-                headers: { Authorization: `Bearer ${token}` }
-            });
+    try {
+        let codes: number[] = [];
+        if (!params.category1 || params.category1 === "0") {
+            codes = [0, 1, 2, 3]; // 전체
+        } else {
+            codes = [Number(params.category1), 0];
+        }
+
+        console.log("fetchNotices params.category1:", params.category1, "codes:", codes);
+
+        const response = await api.get<Notice[]>('/notices', {
+            params: { codes: codes.join(",") }, // 배열 → 문자열 변환
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
             let data = response.data;
 
             if (params.category2 && params.category2 !== "0") {
@@ -174,8 +185,8 @@ function NoticeRegistration() {
                 endDate: item.endDate,
                 atCreated: item.atCreated
             })));
-        } catch (err) {
-            setError(err as AxiosError);
+        } catch (err: any) {
+            setError(err.message || "공지사항 조회 중 오류가 발생했습니다.");
         } finally {
             setIsLoading(false);
         }
@@ -185,6 +196,7 @@ function NoticeRegistration() {
         fetchNotices();
     }, [token]);
 
+    // 검색 버튼
     const handleSearch = () => {
         fetchNotices({
             category1: searchCategory1,
@@ -235,8 +247,8 @@ function NoticeRegistration() {
                 finalEndDate = twoMonthsLater.toISOString().split("T")[0];
             }
 
-            await axios.post(
-                API_URL,
+            await api.post(
+                '/notices',
                 {
                     ntCode: codeToSave,
                     ntCategory: registerCategory2,
@@ -245,7 +257,7 @@ function NoticeRegistration() {
                     endDate: finalEndDate || null,
                 },
                 {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { Authorization: `Bearer ${token}` } // 필요 시
                 }
             );
 
@@ -262,7 +274,7 @@ function NoticeRegistration() {
         }
     };
 
-    // 공지사항 삭제
+    // 공지사항 다중 삭제
     const handleDeleteSelected = async (): Promise<void> => {
         const selectedIds = notices
             .filter(item => item.isChecked)
@@ -277,7 +289,7 @@ function NoticeRegistration() {
 
         try {
             setIsLoading(true);
-            await axios.delete(API_URL, {
+            await api.delete('/notices', {
                 data: selectedIds,
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -295,13 +307,13 @@ function NoticeRegistration() {
         setSelectedNotice(null);
     };
 
-    // 한 개 삭제
+    // 단일 삭제
     const handleDeleteOne = async (notice: Notice | null): Promise<void> => {
         if (!notice?.ntKey) return;
         if (!window.confirm('해당 공지사항을 삭제하시겠습니까?')) return;
         try {
             setIsLoading(true);
-            await axios.delete(API_URL, {
+            await api.delete('/notices', {
                 data: [notice.ntKey],
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -324,7 +336,7 @@ function NoticeRegistration() {
         if (newContent === null) return;
         try {
             setIsLoading(true);
-            await axios.put(`${API_URL}/${notice.ntKey}`, {
+            await api.put(`/notices/${notice.ntKey}`, {
                 ntCode: notice.ntCode,
                 ntCategory: newCategory,
                 ntContent: newContent,
@@ -410,7 +422,7 @@ function NoticeRegistration() {
                                         className={headStyles.select_w120}
                                         value={searchCategory1}
                                         onChange={(e) => setSearchCategory1(e.target.value)}>
-                                        <option value="">전체</option>
+                                        <option value="0">전체</option>
                                         <option value="1">본사</option>
                                         <option value="2">물류</option>
                                         <option value="3">대리점</option>
@@ -500,50 +512,63 @@ function NoticeRegistration() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {isLoading && (
-                                    <tr>
-                                        <td colSpan={7}>로딩중...</td>
-                                    </tr>
-                                )}
-                                {!isLoading && notices.length === 0 && (
-                                    <tr>
-                                        <td colSpan={7}>등록된 공지사항이 없습니다.</td>
-                                    </tr>
-                                )}
-                                {!isLoading && notices.map((notice) => {
-                                    const itemId = notice.ntKey ?? notice.nt_key ?? notice.id;
-                                    if (!itemId) return null;
-                                    return (
-                                        <tr key={itemId}>
-                                            <td className={headStyles.t_check_box}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={notice.isChecked ?? false}
-                                                    onChange={() => handleSelectOne(itemId)} />
-                                            </td>
-                                            <td>{(notice.atCreated ?? notice.at_created)?.split("T")[0]}</td>
-                                            <td>{notice.startDate}</td>
-                                            <td>{notice.ntCode ?? notice.code}</td>
-                                            <td>{notice.ntCategory ?? notice.category2}</td>
-                                            <td>
-                                                <button
-                                                    className={headStyles.btn_link}
-                                                    onClick={() => handleNoticeClick(notice)}>
-                                                    {notice.ntContent ?? notice.content}
-                                                </button>
-                                            </td>
-                                            <td>
-                                                <button
-                                                    className={headStyles.btn_modify}
-                                                    onClick={() => handleModifyOne(notice)}>수정</button>
-                                                <button
-                                                    className={headStyles.btn_delete}
-                                                    onClick={() => handleDeleteOne(notice)}>삭제</button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
+  {isLoading && (
+    <tr>
+      <td colSpan={7}>로딩중...</td>
+    </tr>
+  )}
+  {!isLoading && notices.length === 0 && (
+    <tr>
+      <td colSpan={7}>등록된 공지사항이 없습니다.</td>
+    </tr>
+  )}
+  {!isLoading && notices.map((notice) => {
+    const itemId = notice.ntKey ?? notice.nt_key ?? notice.id;
+    if (!itemId) return null;
+
+    const code = notice.ntCode ?? notice.code;
+    const displayCategory1 = typeof code === 'number' ? category1Map[code] ?? code : code;
+
+    return (
+      <tr key={itemId}>
+        <td className={headStyles.t_check_box}>
+          <input
+            type="checkbox"
+            checked={notice.isChecked ?? false}
+            onChange={() => handleSelectOne(itemId)}
+          />
+        </td>
+        <td>{(notice.atCreated ?? notice.at_created)?.split("T")[0]}</td>
+        <td>{notice.startDate}</td>
+        <td>{displayCategory1}</td>
+        <td>{notice.ntCategory ?? notice.category2}</td>
+        <td>
+          <button
+            className={headStyles.btn_link}
+            onClick={() => handleNoticeClick(notice)}
+          >
+            {notice.ntContent ?? notice.content}
+          </button>
+        </td>
+        <td>
+          <button
+            className={headStyles.btn_modify}
+            onClick={() => handleModifyOne(notice)}
+          >
+            수정
+          </button>
+          <button
+            className={headStyles.btn_delete}
+            onClick={() => handleDeleteOne(notice)}
+          >
+            삭제
+          </button>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
                         </table>
                     </div>
                 </section>

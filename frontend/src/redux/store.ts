@@ -10,6 +10,7 @@ import orderDetailReducer from './slices/common/orderdetail-slice';
 import agencyProductStatusReducer from './slices/head/agencyproductstatus-slice';
 import orderCheckReducer from "./slices/head/ordercheck-slice";
 import logisticProductReducer from "./slices/head/logisticproductstatus-slice";
+import logisticInboundReducer from './slices/head/logisticinbound-slice';
 
 
 
@@ -29,6 +30,9 @@ export const store = configureStore({
     agencyProductStatus: agencyProductStatusReducer,
     ordercheck: orderCheckReducer,
     headLogisticProduct: logisticProductReducer,
+    logisticInbound: logisticInboundReducer,
+
+
 
   },
 });
