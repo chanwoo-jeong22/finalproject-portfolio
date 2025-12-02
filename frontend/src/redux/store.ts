@@ -8,6 +8,8 @@ import noticeReducer from "./slices/notice/notice-slice";
 import statusReducer from './slices/head/headstatus-slice';
 import orderDetailReducer from './slices/common/orderdetail-slice';
 import agencyProductStatusReducer from './slices/head/agencyproductstatus-slice';
+import orderCheckReducer from "./slices/head/ordercheck-slice";
+import logisticProductReducer from "./slices/head/logisticproductstatus-slice";
 
 
 
@@ -25,7 +27,8 @@ export const store = configureStore({
     status: statusReducer,
     orderDetail: orderDetailReducer,
     agencyProductStatus: agencyProductStatusReducer,
-
+    ordercheck: orderCheckReducer,
+    headLogisticProduct: logisticProductReducer,
 
   },
 });
