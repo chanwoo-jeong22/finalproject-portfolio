@@ -75,7 +75,10 @@ public class AppConfig implements WebMvcConfigurer {
                     "/api/agencyorder/draft", // 인증 없이 허용 예시
 
                     // 업로드 리소스
-                    "/uploads/**", "/uploads/profile/**", "/uploads/product/**"
+                    "/uploads/**", "/uploads/profile/**", "/uploads/product/**",
+
+                    // 여기에 추가
+                    "/api/status" 
                 ).permitAll()
 
                 // ============================

@@ -22,15 +22,22 @@ public class StatusService {
     }
 
     private StatusDTO convertToDTO(AgencyOrderEntity order) {
-        return new StatusDTO(
-                order.getOrKey(),
-                order.getAgency().getAgName(),
-                order.getOrStatus(),
-                order.getDelivery().getDvName(),
-                order.getDelivery().getDvPhone(),
-                order.getOrDate().toLocalDate(),
-                order.getOrReserve().toLocalDate(),
-                order.getOrderNumber()
-        );
+    String dvName = null;
+    String dvPhone = null;
+    if (order.getDelivery() != null) {
+        dvName = order.getDelivery().getDvName();
+        dvPhone = order.getDelivery().getDvPhone();
     }
+    return new StatusDTO(
+            order.getOrKey(),
+            order.getAgency().getAgName(),
+            order.getOrStatus(),
+            dvName,
+            dvPhone,
+            order.getOrDate().toLocalDate(),
+            order.getOrReserve().toLocalDate(),
+            order.getOrderNumber()
+    );
+}
+
 }
