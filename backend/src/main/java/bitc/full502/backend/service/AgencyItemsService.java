@@ -25,7 +25,7 @@ public class AgencyItemsService {
     private final ProductRepository productRepository;
     private final AgencyItemsRepository agencyItemsRepository;
 
-    // 전체 대리점 조회 : 진경 수정
+    // 전체 대리점 조회
     public List<AgencyItemsDTO> getAllAgencies() {
         return agencyRepository.findAll().stream()
                 .map(a -> new AgencyItemsDTO(
@@ -36,37 +36,54 @@ public class AgencyItemsService {
                 .collect(Collectors.toList());
     }
 
-    // 본사 전체 제품 조회 - AgencyItemsListDTO로 반환
+    // 본사 전체 제품 조회 (업체명, 입고일 포함)
     public List<AgencyItemsListDTO> getAllHeadProducts() {
-        return productRepository.findAll().stream()
-                .map(this::entityToAgencyItemsListDTO)
+        List<AgencyProductEntity> apList = agencyItemsRepository.findAll();
+
+        return apList.stream()
+                .map(ap -> {
+                    ProductEntity p = ap.getProduct();
+                    AgencyEntity a = ap.getAgency();
+
+                    AgencyItemsListDTO dto = new AgencyItemsListDTO(
+                            p.getPdKey(),
+                            p.getPdCategory(),
+                            p.getPdNum(),
+                            p.getPdProducts(),
+                            p.getPdImage(),
+                            p.getPdPrice(),
+                            a.getAgName(),    // 업체명
+                            ap.getApStore()   // 입고일
+                    );
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
-    // 특정 대리점 제품 조회 - AgencyItemsListDTO로 반환
+    // 특정 대리점 제품 조회
     public List<AgencyItemsListDTO> getAgencyProducts(Integer agencyId) {
         AgencyEntity agency = agencyRepository.findById(agencyId)
                 .orElseThrow(() -> new IllegalArgumentException("대리점 없음: " + agencyId));
 
         return agencyItemsRepository.findByAgency(agency).stream()
-                .map(AgencyProductEntity::getProduct)
-                .map(this::entityToAgencyItemsListDTO)
+                .map(ap -> {
+                    ProductEntity p = ap.getProduct();
+                    AgencyItemsListDTO dto = new AgencyItemsListDTO(
+                            p.getPdKey(),
+                            p.getPdCategory(),
+                            p.getPdNum(),
+                            p.getPdProducts(),
+                            p.getPdImage(),
+                            p.getPdPrice(),
+                            agency.getAgName(),
+                            ap.getApStore()
+                    );
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
-    // Entity → AgencyItemsListDTO 변환 메서드
-    private AgencyItemsListDTO entityToAgencyItemsListDTO(ProductEntity entity) {
-        return new AgencyItemsListDTO(
-                entity.getPdKey(),
-                entity.getPdCategory(),
-                entity.getPdNum(),
-                entity.getPdProducts(),
-                entity.getPdImage(),
-                entity.getPdPrice()
-        );
-    }
-
-    // 대리점에 제품 등록 - AgencyItemsListDTO로 반환
+    // 대리점에 제품 등록
     public List<AgencyItemsListDTO> registerProducts(Integer agencyId, List<Integer> productIds) {
         AgencyEntity agency = agencyRepository.findById(agencyId)
                 .orElseThrow(() -> new IllegalArgumentException("대리점 없음: " + agencyId));
@@ -89,7 +106,7 @@ public class AgencyItemsService {
         return getAgencyProducts(agencyId);
     }
 
-    // 대리점에서 제품 삭제 - AgencyItemsListDTO로 반환
+    // 대리점에서 제품 삭제
     public List<AgencyItemsListDTO> deleteProducts(Integer agencyId, List<Integer> productIds) {
         AgencyEntity agency = agencyRepository.findById(agencyId)
                 .orElseThrow(() -> new IllegalArgumentException("대리점 없음: " + agencyId));
@@ -101,6 +118,5 @@ public class AgencyItemsService {
 
         return getAgencyProducts(agencyId);
     }
-
 
 }

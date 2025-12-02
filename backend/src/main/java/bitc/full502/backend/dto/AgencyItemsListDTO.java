@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,7 +17,9 @@ public class AgencyItemsListDTO {
     private String pdImage;
     private Integer pdPrice;
 
-    // 이미지 URL 생성 메서드
+    private String agName;    // 업체명 추가
+    private LocalDate apStore; // 입고일 추가
+
     public String getImageUrl() {
         if (this.pdImage == null || this.pdImage.isEmpty()) {
             return null;
