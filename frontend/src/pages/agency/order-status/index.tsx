@@ -173,8 +173,8 @@ export default function OrderStatus() {
       alert("선택된 주문이 삭제되었습니다.");
       setSelected([]);
 
-      if (agencyId) {
-        dispatch(fetchAgencyOrders(agencyId));
+      if (userInfo?.agKey) {
+        dispatch(fetchAgencyOrders(userInfo?.agKey));
       } else {
         console.warn("agencyId가 없어 주문 리스트 갱신을 할 수 없습니다.");
       }

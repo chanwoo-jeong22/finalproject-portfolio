@@ -22,6 +22,8 @@ interface SchedulesByDate {
 export default function Index() {
     // Redux에서 인증 토큰 조회
     const token = useSelector((state: RootState) => state.auth.token);
+    const userInfo = useSelector((state: RootState) => state.auth.userInfo);
+
 
     // 선택된 공지사항과 상세보기 상태
     const [selectedNotice, setSelectedNotice] = useState<any | null>(null);
@@ -38,22 +40,42 @@ export default function Index() {
 
     // 입고 예정 일정 API 호출 및 상태 업데이트
     useEffect(() => {
-        if (!token) return;
+        if (!token || !userInfo?.agKey) return;
+
+        console.log("입고예정일 API 호출 - agKey:", userInfo.agKey);
 
         const from = toIsoDate(days[0]);
         const to = toIsoDate(days[days.length - 1]);
 
         axios
             .get("/api/agencyorder/schedule", {
-                params: { from, to },
+                params: { from, to, agKey: userInfo.agKey },
                 headers: { Authorization: `Bearer ${token}` },
             })
             .then((res) => {
+                // 1) API 응답 전체 데이터 확인
+                console.log("schedule API response:", res.data);
+
+                // 데이터가 어디에 담겨 있는지 구조 확인 (data, data.data 등)
                 const rows = res.data?.data ?? res.data ?? [];
+
+                // 2) rows 배열 길이와 주요 키값들 로그로 찍기
+                console.log("rows length:", rows.length);
+                console.log(
+                    "rows 주문번호 및 예약일:",
+                    rows.map((r: any) => ({
+                        orderNumber: r.orderNumber,
+                        orReserve: r.orReserve ?? r.or_reserve,
+                    }))
+                );
+
                 const byDate: SchedulesByDate = {};
 
                 rows.forEach((r: any) => {
                     if (r.orStatus === "배송완료") return;
+
+                    // 일단 필터링 제거하고 확인
+                    // if (r.agKey !== userInfo.agKey) return;
 
                     const iso = String(r.orReserve ?? r.or_reserve ?? "").slice(0, 10);
                     if (!iso) return;
@@ -63,28 +85,30 @@ export default function Index() {
                     if (!byDate[key]) byDate[key] = [];
 
                     const items = r.items ?? [];
-                    const firstItemName =
-                        items.length > 0
-                            ? items[0].name ?? items[0].oiProducts ?? "미정"
-                            : r.orProducts?.split(",")[0] ?? "미정";
+                    const firstItemName = items.length > 0
+                        ? items[0].name ?? items[0].oiProducts ?? "미정"
+                        : r.orProducts?.split(",")[0] ?? "미정";
 
                     const extraCount = Math.max(
                         (items.length || r.orProducts?.split(",").length || 1) - 1,
                         0
                     );
 
-                    const title =
-                        extraCount > 0
-                            ? `📦 ${firstItemName} 외 ${extraCount}건 입고 예정 (주문번호 ${r.orderNumber})`
-                            : `📦 ${firstItemName} 입고 예정 (주문번호 ${r.orderNumber})`;
+                    const title = extraCount > 0
+                        ? `📦 ${firstItemName} 외 ${extraCount}건 입고 예정 (주문번호 ${r.orderNumber})`
+                        : `📦 ${firstItemName} 입고 예정 (주문번호 ${r.orderNumber})`;
 
                     byDate[key].push({ title });
                 });
 
+
                 setSchedulesByDate(byDate);
             })
-            .catch(console.error);
-    }, [days, token]);
+            .catch((err) => {
+                console.error("입고예정일 API 호출 오류:", err);
+            });
+    }, [days, token, userInfo]);
+
 
     // 공지사항 클릭 시 상세보기 열기
     const handleNoticeClick = (notice: any) => {
@@ -107,6 +131,8 @@ export default function Index() {
                 <div className={style.scheduleGrid}>
                     {days.map((d) => {
                         const key = d.toISOString().slice(0, 10).replace(/-/g, ".");
+                        console.log("렌더링 날짜 key:", key, "일정 수:", (schedulesByDate[key] || []).length);
+
                         const items = schedulesByDate[key] || [];
                         const dow = KOR_DOW[d.getDay()];
 

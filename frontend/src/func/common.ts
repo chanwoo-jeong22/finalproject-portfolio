@@ -1,11 +1,9 @@
 /* =============== 일정 헬퍼 =============== */
-// 오늘부터 월~토만 집계해서 N칸 반환(일요일 제외)
 export function getNextBizDays(count = 12) {
     const days = [];
-    const start = new Date();
-    const d = new Date(start);
+    const d = new Date();
     while (days.length < count) {
-        if (d.getDay() !== 0) days.push(new Date(d)); // 0=일요일 제외
+        days.push(new Date(d));
         d.setDate(d.getDate() + 1);
     }
     return days;
