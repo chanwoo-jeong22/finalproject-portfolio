@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "../../../styles/agency/orders.module.css";
-import api from "../../../api/api"; // axios 인스턴스
+import api from "../../../api/api";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useSelector } from "react-redux"; // redux state 접근용
 
@@ -36,21 +36,29 @@ export default function OrderDraft() {
 
   // 토큰이 바뀌면 임시 저장 목록 다시 불러오기
   useEffect(() => {
-    if (!token) return; // 토큰 없으면 API 호출 금지
+  if (!token) return;
 
-    const fetchDrafts = async () => {
-      try {
-        const res = await api.get<DraftItem[]>("/agencyorder/draft", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setDrafts(res.data);
-      } catch (err) {
-        console.error("임시 저장 데이터 불러오기 실패", err);
-      }
-    };
+  const userInfoStr = localStorage.getItem("userInfo");
+  const agKey = userInfoStr ? JSON.parse(userInfoStr).agKey : null;
+  if (!agKey) {
+    console.error("대리점 키(agKey)가 없습니다.");
+    return;
+  }
 
-    fetchDrafts();
-  }, [token]);
+  const fetchDrafts = async () => {
+    try {
+      const res = await api.get<DraftItem[]>(`/agencyorder/draft?agKey=${agKey}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setDrafts(res.data);
+    } catch (err) {
+      console.error("임시 저장 데이터 불러오기 실패", err);
+    }
+  };
+
+  fetchDrafts();
+}, [token]);
+
 
   // 체크박스 토글 (개별)
   const toggleSelect = (rdKey: number) => {

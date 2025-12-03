@@ -16,11 +16,10 @@ import logisticInboundReducer from './slices/head/logisticinbound-slice';
 
 
 
-
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    agency: agencyReducer,
+    agencyOrders: agencyReducer,
     head: headReducer,
     password: passwordReducer,
     headGraph: headGraphReducer,

@@ -35,7 +35,7 @@ export default function OrderManagement() {
         orders,
         drafts,
         loading,
-    } = useSelector((state: RootState) => state.agency);
+    } = useSelector((state: RootState) => state.agencyOrders);
 
     // Local UI state
     const [sku, setSku] = useState("");
@@ -63,14 +63,15 @@ export default function OrderManagement() {
 
     // 검색 필터 적용
     const handleSearch = () => {
-    const filtered = lineItems.filter(
-        (p) =>
-            (sku ? p.sku.includes(sku) : true) &&
-            (name ? p.name.includes(name) : true)
-    );
-    setFilteredLineItems(filtered);
-    dispatch(clearSelectForAdd()); // 선택 초기화: 전체 선택 해제
-};
+        const filtered = lineItems.filter(
+            (p) =>
+                (sku ? (p.sku?.includes(sku) ?? false) : true) && // p.sku가 있을 때만 includes 실행
+                (name ? p.name.includes(name) : true)
+        );
+        setFilteredLineItems(filtered);
+        dispatch(clearSelectForAdd());
+    };
+
 
 
 
@@ -123,11 +124,25 @@ export default function OrderManagement() {
             alert("임시 저장할 품목을 선택해주세요.");
             return;
         }
+        if (!agencyId) {
+            alert("대리점 ID(agKey)가 없습니다.");
+            return;
+        }
+
         setIsSaving(true);
         try {
-            const itemsToSave = lineItems.filter((item) =>
-                selectedForAdd.includes(item.id)
-            );
+            const itemsToSave = lineItems
+                .filter(item => selectedForAdd.includes(item.id))
+                .map(item => ({
+                    agKey: agencyId,             // 대리점 키 (number or string 타입 확인)
+                    pdKey: Number(item.pdKey),  // 백엔드가 number 타입이면 변환해주기 (필요시)
+                    rdProducts: item.name,       // 제품명
+                    rdQuantity: item.qty,        // 수량
+                    rdPrice: item.price,         // 단가
+                    rdTotal: item.qty * item.price, // 총액
+                    // rdStatus 등 백엔드 필수필드 있으면 여기에 추가
+                }));
+
             await dispatch(saveDraft(itemsToSave)).unwrap();
             alert("임시 저장 완료!");
         } catch (err: any) {
@@ -232,54 +247,54 @@ export default function OrderManagement() {
                 >
                     <table className={styles.table}>
                         <thead>
-                        <tr>
-                            <th className={`${styles.center} ${styles.t_w40}`}>
-                                <input
-                                    type="checkbox"
-                                    checked={
-                                        filteredLineItems.length > 0 &&
-                                        selectedForAdd.length === filteredLineItems.length
-                                    }
-                                    onChange={onToggleSelectAllForAdd}
-                                />
-                            </th>
-                            <th className={styles.center}>품번</th>
-                            <th className={styles.center}>제품명</th>
-                            <th className={styles.right}>수량</th>
-                            <th className={styles.right}>단가</th>
-                            <th className={styles.right}>총액</th>
-                        </tr>
+                            <tr>
+                                <th className={`${styles.center} ${styles.t_w40}`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={
+                                            filteredLineItems.length > 0 &&
+                                            selectedForAdd.length === filteredLineItems.length
+                                        }
+                                        onChange={onToggleSelectAllForAdd}
+                                    />
+                                </th>
+                                <th className={styles.center}>품번</th>
+                                <th className={styles.center}>제품명</th>
+                                <th className={styles.right}>수량</th>
+                                <th className={styles.right}>단가</th>
+                                <th className={styles.right}>총액</th>
+                            </tr>
                         </thead>
 
                         <tbody>
-                        {filteredLineItems.length > 0 ? (
-                            filteredLineItems.map((item, index) => (
-                                <tr key={`${item.id}-${index}`}>
-                                    <td className={styles.center}>
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedForAdd.includes(item.id)}
-                                            onChange={() => onToggleSelectForAdd(item.id)}
-                                        />
-                                    </td>
-                                    <td className={styles.center}>{item.sku}</td>
-                                    <td className={styles.center}>{item.name}</td>
-                                    <td className={styles.right}>{item.qty}</td>
-                                    <td className={styles.right}>
-                                        {item.price.toLocaleString()}원
-                                    </td>
-                                    <td className={styles.right}>
-                                        {(item.qty * item.price).toLocaleString()}원
+                            {filteredLineItems.length > 0 ? (
+                                filteredLineItems.map((item, index) => (
+                                    <tr key={`${item.id}-${index}`}>
+                                        <td className={styles.center}>
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedForAdd.includes(item.id)}
+                                                onChange={() => onToggleSelectForAdd(item.id)}
+                                            />
+                                        </td>
+                                        <td className={styles.center}>{item.sku}</td>
+                                        <td className={styles.center}>{item.name}</td>
+                                        <td className={styles.right}>{item.qty}</td>
+                                        <td className={styles.right}>
+                                            {item.price.toLocaleString()}원
+                                        </td>
+                                        <td className={styles.right}>
+                                            {(item.qty * item.price).toLocaleString()}원
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={6} style={{ textAlign: "center" }}>
+                                        {loading ? "데이터를 불러오는 중입니다..." : "검색 결과가 없습니다."}
                                     </td>
                                 </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan={6} style={{ textAlign: "center" }}>
-                                    {loading ? "데이터를 불러오는 중입니다..." : "검색 결과가 없습니다."}
-                                </td>
-                            </tr>
-                        )}
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -337,64 +352,64 @@ export default function OrderManagement() {
                 <div className={styles.tableWrap}>
                     <table className={styles.table}>
                         <thead>
-                        <tr>
-                            <th className={`${styles.center} ${styles.t_w40}`}>
-                                <input
-                                    type="checkbox"
-                                    checked={
-                                        registeredItems.length > 0 &&
-                                        selectedRegistered.length === registeredItems.length
-                                    }
-                                    onChange={onToggleSelectAllRegistered}
-                                />
-                            </th>
-                            <th className={styles.center}>품번</th>
-                            <th className={styles.center}>제품명</th>
-                            <th className={styles.right}>수량</th>
-                            <th className={styles.right}>단가</th>
-                            <th className={styles.right}>총액</th>
-                        </tr>
+                            <tr>
+                                <th className={`${styles.center} ${styles.t_w40}`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={
+                                            registeredItems.length > 0 &&
+                                            selectedRegistered.length === registeredItems.length
+                                        }
+                                        onChange={onToggleSelectAllRegistered}
+                                    />
+                                </th>
+                                <th className={styles.center}>품번</th>
+                                <th className={styles.center}>제품명</th>
+                                <th className={styles.right}>수량</th>
+                                <th className={styles.right}>단가</th>
+                                <th className={styles.right}>총액</th>
+                            </tr>
                         </thead>
 
                         <tbody>
-                        {registeredItems.length > 0 ? (
-                            registeredItems.map((item, index) => (
-                                <tr key={`${item.id}-${index}`}>
-                                    <td className={`${styles.center} ${styles.t_w40}`}>
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedRegistered.includes(item.id)}
-                                            onChange={() => onToggleSelectRegistered(item.id)}
-                                        />
-                                    </td>
-                                    <td className={styles.center}>{item.sku}</td>
-                                    <td className={styles.center}>{item.name}</td>
-                                    <td className={styles.right}>
-                                        <button onClick={() => onUpdateRegisteredQty(item.id, -1)}>
-                                            -
-                                        </button>
-                                        <span style={{ margin: "0 5px" }}>{item.qty}</span>
-                                        <button onClick={() => onUpdateRegisteredQty(item.id, 1)}>
-                                            +
-                                        </button>
-                                    </td>
-                                    <td className={styles.right}>{item.price.toLocaleString()}원</td>
-                                    <td className={styles.right}>
-                                        {(item.qty * item.price).toLocaleString()}원
+                            {registeredItems.length > 0 ? (
+                                registeredItems.map((item, index) => (
+                                    <tr key={`${item.id}-${index}`}>
+                                        <td className={`${styles.center} ${styles.t_w40}`}>
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedRegistered.includes(item.id)}
+                                                onChange={() => onToggleSelectRegistered(item.id)}
+                                            />
+                                        </td>
+                                        <td className={styles.center}>{item.sku}</td>
+                                        <td className={styles.center}>{item.name}</td>
+                                        <td className={styles.right}>
+                                            <button onClick={() => onUpdateRegisteredQty(item.id, -1)}>
+                                                -
+                                            </button>
+                                            <span style={{ margin: "0 5px" }}>{item.qty}</span>
+                                            <button onClick={() => onUpdateRegisteredQty(item.id, 1)}>
+                                                +
+                                            </button>
+                                        </td>
+                                        <td className={styles.right}>{item.price.toLocaleString()}원</td>
+                                        <td className={styles.right}>
+                                            {(item.qty * item.price).toLocaleString()}원
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td
+                                        colSpan={6}
+                                        className={styles.center}
+                                        style={{ color: "#888", padding: "20px" }}
+                                    >
+                                        {loading ? "데이터를 불러오는 중입니다..." : "등록된 주문이 없습니다."}
                                     </td>
                                 </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td
-                                    colSpan={6}
-                                    className={styles.center}
-                                    style={{ color: "#888", padding: "20px" }}
-                                >
-                                    {loading ? "데이터를 불러오는 중입니다..." : "등록된 주문이 없습니다."}
-                                </td>
-                            </tr>
-                        )}
+                            )}
                         </tbody>
                     </table>
                 </div>
