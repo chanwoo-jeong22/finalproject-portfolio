@@ -2,14 +2,24 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../../api/api";  // 공통 axios 인스턴스 import
 
 interface UserInfo {
-  [key: string]: any;
+  
+  agAddress: string;
+  agCeo: string;
+  agCode: number;
+  agEmail: string;
+  agId: string;
+  agKey: number;
+  agName: string;
+  agPhone: string;
+  agPw: string;
+  agZip: string;
 }
 
 interface AuthState {
   token: string | null;
-  hdId: string | null;
-  agId: string | null;
-  lgId: string | null;
+  hdId: string | null; // 본사계정명
+  agId: string | null; // 계정명
+  lgId: string | null; // 물류계정명
   userInfo: UserInfo;
 }
 

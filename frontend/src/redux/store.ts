@@ -11,6 +11,12 @@ import agencyProductStatusReducer from './slices/head/agencyproductstatus-slice'
 import orderCheckReducer from "./slices/head/ordercheck-slice";
 import logisticProductReducer from "./slices/head/logisticproductstatus-slice";
 import logisticInboundReducer from './slices/head/logisticinbound-slice';
+import logisticReducer from "./slices/logistic/logistic-slice";
+import mypageReducer from "./slices/logistic/mypage-slice";
+import orderFulfillmentReducer from "./slices/logistic/orderfulfillment-slice";
+
+
+
 
 
 
@@ -30,8 +36,9 @@ export const store = configureStore({
     ordercheck: orderCheckReducer,
     headLogisticProduct: logisticProductReducer,
     logisticInbound: logisticInboundReducer,
-
-
+    logistic: logisticReducer,
+    mypage: mypageReducer,
+    orderfulfillment: orderFulfillmentReducer,
 
   },
 });

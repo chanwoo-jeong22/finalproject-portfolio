@@ -1,4 +1,3 @@
-// src/App.tsx
 import React, { useEffect,  useMemo } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 

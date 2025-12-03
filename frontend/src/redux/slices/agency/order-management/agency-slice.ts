@@ -1,6 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { AgencyState, LineItem } from "./types";
-import { fetchAgencyProducts, saveDraft, confirmOrder } from "./thunks";
+import type { AgencyState, LineItem, Order } from "./types";
+import {
+    fetchAgencyProducts,
+    saveDraft,
+    confirmOrder,
+    deleteOrders,
+    fetchAgencyOrders,
+
+} from "./thunks";
 
 const initialState: AgencyState = {
     orders: [],
@@ -33,11 +40,9 @@ const agencySlice = createSlice({
                 state.selectedForAdd = state.lineItems.map(item => item.id);
             }
         },
-
         clearSelectForAdd(state) {
             state.selectedForAdd = [];
         },
-
         toggleSelectRegistered(state, action: PayloadAction<string>) {
             const id = action.payload;
             if (state.selectedRegistered.includes(id)) {
@@ -83,6 +88,7 @@ const agencySlice = createSlice({
             state.loading = true;
             state.error = null;
         });
+
         builder.addCase(fetchAgencyProducts.fulfilled, (state, action) => {
             state.loading = false;
             state.lineItems = action.payload;
@@ -124,6 +130,34 @@ const agencySlice = createSlice({
         builder.addCase(confirmOrder.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload ?? "주문 확정 실패";
+        });
+
+        // 여기에 삭제 thunk 연결
+        builder.addCase(deleteOrders.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(deleteOrders.fulfilled, (state, action) => {
+            state.loading = false;
+            const deletedIds = action.payload;
+            state.orders = state.orders.filter(order => !deletedIds.includes(order.orKey));
+        });
+        builder.addCase(deleteOrders.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload ?? "주문 삭제 실패";
+        });
+
+        builder.addCase(fetchAgencyOrders.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(fetchAgencyOrders.fulfilled, (state, action) => {
+            state.loading = false;
+            state.orders = action.payload;  // 여기서 주문 목록 저장
+        });
+        builder.addCase(fetchAgencyOrders.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload ?? "주문 목록 불러오기 실패";
         });
     },
 });

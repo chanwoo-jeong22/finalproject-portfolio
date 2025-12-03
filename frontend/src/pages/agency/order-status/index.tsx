@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useOutletContext, useLocation, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import api from "../../../api/api";
 import styles from "../../../styles/agency/orders.module.css";
-import { confirmOrder } from "../../../redux/slices/agency/order-management/thunks";
+import { RootState, AppDispatch } from "../../../redux/store";
+import {
+  fetchAgencyOrders,
+  fetchAgencyProducts, // 주문 리스트 불러오기 thunk
+  deleteOrders,      // 주문 삭제 thunk 이름 맞춰서 수정
+} from "../../../redux/slices/agency/order-management/thunks";
 
-// Redux 루트 상태 타입 (auth 부분만 정의)
-interface RootState {
-  auth: {
-    token: string | null;
-  };
-}
 
-// 주문 아이템 타입
 interface OrderItem {
   sku?: string;
   name?: string;
@@ -25,7 +23,6 @@ interface OrderItem {
   quantity?: number;
 }
 
-// 주문 타입
 interface Order {
   orKey: string;
   orStatus: string;
@@ -39,21 +36,17 @@ interface Order {
   delivery?: any;
 }
 
-// OutletContext에서 내려받는 props 타입
-interface OutletContextType {
-  orders: Order[];
-  setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
-}
-
 export default function OrderStatus() {
-  // Outlet으로부터 orders, setOrders 받아옴
-  const { orders, setOrders } = useOutletContext<OutletContextType>();
+  const useAppDispatch = () => useDispatch<AppDispatch>();
 
-  // Redux에서 토큰 가져오기
-  const token = useSelector((state: RootState) => state.auth.token);
-
+  const dispatch = useAppDispatch();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const token = useSelector((state: RootState) => state.auth.token);
+  const orders = useSelector((state: RootState) => state.agencyOrders.orders);
+  const userInfo = useSelector((state: RootState) => state.auth.userInfo);
+
   const { newOrder } = (location.state || {}) as { newOrder?: Order };
 
   const [groupedOrders, setGroupedOrders] = useState<Order[]>([]);
@@ -71,22 +64,33 @@ export default function OrderStatus() {
   const [sortColumn, setSortColumn] = useState("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
-  // orders 바뀔 때마다 주문 데이터 그룹핑 및 가공
+  // 최초 렌더 시 및 token 변경 시 주문 목록 불러오기
   useEffect(() => {
-    if (!orders || orders.length === 0) return;
+    console.log("token:", token, "agencyId:", userInfo.agKey);
+    if (token && userInfo) {
+      dispatch(fetchAgencyOrders(userInfo.agKey));
+    }
+  }, [dispatch, token, userInfo]);
 
-    // 본사에서 "주문 처리 완료" 상태를 대리점에선 "배송 준비중"으로 변환
+  // Redux orders 변경 시 그룹핑 및 가공
+  useEffect(() => {
+    if (!orders || orders.length === 0) {
+      setGroupedOrders([]);
+      setFilteredOrders([]);
+      return;
+    }
+
     const updatedOrders = orders.map((o) => ({
       ...o,
-      orStatus: o.orStatus === "주문 처리 완료" ? "배송 준비중" : o.orStatus,
+      orStatus: o.orStatus === "주문 처리 완료" ? "배송 준비중" : o.orStatus ?? "알 수 없음",
     }));
 
-    // orKey 기준으로 주문 묶기 (items 병합, delivery 포함)
     const groupedMap: Record<string, Order> = {};
     updatedOrders.forEach((order) => {
       if (!groupedMap[order.orKey]) {
         groupedMap[order.orKey] = {
           ...order,
+          orStatus: order.orStatus === "주문 처리 완료" ? "배송 준비중" : order.orStatus ?? "알 수 없음",
           items: [...(order.items ?? [])],
           delivery: order.delivery ?? null,
         };
@@ -95,7 +99,6 @@ export default function OrderStatus() {
       }
     });
 
-    // 아이템 가공 및 총액 계산, UI용 주문번호 설정
     const grouped = Object.values(groupedMap).map((order) => {
       const items = (order.items ?? []).map((item) => ({
         sku: item.sku ?? item.product?.pdNum ?? "정보 없음",
@@ -115,30 +118,16 @@ export default function OrderStatus() {
     setFilteredOrders(grouped);
   }, [orders]);
 
-  // 새 주문이 들어오면 바로 추가하고 URL 상태 초기화
+  // location.state에 newOrder가 있으면 Redux 상태에 반영 (필요시)
   useEffect(() => {
     if (!newOrder?.items?.length) return;
 
-      const items = (newOrder.items as (OrderItem & Partial<typeof confirmOrder>)[]).map((item) => ({
-          sku: item.sku ?? "정보 없음",
-          name: item.name ?? "정보 없음",
-          qty: item.qty ?? 0,
-          price: item.price ?? 0,
-      }));
-
-    const totalAmount = items.reduce((sum, item) => sum + item.qty * item.price, 0);
-    const orderNumberUI = newOrder.orderNumber;
-
-    const formattedOrder = { ...newOrder, items, totalAmount, orderNumberUI };
-
-    setOrders((prev) => [...prev, formattedOrder]);
-    setGroupedOrders((prev) => [...prev, formattedOrder]);
-    setFilteredOrders((prev) => [...prev, formattedOrder]);
-
+    // 기존 orders에 newOrder가 없으면 추가 (여기서는 단순히 setOrders 호출 안하므로 Redux에 반영하는 thunk 필요)
+    // 만약 Redux에서 newOrder 반영하는 thunk가 있다면 호출하는게 좋음.
+    // 지금은 간단하게 navigate로 location state 초기화만 처리
     navigate(location.pathname, { replace: true, state: null });
-  }, [newOrder, navigate, location.pathname, setOrders]);
+  }, [newOrder, navigate, location.pathname]);
 
-  // 테이블 정렬 처리
   const handleSort = (column: keyof Order) => {
     let direction: "asc" | "desc" = "asc";
     if (sortColumn === column && sortDirection === "asc") direction = "desc";
@@ -157,51 +146,45 @@ export default function OrderStatus() {
     setFilteredOrders(sorted);
   };
 
-  // 정렬 화살표 UI
   const getArrow = (column: string) =>
     sortColumn !== column ? "▼" : sortDirection === "asc" ? "▲" : "▼";
 
-  // 단일 선택 토글
   const toggleSelect = (id: string) => {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
-  // 전체 선택/해제 토글
   const toggleSelectAll = () => {
     if (selected.length === filteredOrders.length) setSelected([]);
     else setSelected(filteredOrders.map((o) => o.orKey));
   };
 
-  // 선택된 주문 삭제 처리
+  // 선택된 주문 삭제 시 thunk 호출
   const handleDeleteSelected = async () => {
     if (selected.length === 0) return;
 
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
     try {
-      const agKey = JSON.parse(localStorage.getItem("userInfo") || "{}").agKey;
-
-      await Promise.all(
-        selected.map((id) =>
-          api.delete(`/agencyorder/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-        )
-      );
-
-      // 삭제된 주문 제외 후 상태 업데이트
-      const updatedOrders = groupedOrders.filter((o) => !selected.includes(o.orKey));
-
-      setGroupedOrders(updatedOrders);
-      setFilteredOrders(updatedOrders);
-      setSelected([]);
+      await dispatch(deleteOrders(selected)).unwrap();
 
       alert("선택된 주문이 삭제되었습니다.");
+      setSelected([]);
+
+      if (agencyId) {
+        dispatch(fetchAgencyOrders(agencyId));
+      } else {
+        console.warn("agencyId가 없어 주문 리스트 갱신을 할 수 없습니다.");
+      }
     } catch (err: any) {
       console.error(err);
-      alert("삭제 중 오류가 발생했습니다: " + err.message);
+      alert("삭제 중 오류가 발생했습니다: " + (err.message ?? "알 수 없는 오류"));
     }
+
   };
 
-  // 필터링 적용 함수
   const applyFilters = (
     statusVal = status,
     orderIdVal = orderId,
@@ -354,7 +337,9 @@ export default function OrderStatus() {
                           ? "-"
                           : new Date(o.orReserve).toLocaleDateString()}
                       </td>
-                      <td className={styles.center}>{o.orStatus === "배송완료" || !o.dvName ? "-" : o.dvName}</td>
+                      <td className={styles.center}>
+                        {o.orStatus === "배송완료" || !o.dvName ? "-" : o.dvName}
+                      </td>
                       <td className={styles.right}>{(o.totalAmount ?? 0).toLocaleString()}</td>
                       <td className={styles.center}>
                         <span
