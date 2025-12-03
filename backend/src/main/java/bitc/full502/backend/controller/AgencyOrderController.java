@@ -134,27 +134,31 @@ public class AgencyOrderController {
 
 
     @GetMapping("/schedule")
-    public List<AgencyOrderDTO> schedule(
-            @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam("to")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-            @RequestParam(value = "gu", required = false) String gu
-    ) {
-        return service.getSchedule(from, to, gu); // ← 변환 없음
-    }
+public List<AgencyOrderDTO> schedule(
+    @RequestParam("from") LocalDate from,
+    @RequestParam("to") LocalDate to,
+    @RequestParam(value = "agKey", required = false) Integer agKey
+) {
+    return service.getSchedule(from, to, agKey);  // agKey null이면 전체조회, 아니면 agKey 기준 조회
+}
 
-    @GetMapping("/schedule/mine")
-    public List<AgencyOrderDTO> scheduleMine(
-            Authentication auth,
-            @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam("to")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
-    ) {
-        String loginId = auth != null ? auth.getName() : null;
-        boolean isHQ = auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_HQ"));
-        if (isHQ) return service.getSchedule(from, to, null);
-        String gu = service.resolveGuPrefixByLoginId(loginId);
-        return service.getSchedule(from, to, gu);
+@GetMapping("/schedule/mine")
+public List<AgencyOrderDTO> scheduleMine(
+        Authentication auth,
+        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam("to")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+) {
+    String loginId = auth != null ? auth.getName() : null;
+    boolean isHQ = auth != null && auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_HQ"));
+    if (isHQ) {
+        return service.getSchedule(from, to, null); // 전체 조회
     }
+    String gu = service.resolveGuPrefixByLoginId(loginId);
+    return service.getSchedule(from, to, gu);  // gu 기준 조회
+}
+
+
 
     @GetMapping("/android")
     public List<OrderDTO> getOrdersByAgency(@RequestParam int agKey) {

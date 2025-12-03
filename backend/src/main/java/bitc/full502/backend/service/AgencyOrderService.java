@@ -500,43 +500,67 @@ public class AgencyOrderService {
                 .collect(Collectors.toList());
 
     }
-    public List<AgencyOrderDTO> getSchedule(LocalDate from, LocalDate to , String gu) {
-        var entities = repo.findSchedule(from, to, gu);
+    // 1. agKey 기준 조회 (대리점별 스케줄)
+public List<AgencyOrderDTO> getScheduleByAgKey(LocalDate from, LocalDate to, Integer agKey) {
+    List<AgencyOrderEntity> entities = repo.findScheduleByAgKey(from, to, agKey);
+    return toDTOList(entities);
+}
 
-        return entities.stream()
-                .collect(Collectors.toMap(
-                        AgencyOrderEntity::getOrKey,  // key 중복 제거 기준
-                        o -> {
-                            AgencyOrderDTO dto = new AgencyOrderDTO();
-                            dto.setOrKey(o.getOrKey());
-                            dto.setOrderNumber(o.getOrderNumber());
-                            dto.setOrStatus(o.getOrStatus());
-                            dto.setOrReserve(o.getOrReserve());
-                            dto.setOrProducts(o.getOrProducts());
-                            dto.setOrQuantity(o.getOrQuantity());
-                            dto.setOrPrice(o.getOrPrice());
-                            dto.setOrTotal(o.getOrTotal());
+// 2. gu 기준 조회 (지역 구 필터링)
+public List<AgencyOrderDTO> getScheduleByGu(LocalDate from, LocalDate to, String gu) {
+    List<AgencyOrderEntity> entities = repo.findSchedule(from, to, gu);
+    return toDTOList(entities);
+}
 
-                            if (o.getAgency() != null) {
-                                dto.setAgName(o.getAgency().getAgName());
-                                dto.setAgAddress(o.getAgency().getAgAddress());
-                                dto.setAgPhone(o.getAgency().getAgPhone());
-                            }
-
-                            if (o.getDelivery() != null) {
-                                dto.setDvName(o.getDelivery().getDvName());
-                            }
-
-                            return dto;
-                        },
-                        (existing, duplicate) -> existing // 중복 시 첫 번째만 유지
-                ))
-                .values()
-                .stream()
-                .toList();
+// 3. agKey 와 gu 모두 null 일 때는 전체 조회 (필요 시 구현)
+public List<AgencyOrderDTO> getSchedule(LocalDate from, LocalDate to, Object filterKey) {
+    if (filterKey == null) {
+        // 전체 조회 - gu 파라미터 null 전달
+        return getScheduleByGu(from, to, null);
     }
+    if (filterKey instanceof Integer) {
+        return getScheduleByAgKey(from, to, (Integer) filterKey);
+    }
+    if (filterKey instanceof String) {
+        return getScheduleByGu(from, to, (String) filterKey);
+    }
+    // 예외 처리 또는 기본값 반환
+    return List.of();
+}
 
+// 공통 DTO 변환 로직
+private List<AgencyOrderDTO> toDTOList(List<AgencyOrderEntity> entities) {
+    return entities.stream()
+        .collect(Collectors.toMap(
+            AgencyOrderEntity::getOrKey,
+            o -> {
+                AgencyOrderDTO dto = new AgencyOrderDTO();
+                dto.setOrKey(o.getOrKey());
+                dto.setOrderNumber(o.getOrderNumber());
+                dto.setOrStatus(o.getOrStatus());
+                dto.setOrReserve(o.getOrReserve());
+                dto.setOrProducts(o.getOrProducts());
+                dto.setOrQuantity(o.getOrQuantity());
+                dto.setOrPrice(o.getOrPrice());
+                dto.setOrTotal(o.getOrTotal());
 
+                if (o.getAgency() != null) {
+                    dto.setAgName(o.getAgency().getAgName());
+                    dto.setAgAddress(o.getAgency().getAgAddress());
+                    dto.setAgPhone(o.getAgency().getAgPhone());
+                }
+
+                if (o.getDelivery() != null) {
+                    dto.setDvName(o.getDelivery().getDvName());
+                }
+                return dto;
+            },
+            (existing, duplicate) -> existing
+        ))
+        .values()
+        .stream()
+        .toList();
+}
 
     public List<AgencyOrderDTO> findMineByLoginId(String loginId, boolean isHQ) {
         if (isHQ) return findAll();
@@ -657,51 +681,9 @@ public class AgencyOrderService {
             countToday = repo.findMaxOrderNumber();
             order.setOrderNumber(String.format("%02d", countToday + 1));
         }
-//        int countToday = repo.findMaxOrderNumber();
-
-//        order.setOrderNumber(String.format("%02d", countToday + 1));
-//        order.setOrderNumber(datePrefix + String.valueOf(countToday + 1));
-
 
         repo.saveAndFlush(order);
 
-        // 5️⃣ 주문 아이템 생성
-//        List<AgencyOrderItemEntity> orderItems = new ArrayList<>();
-//        for (OrderItemRequestDTO itemDTO : items) {
-//            ProductEntity product = productRepository.findById(itemDTO.getPdKey())
-//                    .orElseThrow(() -> new RuntimeException("상품 없음: " + itemDTO.getPdKey()));
-//
-//            AgencyOrderItemEntity orderItem = new AgencyOrderItemEntity();
-//            orderItem.setOrder(order);
-//            orderItem.setProduct(product);
-//            orderItem.setPdKey(product.getPdKey());
-//            orderItem.setOiProducts(product.getPdProducts());
-//            orderItem.setOiPrice(itemDTO.getPdPrice());
-//            orderItem.setOiQuantity(itemDTO.getQuantity());
-//            orderItem.setOrDelivery(false);
-//            orderItem.setOiTotal(itemDTO.getPdPrice() * itemDTO.getQuantity());
-//
-//            orderItems.add(orderItem);
-//        }
-//        order.setItems(orderItems);
-//
-//        // 6️⃣ or_products, or_quantity, or_total, orPrice 계산
-//        String allProducts = orderItems.stream()
-//                .map(AgencyOrderItemEntity::getOiProducts)
-//                .collect(Collectors.joining(", "));
-//        int totalQuantity = orderItems.stream()
-//                .mapToInt(AgencyOrderItemEntity::getOiQuantity)
-//                .sum();
-//        int totalAmount = orderItems.stream()
-//                .mapToInt(AgencyOrderItemEntity::getOiTotal)
-//                .sum();
-//
-//        order.setOrProducts(allProducts);
-//        order.setOrQuantity(totalQuantity);
-//        order.setOrTotal(totalAmount);
-//        order.setOrPrice(totalAmount); // 추가: orPrice 저장
-//
-//        repo.save(order);
         return order;
     }
 

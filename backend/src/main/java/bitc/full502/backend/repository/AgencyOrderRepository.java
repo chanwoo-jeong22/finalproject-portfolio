@@ -66,5 +66,21 @@ public interface AgencyOrderRepository extends JpaRepository<AgencyOrderEntity, 
     int findMaxOrderNumber();
 
     List<AgencyOrderEntity> findByAgencyAgKey(int agKey);
+
+    // 대리점 본인 스케줄 조회 (ag_key 기준)
+@Query("""
+    select o
+    from AgencyOrderEntity o
+    join fetch o.agency a
+    where o.orReserve between :from and :to
+      and a.agKey = :agKey
+    order by o.orReserve asc
+""")
+List<AgencyOrderEntity> findScheduleByAgKey(
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("agKey") int agKey
+);
+
 }
 
