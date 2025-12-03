@@ -44,6 +44,9 @@ dependencies {
 
     // 이메일 발송용
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // sevlet
+    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 }
 
 tasks.named('test') {

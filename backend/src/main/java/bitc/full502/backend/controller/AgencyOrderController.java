@@ -55,12 +55,14 @@ public class AgencyOrderController {
 
     // 특정 대리점 주문 목록 조회 (상태 필터링 가능)
     @GetMapping
-    public ResponseEntity<List<AgencyOrderEntity>> getOrders(
+    public ResponseEntity<List<AgencyOrderDTO>> getOrders(
         @RequestParam int agencyId,
         @RequestParam(required = false) String status
     ) {
-        return ResponseEntity.ok(service.getOrders(agencyId, status));
+        List<AgencyOrderDTO> dtos = service.getOrders(agencyId, status);
+        return ResponseEntity.ok(dtos);
     }
+
 
     // 주문 삭제
     @DeleteMapping("/{id}")

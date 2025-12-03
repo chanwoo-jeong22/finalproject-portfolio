@@ -17,7 +17,7 @@ public class AgencyItemsController {
 
     private final AgencyItemsService agencyItemsService;
 
-    // 전체 대리점 조회 : 진경 수정
+    // 전체 대리점 조회
     @GetMapping
     public List<AgencyItemsDTO> getAllAgencies() {
         return agencyItemsService.getAllAgencies();

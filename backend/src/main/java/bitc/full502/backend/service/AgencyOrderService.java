@@ -387,13 +387,56 @@ public class AgencyOrderService {
     //============================================================
     // 8️⃣ 대리점 ID와 상태 기준 주문 조회
     //============================================================
-    public List<AgencyOrderEntity> getOrders(int agencyId, String status) {
-        if (status == null || status.isBlank()) {
-            return repo.findByAgency_AgKey(agencyId);
-        } else {
-            return repo.findByAgencyAndStatus(agencyId, status);
-        }
+    public List<AgencyOrderDTO> getOrders(int agencyId, String status) {
+    List<AgencyOrderEntity> orders;
+
+    if (status == null || status.isBlank()) {
+        orders = repo.findByAgency_AgKey(agencyId);
+    } else {
+        orders = repo.findByAgencyAndStatus(agencyId, status);
     }
+
+    // 바로 여기서 DTO 리스트로 변환
+    return orders.stream().map(e -> {
+        AgencyOrderDTO dto = new AgencyOrderDTO();
+        dto.setOrKey(e.getOrKey());
+        dto.setOrderNumber(e.getOrderNumber());
+        dto.setOrStatus(e.getOrStatus());
+        dto.setOrDate(e.getOrDate());
+        dto.setOrReserve(e.getOrReserve());
+        dto.setOrGu(e.getOrGu());
+        dto.setOrProducts(e.getOrProducts());
+        dto.setOrPrice(e.getOrPrice());
+        dto.setOrQuantity(e.getOrQuantity());
+        dto.setOrTotal(e.getOrTotal());
+
+        if (e.getAgency() != null) {
+            dto.setAgName(e.getAgency().getAgName());
+            dto.setAgAddress(e.getAgency().getAgAddress());
+            dto.setAgPhone(e.getAgency().getAgPhone());
+        }
+
+        dto.setDvName(e.getDelivery() != null ? e.getDelivery().getDvName() : e.getDvName());
+
+        if (e.getItems() != null) {
+            List<AgencyOrderDTO.Item> items = e.getItems().stream().map(item -> {
+                AgencyOrderDTO.Item dtoItem = new AgencyOrderDTO.Item();
+                dtoItem.setQuantity(item.getOiQuantity());
+                dtoItem.setPrice(item.getOiPrice());
+                dtoItem.setName(item.getOiProducts());
+                dtoItem.setPdKey(item.getPdKey());
+                dtoItem.setSku(item.getPdKey() != 0 ? String.valueOf(item.getPdKey()) : "N/A");
+                return dtoItem;
+            }).toList();
+            dto.setItems(items);
+        } else {
+            dto.setItems(List.of());
+        }
+
+        return dto;
+    }).toList();
+}
+
 
     @Transactional
     public void confirmOrders(List<Integer> orderIds) {
