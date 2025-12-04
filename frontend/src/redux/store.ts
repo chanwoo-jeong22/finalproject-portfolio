@@ -14,6 +14,10 @@ import logisticInboundReducer from './slices/head/logisticinbound-slice';
 import logisticReducer from "./slices/logistic/logistic-slice";
 import mypageReducer from "./slices/logistic/mypage-slice";
 import orderFulfillmentReducer from "./slices/logistic/orderfulfillment-slice";
+import orderdetailReducer from "./slices/logistic/orderdetail-slice";
+import logisticInventoryReducer from "./slices/logistic/logisticinventory-slice";
+
+
 
 
 
@@ -39,6 +43,10 @@ export const store = configureStore({
     logistic: logisticReducer,
     mypage: mypageReducer,
     orderfulfillment: orderFulfillmentReducer,
+    orderdetail: orderdetailReducer,
+    logisticInventory: logisticInventoryReducer,
+
+
 
   },
 });

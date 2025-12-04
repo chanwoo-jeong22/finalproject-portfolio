@@ -21,20 +21,26 @@ api.interceptors.request.use(
       return config;
     }
 
-    // localStorage 직접 참조 제거하고 Redux 상태만 사용
-let token = store.getState().auth.token;
+    // Redux store에서 토큰 가져오기 (string | undefined)
+    let token: string | null = store.getState().auth.token ?? null;
 
-if (!token) {
-  console.log("[api.ts] 요청 인터셉터 - 토큰 없음", config.url);
-} else {
-  console.log("[api.ts] 요청 인터셉터 - 토큰:", token, "URL:", config.url);
-  if (config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-}
+    // Redux에 토큰 없으면 localStorage에서 가져오기 (string | null)
+    if (!token) {
+      token = localStorage.getItem("token");
+      if (token) {
+        console.log("[api.ts] 요청 인터셉터 - localStorage에서 토큰 읽음", config.url);
+      } else {
+        console.log("[api.ts] 요청 인터셉터 - 토큰 없음", config.url);
+      }
+    } else {
+      console.log("[api.ts] 요청 인터셉터 - redux store 토큰 사용", config.url);
+    }
 
-console.log('config check....................', config);
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
+    console.log('config check....................', config);
 
     return config;
   },
@@ -47,22 +53,27 @@ console.log('config check....................', config);
  */
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    // 정상 응답은 그대로 리턴
     return response;
   },
   (error: AxiosError) => {
     if (error.response) {
       const status = error.response.status;
-      console.log(error)
+      const url = error.config?.url ?? "";
 
-      if (status === 401 || status === 403) {
-        console.warn("[api.ts] 응답 인터셉터 - 인증 오류 발생, 자동 로그아웃 처리");
+      console.log("[api.ts] 응답 에러 발생:", status, url);
 
-        // Redux store에 logout 액션 dispatch
+      // 인증 관련된 URL만 로그아웃 처리
+      const authUrls = ["/login", "/auth", "/refresh", "/auth/verify"];
+
+      const isAuthRequest = authUrls.some((path) => url.includes(path));
+
+      // 🔥 인증 요청에서만 자동 로그아웃
+      if (isAuthRequest && (status === 401 || status === 403)) {
+        console.warn("[api.ts] 인증 요청 실패 → 자동 로그아웃");
         store.dispatch(logout());
-
-        // localStorage token 등 데이터 클리어는 authSlice 내 logout 리듀서에서 처리
       }
+
+      // ❗ 일반 API는 실패해도 절대 로그아웃하지 않음
     }
 
     return Promise.reject(error);
@@ -85,6 +96,5 @@ export const noticeApi = {
   deleteNotices: (keys: number[]) =>
     api.delete(`/notices`, { data: keys }),
 };
-
 
 export default api;

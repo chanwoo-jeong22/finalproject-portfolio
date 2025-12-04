@@ -15,34 +15,6 @@ import {
   setIsOpen,
 } from "../../../redux/slices/logistic/orderfulfillment-slice";
 
-interface AgencyOrderForm {
-  orKey: string;
-  orStatus: string;
-  orProducts: string;
-  orQuantity: string | number;
-  orTotal: string | number;
-  orPrice: string | number;
-  orDate: string;
-  orReserve: string;
-  orGu: string;
-  agName: string;
-  pdProducts: string;
-  dvName: string;
-  pdNum: string;
-
-  orDateStart: string;
-  orDateEnd: string;
-  reserveStart: string;
-  reserveEnd: string;
-
-  orTotalStart: string;
-  orTotalEnd: string;
-  orQuantityStart: string;
-  orQuantityEnd: string;
-
-  orderNumber?: string;
-}
-
 interface OrderItem {
   orKey: string;
   orProducts: string;
@@ -83,7 +55,9 @@ export default function OrderfulFillment() {
         const authHeader = { headers: { Authorization: `Bearer ${token}` } };
 
         // 주문 목록
-        const ordersRes = await api.get("/agencyorder/full/mine", authHeader);
+        const ordersRes = await api.get("/agencyorder/full/mine", {
+          params: { status: "배송 준비중" }
+        });
         const rawOrders: OrderItem[] = ordersRes.data?.data ?? ordersRes.data ?? [];
         const list = rawOrders.map((o) => {
           const items = o.items ?? o.orderItems ?? [];
@@ -139,13 +113,20 @@ export default function OrderfulFillment() {
 
   // 팝업 열기
   const openOrderPopup = (row: OrderItem) => {
-    const url = `${window.location.origin}/order-detail/${row.orKey}`;
+    console.log("팝업 열기 - orKey:", row.orKey);
+    if (!row.orKey) {
+      alert("주문 키(orKey)가 없습니다!");
+      return;
+    }
+    const url = `${window.location.origin}/logistic-orderdetail/${row.orKey}`;
     window.open(
       url,
       "order-detail-popup",
       "width=1400,height=600,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes"
     );
   };
+
+
 
   // 유틸 함수
   const toDate = (v: string | null | undefined, asEnd = false): Date | null => {
@@ -242,7 +223,7 @@ export default function OrderfulFillment() {
     const isNumber = (f: keyof OrderItem | any) =>
       ["orTotal", "orQuantity", "orPrice", "orKey"].includes(f);
 
-    const isDate = (f: keyof OrderItem | any ) =>
+    const isDate = (f: keyof OrderItem | any) =>
       ["orDate", "orReserve"].includes(f);
 
     const cmp = (a: OrderItem, b: OrderItem) => {
@@ -306,211 +287,211 @@ export default function OrderfulFillment() {
     dispatch(setOrders(allOrders));
   };
 
-return (
-  <div className={styles.page}>
-    <h2 className={styles.title}>주문 출고</h2>
+  return (
+    <div className={styles.page}>
+      <h2 className={styles.title}>주문 출고</h2>
 
-    {/* ===== 검색 폼 ===== */}
-    <div className={styles.formScroll}>
-      <div className={styles.formInner}>
-        <div className={styles.form}>
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <label>주문일</label>
-              <div className={styles.inline}>
-                <input type="date" name="orDateStart" value={agencyorderForm.orDateStart} onChange={onAgencyOrderChange} />
-                <span className={styles.tilde}>~</span>
-                <input type="date" name="orDateEnd" value={agencyorderForm.orDateEnd} onChange={onAgencyOrderChange} />
-              </div>
-            </div>
-
-            {/* 도착예정일 */}
-            <div className={styles.field}>
-              <label>배송예정일</label>
-              <div className={styles.inline}>
-                <input type="date" name="reserveStart" value={agencyorderForm.reserveStart} onChange={onAgencyOrderChange} />
-                <span className={styles.tilde}>~</span>
-                <input type="date" name="reserveEnd" value={agencyorderForm.reserveEnd} onChange={onAgencyOrderChange} />
-              </div>
-            </div>
-            <div className={styles.field}>
-              <label>처리 상태</label>
-              <div className={styles.inline}>
-                <select name="orStatus" value={agencyorderForm.orStatus} onChange={onAgencyOrderChange}>
-                  <option value="">전체</option>
-                  <option value="주문대기">주문대기</option>
-                  <option value="배송중">배송중</option>
-                  <option value="배송완료">배송완료</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <label>대리점</label>
-              <div className={styles.inline}>
-                <input type="text" name="agName" value={agencyorderForm.agName} onChange={onAgencyOrderChange} placeholder="대리점" />
-              </div>
-            </div>
-            <div className={styles.field}>
-              <label>제품명</label>
-              <div className={styles.inline}>
-                <input name="orProducts" value={agencyorderForm.orProducts} onChange={onAgencyOrderChange} placeholder="제품명 일부" />
-              </div>
-            </div>
-            <div className={styles.field}>
-              <label>수량</label>
-              <div className={styles.inline}>
+      {/* ===== 검색 폼 ===== */}
+      <div className={styles.formScroll}>
+        <div className={styles.formInner}>
+          <div className={styles.form}>
+            <div className={styles.row}>
+              <div className={styles.field}>
+                <label>주문일</label>
                 <div className={styles.inline}>
-                  <input type="number" name="orQuantityStart" value={agencyorderForm.orQuantityStart} onChange={onAgencyOrderChange} />
+                  <input type="date" name="orDateStart" value={agencyorderForm.orDateStart} onChange={onAgencyOrderChange} />
                   <span className={styles.tilde}>~</span>
-                  <input type="number" name="orQuantityEnd" value={agencyorderForm.orQuantityEnd} onChange={onAgencyOrderChange} />
+                  <input type="date" name="orDateEnd" value={agencyorderForm.orDateEnd} onChange={onAgencyOrderChange} />
+                </div>
+              </div>
+
+              {/* 도착예정일 */}
+              <div className={styles.field}>
+                <label>배송예정일</label>
+                <div className={styles.inline}>
+                  <input type="date" name="reserveStart" value={agencyorderForm.reserveStart} onChange={onAgencyOrderChange} />
+                  <span className={styles.tilde}>~</span>
+                  <input type="date" name="reserveEnd" value={agencyorderForm.reserveEnd} onChange={onAgencyOrderChange} />
+                </div>
+              </div>
+              <div className={styles.field}>
+                <label>처리 상태</label>
+                <div className={styles.inline}>
+                  <select name="orStatus" value={agencyorderForm.orStatus} onChange={onAgencyOrderChange}>
+                    <option value="">전체</option>
+                    <option value="주문대기">주문대기</option>
+                    <option value="배송중">배송중</option>
+                    <option value="배송완료">배송완료</option>
+                  </select>
                 </div>
               </div>
             </div>
-            <div className={styles.field}>
-              <label>총액</label>
-              <div className={styles.inline}>
+
+            <div className={styles.row}>
+              <div className={styles.field}>
+                <label>대리점</label>
                 <div className={styles.inline}>
-                  <input type="number" name="orTotalStart" value={agencyorderForm.orTotalStart} onChange={onAgencyOrderChange} />
-                  <span className={styles.tilde}>~</span>
-                  <input type="number" name="orTotalEnd" value={agencyorderForm.orTotalEnd} onChange={onAgencyOrderChange} />
+                  <input type="text" name="agName" value={agencyorderForm.agName} onChange={onAgencyOrderChange} placeholder="대리점" />
                 </div>
               </div>
-            </div>
-            <div className={styles.field}>
-              <label>주문번호</label>
-              <div className={styles.inline}>
-                <input name="orderNumber" value={agencyorderForm.orderNumber} onChange={onAgencyOrderChange} />
+              <div className={styles.field}>
+                <label>제품명</label>
+                <div className={styles.inline}>
+                  <input name="orProducts" value={agencyorderForm.orProducts} onChange={onAgencyOrderChange} placeholder="제품명 일부" />
+                </div>
               </div>
-            </div>
-            <div className={styles.field} style={{ alignItems: "flex-end" }}>
-              <button className={styles.btnDark} onClick={Filter}>검색</button>
-              <button className={styles.btnDark} onClick={resetFilter} style={{ marginLeft: 8 }}>초기화</button>
+              <div className={styles.field}>
+                <label>수량</label>
+                <div className={styles.inline}>
+                  <div className={styles.inline}>
+                    <input type="number" name="orQuantityStart" value={agencyorderForm.orQuantityStart} onChange={onAgencyOrderChange} />
+                    <span className={styles.tilde}>~</span>
+                    <input type="number" name="orQuantityEnd" value={agencyorderForm.orQuantityEnd} onChange={onAgencyOrderChange} />
+                  </div>
+                </div>
+              </div>
+              <div className={styles.field}>
+                <label>총액</label>
+                <div className={styles.inline}>
+                  <div className={styles.inline}>
+                    <input type="number" name="orTotalStart" value={agencyorderForm.orTotalStart} onChange={onAgencyOrderChange} />
+                    <span className={styles.tilde}>~</span>
+                    <input type="number" name="orTotalEnd" value={agencyorderForm.orTotalEnd} onChange={onAgencyOrderChange} />
+                  </div>
+                </div>
+              </div>
+              <div className={styles.field}>
+                <label>주문번호</label>
+                <div className={styles.inline}>
+                  <input name="orderNumber" value={agencyorderForm.orderNumber} onChange={onAgencyOrderChange} />
+                </div>
+              </div>
+              <div className={styles.field} style={{ alignItems: "flex-end" }}>
+                <button className={styles.btnDark} onClick={Filter}>검색</button>
+                <button className={styles.btnDark} onClick={resetFilter} style={{ marginLeft: 8 }}>초기화</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    {/* ===== 결과 표 ===== */}
-    <div className={styles.tableWrap}>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th><div><p>주문번호</p>
-              <button onClick={() => handleSort("orderNumber")}>{getSortArrow("orderNumber")}</button>
-            </div></th>
-
-            <th><div><p>대리점</p>
-              <button onClick={() => handleSort("agName")}>{getSortArrow("agName")}</button>
-            </div></th>
-
-            <th><div><p>처리 상태</p>
-              <button onClick={() => handleSort("orStatus")}>{getSortArrow("orStatus")}</button>
-            </div></th>
-
-            <th><div><p>제품명</p>
-              <button onClick={() => handleSort("orProducts")}>{getSortArrow("orProducts")}</button>
-            </div></th>
-
-            <th><div><p>수량</p>
-              <button onClick={() => handleSort("orQuantity")}>{getSortArrow("orQuantity")}</button>
-            </div></th>
-
-            <th><div><p>총액</p>
-              <button onClick={() => handleSort("orTotal")}>{getSortArrow("orTotal")}</button>
-            </div></th>
-
-            <th><div><p>주문일</p>
-              <button onClick={() => handleSort("orDate")}>{getSortArrow("orDate")}</button>
-            </div></th>
-
-            <th><div><p>배송예정일</p>
-              <button onClick={() => handleSort("orReserve")}>{getSortArrow("orReserve")}</button>
-            </div></th>
-
-            <th><div><p>배송기사</p>
-              <button onClick={() => handleSort("dvName")}>{getSortArrow("dvName")}</button>
-            </div></th>
-
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length > 0 ? (
-            rows.map((r) => (
-              <tr key={r.orKey}>
-                <td>{r.orderNumber}</td>
-                <td>{r.agName}</td>
-                <td>{r.orStatus}</td>
-                <td className={styles.left}>{r.orProducts}</td>
-                <td>{r.orQuantity}</td>
-                <td className={styles.right}>{typeof r.orTotal === "number" ? r.orTotal.toLocaleString() : r.orTotal}</td>
-                <td>{r.orDate}</td>
-                <td>{r.orReserve}</td>
-                <td>{r.dvName}</td>
-                {/*상세보기로 수정 : 진경*/}
-                <td className={styles.viewCell}><button className={styles.viewBtn} onClick={() => openOrderPopup(r)}>상세보기</button></td>
-              </tr>
-            ))
-          ) : (
+      {/* ===== 결과 표 ===== */}
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead>
             <tr>
-              <td colSpan={11} className={styles.empty}>검색 결과가 없습니다.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+              <th><div><p>주문번호</p>
+                <button onClick={() => handleSort("orderNumber")}>{getSortArrow("orderNumber")}</button>
+              </div></th>
 
-    {/* ===== 주문서 모달 ===== */}
-    {isOpen && sheet && (
-      <div className={styles.modalBackdrop} onClick={() => setIsOpen(false)}>
-        <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-          <div className={styles.modalHeader}>
-            <div>
-              <div className={styles.modalTitle}>주문서 상세</div>
-              <div className={styles.modalMeta}>
-                <span>주문번호: {sheet.orderNumber}</span>
-                <span>주문일: {sheet.orDate}</span>
-                <span>대리점: {sheet.agName}</span>
-                <span>도착예정일: {sheet.orReserve}</span>
+              <th><div><p>대리점</p>
+                <button onClick={() => handleSort("agName")}>{getSortArrow("agName")}</button>
+              </div></th>
+
+              <th><div><p>처리 상태</p>
+                <button onClick={() => handleSort("orStatus")}>{getSortArrow("orStatus")}</button>
+              </div></th>
+
+              <th><div><p>제품명</p>
+                <button onClick={() => handleSort("orProducts")}>{getSortArrow("orProducts")}</button>
+              </div></th>
+
+              <th><div><p>수량</p>
+                <button onClick={() => handleSort("orQuantity")}>{getSortArrow("orQuantity")}</button>
+              </div></th>
+
+              <th><div><p>총액</p>
+                <button onClick={() => handleSort("orTotal")}>{getSortArrow("orTotal")}</button>
+              </div></th>
+
+              <th><div><p>주문일</p>
+                <button onClick={() => handleSort("orDate")}>{getSortArrow("orDate")}</button>
+              </div></th>
+
+              <th><div><p>배송예정일</p>
+                <button onClick={() => handleSort("orReserve")}>{getSortArrow("orReserve")}</button>
+              </div></th>
+
+              <th><div><p>배송기사</p>
+                <button onClick={() => handleSort("dvName")}>{getSortArrow("dvName")}</button>
+              </div></th>
+
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length > 0 ? (
+              rows.map((r) => (
+                <tr key={r.orKey}>
+                  <td>{r.orderNumber}</td>
+                  <td>{r.agName}</td>
+                  <td>{r.orStatus}</td>
+                  <td className={styles.left}>{r.orProducts}</td>
+                  <td>{r.orQuantity}</td>
+                  <td className={styles.right}>{typeof r.orPrice === "number" ? r.orPrice.toLocaleString() : r.orPrice}</td>
+                  <td>{r.orDate}</td>
+                  <td>{r.orReserve}</td>
+                  <td>{r.dvName}</td>
+                  {/*상세보기로 수정 : 진경*/}
+                  <td className={styles.viewCell}><button className={styles.viewBtn} onClick={() => openOrderPopup(r)}>상세보기</button></td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={11} className={styles.empty}>검색 결과가 없습니다.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ===== 주문서 모달 ===== */}
+      {isOpen && sheet && (
+        <div className={styles.modalBackdrop} onClick={() => setIsOpen(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div>
+                <div className={styles.modalTitle}>주문서 상세</div>
+                <div className={styles.modalMeta}>
+                  <span>주문번호: {sheet.orderNumber}</span>
+                  <span>주문일: {sheet.orDate}</span>
+                  <span>대리점: {sheet.agName}</span>
+                  <span>도착예정일: {sheet.orReserve}</span>
+                </div>
               </div>
+              <button className={styles.modalClose} onClick={() => setIsOpen(false)}>닫기</button>
             </div>
-            <button className={styles.modalClose} onClick={() => setIsOpen(false)}>닫기</button>
-          </div>
-          <div className={styles.modalBody}>
-            <table className={styles.modalTable}>
-              <thead>
-                <tr>
-                  <th>품번</th>
-                  <th>제품명</th>
-                  <th>지역(구)</th>
-                  <th>수량</th>
-                  <th>단가</th>
-                  <th>총액</th>
-                  <th>상태</th>
-                  <th>배송기사</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{sheet.orderNumber}</td>
-                  <td>{sheet.orProducts}</td>
-                  <td>{sheet.orGu}</td>
-                  <td>{sheet.orQuantity}</td>
-                  <td className={styles.right}>{typeof sheet.orPrice === "number" ? sheet.orPrice.toLocaleString() : sheet.orPrice}</td>
-                  <td className={styles.right}>{typeof sheet.orTotal === "number" ? sheet.orTotal.toLocaleString() : sheet.orTotal}</td>
-                  <td>{sheet.orStatus}</td>
-                  <td>{sheet.dvName}</td>
-                </tr>
-              </tbody>
-            </table>
+            <div className={styles.modalBody}>
+              <table className={styles.modalTable}>
+                <thead>
+                  <tr>
+                    <th>품번</th>
+                    <th>제품명</th>
+                    <th>지역(구)</th>
+                    <th>수량</th>
+                    <th>단가</th>
+                    <th>총액</th>
+                    <th>상태</th>
+                    <th>배송기사</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{sheet.orderNumber}</td>
+                    <td>{sheet.orProducts}</td>
+                    <td>{sheet.orGu}</td>
+                    <td>{sheet.orQuantity}</td>
+                    <td className={styles.right}>{typeof sheet.orPrice === "number" ? sheet.orPrice.toLocaleString() : sheet.orPrice}</td>
+                    <td className={styles.right}>{typeof sheet.orTotal === "number" ? sheet.orTotal.toLocaleString() : sheet.orTotal}</td>
+                    <td>{sheet.orStatus}</td>
+                    <td>{sheet.dvName}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
-    )}
-  </div>
-);
+      )}
+    </div>
+  );
 }

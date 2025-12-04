@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../../api/api";  // 공통 axios 인스턴스 import
 
 interface UserInfo {
-  
+
   agAddress: string;
   agCeo: string;
   agCode: number;
@@ -132,7 +132,7 @@ const authSlice = createSlice({
       state.hdId = null;
       state.agId = null;
       state.lgId = null;
-      state.userInfo = {};
+      state.userInfo = {} as UserInfo;
 
       localStorage.clear();
     },
@@ -172,7 +172,7 @@ const authSlice = createSlice({
       state.hdId = null;
       state.agId = null;
       state.lgId = null;
-      state.userInfo = {};
+      state.userInfo = {} as UserInfo;
       localStorage.clear();
 
       alert("인증이 만료되었습니다. 다시 로그인해주세요.");
