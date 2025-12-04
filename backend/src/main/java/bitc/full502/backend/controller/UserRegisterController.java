@@ -4,6 +4,7 @@ import bitc.full502.backend.dto.UserRegisterDTO;
 import bitc.full502.backend.repository.AgencyRepository;
 import bitc.full502.backend.repository.LogisticRepository;
 import bitc.full502.backend.service.UserRegisterService;
+import bitc.full502.backend.service.HeadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,19 +23,22 @@ public class UserRegisterController {
   private final UserRegisterService service;
   private final AgencyRepository agencyRepo;
   private final LogisticRepository logisticRepo;
+  private final HeadService headService;  // 추가
 
   // 회원가입
   @PostMapping("/register")
   public String register(@RequestBody UserRegisterDTO dto) {
-    // 아이디 중복 체크
-    boolean idExists = agencyRepo.existsByAgId(dto.getLoginId())
+    // 아이디 중복 체크 (본사 + 대리점 + 물류)
+    boolean idExists = headService.existsById(dto.getLoginId())
+        || agencyRepo.existsByAgId(dto.getLoginId())
         || logisticRepo.existsByLgId(dto.getLoginId());
     if (idExists) {
       return "duplicate-id";
     }
 
-    // 이메일 중복 체크
-    boolean emailExists = agencyRepo.existsByAgEmail(dto.getEmail())
+    // 이메일 중복 체크 (본사 + 대리점 + 물류)
+    boolean emailExists = headService.existsByEmail(dto.getEmail())
+        || agencyRepo.existsByAgEmail(dto.getEmail())
         || logisticRepo.existsByLgEmail(dto.getEmail());
     if (emailExists) {
       return "duplicate-email";
@@ -50,7 +54,9 @@ public class UserRegisterController {
     if (loginId == null || loginId.trim().isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "아이디를 입력해주세요.");
     }
-    return agencyRepo.existsByAgId(loginId) || logisticRepo.existsByLgId(loginId);
+    return headService.existsById(loginId)  // 본사 추가
+        || agencyRepo.existsByAgId(loginId)
+        || logisticRepo.existsByLgId(loginId);
   }
 
   // 이메일 중복 확인
@@ -60,10 +66,12 @@ public class UserRegisterController {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이메일을 입력해주세요.");
     }
 
-    boolean exists = agencyRepo.existsByAgEmail(email) || logisticRepo.existsByLgEmail(email);
+    boolean exists = headService.existsByEmail(email)  // 본사 추가
+        || agencyRepo.existsByAgEmail(email)
+        || logisticRepo.existsByLgEmail(email);
 
     return Map.of(
-        "valid", !exists,   // 중복 없으면 true
+        "valid", !exists,
         "message", exists ? "이미 등록된 이메일입니다." : "사용 가능한 이메일입니다."
     );
   }
