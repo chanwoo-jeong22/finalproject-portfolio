@@ -20,24 +20,7 @@ public class AgencyOrderItemController {
 
     @GetMapping("/items/{orKey}")
     public List<AgencyOrderItemDTO> getItems(@PathVariable int orKey) {
-        return itemrepo.getItemsByOrderKey(orKey);  // <-- 여기 수정
+        return itemrepo.getItemsByOrderKey(orKey); 
     }
-
-
-
-//    @GetMapping("byOrder/{orderKey}")
-//    public List<Map<String, Object>> findByOrder(@PathVariable("orderKey") int orderKey){
-//        return itemrepo.findByOrderKey(orderKey).stream().map(e -> {
-//            Map<String, Object> m = new HashMap<>();
-//            m.put("oiKey", e.getOiKey());
-//            m.put("orderKey", e.getOrder().getOrKey());
-//            m.put("pdKey", e.getPdKey());
-//            m.put("oiProducts", e.getOiProducts());
-//            m.put("oiPrice", e.getOiPrice());
-//            m.put("oiQuantity", e.getOiQuantity());
-//            m.put("oiTotal", e.getOiTotal());
-//            return m;
-//        }).toList();
-//    }
 
 }

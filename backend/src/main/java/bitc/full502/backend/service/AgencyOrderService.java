@@ -562,30 +562,51 @@ private List<AgencyOrderDTO> toDTOList(List<AgencyOrderEntity> entities) {
         .toList();
 }
 
-    public List<AgencyOrderDTO> findMineByLoginId(String loginId, boolean isHQ) {
-        if (isHQ) return findAll();
+    public List<AgencyOrderDTO> findMineByLoginId(String loginId, boolean isHQ, String status) {
 
-        return repo.findForLogisticByLoginId(loginId)
-                .stream()
-                .map(e -> {
-                    AgencyOrderDTO dto = new AgencyOrderDTO();
-                    dto.setOrKey(e.getOrKey());
-                    dto.setOrderNumber(e.getOrderNumber());
-                    dto.setOrStatus(e.getOrStatus());
-                    dto.setOrDate(e.getOrDate());
-                    dto.setOrReserve(e.getOrReserve());
-                    dto.setOrGu(e.getOrGu());
-                    dto.setOrProducts(e.getOrProducts());
-                    dto.setOrPrice(e.getOrPrice());
-                    dto.setOrQuantity(e.getOrQuantity());
-                    dto.setOrTotal(e.getOrTotal());
-                    if (e.getAgency() != null) dto.setAgName(e.getAgency().getAgName());
-                    if (e.getDelivery() != null) dto.setDvName(e.getDelivery().getDvName());
-                    if (e.getProduct() != null) dto.setPdProducts(e.getProduct().getPdProducts());
-                    return dto;
-                })
-                .collect(Collectors.toList());
+    List<AgencyOrderEntity> list;
+
+    if (isHQ) {
+        // 본사면 전체 조회 → status 있으면 필터링 적용
+        if (status == null || status.isBlank()) {
+            list = repo.findAll();
+        } else {
+            list = repo.findByOrStatus(status);
+        }
     }
+    else {
+        // 대리점 또는 물류 담당자
+        if (status == null || status.isBlank()) {
+            list = repo.findForLogisticByLoginId(loginId);
+        } else {
+            list = repo.findForLogisticByLoginIdAndStatus(loginId, status);
+        }
+    }
+
+    return list.stream()
+            .map(e -> {
+                AgencyOrderDTO dto = new AgencyOrderDTO();
+                dto.setOrKey(e.getOrKey());
+                dto.setOrderNumber(e.getOrderNumber());
+                dto.setOrStatus(e.getOrStatus());
+                dto.setOrDate(e.getOrDate());
+                dto.setOrReserve(e.getOrReserve());
+                dto.setOrGu(e.getOrGu());
+                dto.setOrProducts(e.getOrProducts());
+                dto.setOrPrice(e.getOrPrice());
+                dto.setOrQuantity(e.getOrQuantity());
+                dto.setOrTotal(e.getOrTotal());
+
+                if (e.getAgency() != null) dto.setAgName(e.getAgency().getAgName());
+                if (e.getDelivery() != null) dto.setDvName(e.getDelivery().getDvName());
+                if (e.getProduct() != null) dto.setPdProducts(e.getProduct().getPdProducts());
+
+                return dto;
+            })
+            .collect(Collectors.toList());
+}
+
+
 
     public String resolveGuPrefixByLoginId(String loginId) {
         if (loginId == null) return null;

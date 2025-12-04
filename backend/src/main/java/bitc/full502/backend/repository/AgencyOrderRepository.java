@@ -41,8 +41,8 @@ public interface AgencyOrderRepository extends JpaRepository<AgencyOrderEntity, 
     """)
     List<AgencyOrderEntity> findSchedule(@Param("from") LocalDate from,
                                          @Param("to") LocalDate to,
-                                        @Param("gu")   String gu);
-                                         
+                                         @Param("gu") String gu);
+
 
     // 6️⃣ 최대 orderNumber 조회 (패턴 기반)
     @Query("SELECT MAX(a.orderNumber) FROM AgencyOrderEntity a WHERE a.orderNumber LIKE :pattern")
@@ -68,7 +68,7 @@ public interface AgencyOrderRepository extends JpaRepository<AgencyOrderEntity, 
     List<AgencyOrderEntity> findByAgencyAgKey(int agKey);
 
     // 대리점 본인 스케줄 조회 (ag_key 기준)
-@Query("""
+    @Query("""
     select o
     from AgencyOrderEntity o
     join fetch o.agency a
@@ -76,11 +76,28 @@ public interface AgencyOrderRepository extends JpaRepository<AgencyOrderEntity, 
       and a.agKey = :agKey
     order by o.orReserve asc
 """)
-List<AgencyOrderEntity> findScheduleByAgKey(
-        @Param("from") LocalDate from,
-        @Param("to") LocalDate to,
-        @Param("agKey") int agKey
-);
+    List<AgencyOrderEntity> findScheduleByAgKey(
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to,
+            @Param("agKey") int agKey
+    );
+
+
+    // ============================================================
+    //  ⭐⭐⭐ [추가됨] 물류 로그인 사용자 + 상태 조건으로 주문 가져오기
+    // ============================================================
+    @Query("""
+        SELECT ao
+        FROM AgencyOrderEntity ao
+        JOIN LogisticEntity lg
+          ON SUBSTRING(ao.orGu,1,2) = SUBSTRING(lg.lgName,1,2)
+        WHERE lg.lgId = :loginId
+          AND ao.orStatus = :status
+        ORDER BY ao.orDate DESC, ao.orKey DESC
+    """)
+    List<AgencyOrderEntity> findForLogisticByLoginIdAndStatus(
+            @Param("loginId") String loginId,
+            @Param("status") String status
+    );
 
 }
-

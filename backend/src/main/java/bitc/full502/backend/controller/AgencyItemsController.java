@@ -24,7 +24,7 @@ public class AgencyItemsController {
     }
 
     // 본사 전체 제품 조회
-    @GetMapping("/products") // /api/agency-items/products
+    @GetMapping("/products")
     public List<AgencyItemsListDTO> getAllHeadProducts() {
         return agencyItemsService.getAllHeadProducts();
     }
