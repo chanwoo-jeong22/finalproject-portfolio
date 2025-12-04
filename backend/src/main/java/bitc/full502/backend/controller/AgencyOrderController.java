@@ -11,6 +11,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,6 +27,8 @@ public class AgencyOrderController {
     private final AgencyOrderItemService itemService;
     private final AgencyOrderRepository orderRepository;
     private final OrderService orderService;
+
+    private static final Logger logger = LoggerFactory.getLogger(AgencyOrderController.class);
 
     //============================================================
     // 1️⃣ 물류팀 테스트용 API (충돌 없는 경우 유지)

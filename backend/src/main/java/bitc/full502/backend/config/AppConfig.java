@@ -91,6 +91,9 @@ public class AppConfig implements WebMvcConfigurer {
                 // 물류 업체 권한 필요 경로
                 .requestMatchers("/api/logistic/**").hasRole("LOGISTIC")
 
+                // 디테일 페이지 때문에 추가
+                 .requestMatchers("/api/agencyorder/**").hasAnyRole("AGENCY", "LOGISTIC", "HEAD")
+
                 // 나머지 요청은 인증만 되어 있으면 접근 가능
                 .anyRequest().authenticated()
             )
