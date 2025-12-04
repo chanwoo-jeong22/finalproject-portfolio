@@ -11,26 +11,23 @@ const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  // Redux 상태 (비밀번호 재설정 요청 상태, 에러, 결과)
   const { resetStatus, resetError, result } = useAppSelector((state) => state.password);
 
-  // 비밀번호 입력 상태 관리
   const [formData, setFormData] = useState<{ userPw: string; confirmUserPw: string }>({
     userPw: "",
     confirmUserPw: "",
   });
 
-  // 비밀번호 일치 여부 상태 (true / false / null)
   const [pwMatch, setPwMatch] = useState<boolean | null>(null);
 
-  // 컴포넌트 언마운트 시 redux 상태 초기화
+  // 컴포넌트 언마운트 시 상태 초기화
   useEffect(() => {
     return () => {
       dispatch(resetPasswordStatus());
     };
   }, [dispatch]);
 
-  // 비밀번호 일치 여부 검사
+  // 비밀번호 일치 여부 체크
   useEffect(() => {
     if (formData.confirmUserPw === "") {
       setPwMatch(null);
@@ -41,13 +38,11 @@ const ResetPassword: React.FC = () => {
     }
   }, [formData.userPw, formData.confirmUserPw]);
 
-  // 입력값 변경 핸들러
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 폼 제출 핸들러
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -64,15 +59,15 @@ const ResetPassword: React.FC = () => {
     dispatch(resetPassword({ token, newPassword: formData.userPw }));
   };
 
-  // 비밀번호 재설정 성공 시 로그인 페이지로 이동
+  // resetPassword 완료 시 처리
   useEffect(() => {
-    if (result === "success") {
+    if (resetStatus === "succeeded" && result === "success") {
       alert("비밀번호가 변경되었습니다. 다시 로그인해주세요.");
       navigate("/");
     }
-  }, [result, navigate]);
+  }, [resetStatus, result, navigate]);
 
-  // 에러 발생 시 alert 처리
+  // 실패 시 에러 메시지 alert 띄우기
   useEffect(() => {
     if (resetStatus === "failed" && resetError) {
       alert(`비밀번호 변경에 실패했습니다: ${resetError}`);

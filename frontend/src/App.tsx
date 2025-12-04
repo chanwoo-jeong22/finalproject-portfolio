@@ -1,4 +1,4 @@
-import React, { useEffect,  useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Redux 관련
@@ -78,6 +78,8 @@ function AppWithAuth() {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/find-password" element={<FindPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/resetPw" element={<ResetPassword />} />
+
         <Route path="/agency/mypage" element={<MyPageAgency />} />
         <Route path="/logistic/mypage" element={<MyPageLogistic />} />
 

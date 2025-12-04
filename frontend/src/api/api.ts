@@ -23,6 +23,7 @@ api.interceptors.request.use(
       "/users/check-id",
       "/users/check-email",
       "/auth/findPw",
+      "/auth/resetPw",
 
     ];
 

@@ -9,6 +9,8 @@ import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
 
 // password slice의 findPassword thunk와 상태 리셋 액션 임포트
 import { findPassword, resetStatus } from "../../../redux/slices/auth/password-slice";
+import { useNavigate } from "react-router-dom";
+
 
 /**
  * FindPassword 컴포넌트
@@ -18,6 +20,7 @@ import { findPassword, resetStatus } from "../../../redux/slices/auth/password-s
 const FindPassword: React.FC = () => {
   // Redux dispatch 함수 (타입 보장)
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   // Redux 상태에서 password slice 관련 상태 가져오기
   const { status, error, result } = useAppSelector((state) => state.password);
@@ -67,7 +70,74 @@ const FindPassword: React.FC = () => {
       </div>
 
       <div className={styles.find}>
-        <h2 className={styles.title}>비밀번호 찾기</h2>
+        <div
+          style={{
+            position: "relative",
+            marginBottom: "20px",
+            height: "32px",
+          }}
+        >
+          {/* 홈 아이콘 - 왼쪽에 고정 */}
+          <span
+            onClick={() => navigate("/")}
+            style={{
+              cursor: "pointer",
+              position: "absolute",
+              left: 0,
+              top: "50%",
+              transform: "translateY(-50%)",
+              userSelect: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "24px",
+              height: "24px",
+              color: "#000", // 검정색
+            }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                navigate("/");
+              }
+            }}
+            aria-label="홈으로 이동"
+          >
+            {/* 좀 더 깔끔한 집 모양 SVG */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M3 9.5L12 3l9 6.5v11a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1v-11z" />
+            </svg>
+          </span>
+
+
+          {/* 비밀번호 찾기 텍스트 - 컨테이너 중앙에 */}
+          <h2
+            className={styles.title}
+            style={{
+              margin: 0,
+              lineHeight: "32px",
+              textAlign: "center",
+              fontWeight: "bold",
+            }}
+          >
+            비밀번호 찾기
+          </h2>
+        </div>
+
+
+
 
         <form onSubmit={handleSubmit}>
           <div className={styles.find_contents}>

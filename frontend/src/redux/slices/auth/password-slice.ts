@@ -57,7 +57,7 @@ export const findPassword = createAsyncThunk<
  * - 실패 시 에러 메시지 반환
  */
 export const resetPassword = createAsyncThunk<
-    void,
+    { success: boolean; message: string },  // 서버 응답 타입에 맞춤
     { token: string; newPassword: string },
     { rejectValue: string }
 >(
@@ -65,7 +65,8 @@ export const resetPassword = createAsyncThunk<
     async ({ token, newPassword }, { rejectWithValue }) => {
         if (!token) return rejectWithValue("유효하지 않은 토큰입니다.");
         try {
-            await api.post("/auth/resetPw", { token, newPassword });
+            const response = await api.post("/auth/resetPw", { token, newPassword });
+            return response.data; // { success, message } 반환
         } catch (error: any) {
             return rejectWithValue(
                 error.response?.data?.message || "비밀번호 재설정 실패"
@@ -74,21 +75,15 @@ export const resetPassword = createAsyncThunk<
     }
 );
 
+
 const passwordSlice = createSlice({
     name: "password",
     initialState,
     reducers: {
-        /**
-         * 상태 초기화 액션
-         * - 컴포넌트 언마운트 시 호출하여 상태 초기화에 사용
-         * - 비밀번호 찾기 및 재설정 관련 상태 모두 초기화
-         */
         resetStatus(state) {
-            // 비밀번호 찾기 상태 초기화
             state.status = "idle";
             state.error = null;
             state.result = null;
-            // 비밀번호 재설정 상태 초기화
             state.resetStatus = "idle";
             state.resetError = null;
         },
@@ -117,21 +112,25 @@ const passwordSlice = createSlice({
                 state.resetStatus = "loading";
                 state.resetError = null;
             })
-            .addCase(resetPassword.fulfilled, (state) => {
+            .addCase(resetPassword.fulfilled, (state, action) => {
                 state.resetStatus = "succeeded";
                 state.resetError = null;
-                // 재설정 성공 시 결과도 success로 변경해둘 수 있음
-                state.result = "success";
+
+                if (action.payload.success) {
+                    state.result = "success";
+                } else {
+                    state.result = "fail";
+                    state.resetError = action.payload.message || "알 수 없는 오류";
+                }
             })
             .addCase(resetPassword.rejected, (state, action) => {
                 state.resetStatus = "failed";
                 state.resetError = action.payload || "알 수 없는 오류";
-                // 실패 시 결과도 fail로 변경
                 state.result = "fail";
             });
     },
 });
 
-// 액션과 리듀서 내보내기
 export const { resetStatus } = passwordSlice.actions;
 export default passwordSlice.reducer;
+
