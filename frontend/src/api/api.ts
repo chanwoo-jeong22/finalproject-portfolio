@@ -7,28 +7,41 @@ import { logout } from "../redux/slices/auth/auth-slice";
  */
 const api = axios.create({
   baseURL: "http://localhost:8080/api",
-  // withCredentials: true,
 });
 
 /**
  * 요청 인터셉터
- * - 로그인 요청(/login)에는 Authorization 헤더를 붙이지 않음
- * - 그 외 요청은 Redux state나 localStorage에서 토큰을 읽어 Authorization 헤더에 붙임
+ * - 로그인, 회원가입, 중복체크 등은 Authorization 헤더를 제외
+ * - 그 외 요청은 Redux 또는 localStorage에서 토큰을 가져와 Authorization에 추가
  */
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    if (config.url === "/login") {
+    // ✔ 토큰이 필요 없는 공개 API 목록
+    const publicPaths = [
+      "/login",
+      "/auth/signup",
+      "/users/check-id",
+      "/users/check-email",
+      "/auth/findPw",
+
+    ];
+
+    // 🔥 공개 API라면 Authorization 제거
+    if (publicPaths.some((p) => config.url?.includes(p))) {
+      if (config.headers) {
+        delete config.headers.Authorization;
+      }
+      console.log("[PUBLIC API] 토큰 제외:", config.url);
       return config;
     }
 
-    // Redux store에서 토큰 가져오기 (string | undefined)
+    // ✔ 기존 토큰 로직 그대로 유지 (여기부터 기존 코드)
     let token: string | null = store.getState().auth.token ?? null;
 
-    // Redux에 토큰 없으면 localStorage에서 가져오기 (string | null)
     if (!token) {
       token = localStorage.getItem("token");
       if (token) {
-        console.log("[api.ts] 요청 인터셉터 - localStorage에서 토큰 읽음", config.url);
+        console.log("[api.ts] 요청 인터셉터 - localStorage 토큰 사용", config.url);
       } else {
         console.log("[api.ts] 요청 인터셉터 - 토큰 없음", config.url);
       }
@@ -40,7 +53,7 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    console.log('config check....................', config);
+    console.log("config check....................", config);
 
     return config;
   },
@@ -49,7 +62,7 @@ api.interceptors.request.use(
 
 /**
  * 응답 인터셉터
- * - 401 Unauthorized, 403 Forbidden 에러 시 자동 로그아웃 처리
+ * - 401 / 403 발생 시 자동 로그아웃 처리
  */
 api.interceptors.response.use(
   (response: AxiosResponse) => {
@@ -58,28 +71,16 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     if (error.response) {
       const status = error.response.status;
-      const url = error.config?.url ?? "";
 
-      console.log("[api.ts] 응답 에러 발생:", status, url);
-
-      // 인증 관련된 URL만 로그아웃 처리
-      const authUrls = ["/login", "/auth", "/refresh", "/auth/verify"];
-
-      const isAuthRequest = authUrls.some((path) => url.includes(path));
-
-      // 🔥 인증 요청에서만 자동 로그아웃
-      if (isAuthRequest && (status === 401 || status === 403)) {
-        console.warn("[api.ts] 인증 요청 실패 → 자동 로그아웃");
+      if (status === 401 || status === 403) {
+        console.warn("[api.ts] 응답 인터셉터 - 인증 오류, 자동 로그아웃");
         store.dispatch(logout());
       }
-
-      // ❗ 일반 API는 실패해도 절대 로그아웃하지 않음
     }
 
     return Promise.reject(error);
   }
 );
-
 
 export interface NoticeUpdatePayload {
   ntCode: number;

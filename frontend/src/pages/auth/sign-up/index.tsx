@@ -2,9 +2,9 @@ import styles from "../../../styles/login/login.module.css";
 import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import user from '../../../assets/img/user.png';
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../../../redux/hooks";  
+import { useAppDispatch } from "../../../redux/hooks";
 import { signUp as signUpThunk } from "../../../redux/slices/auth/auth-slice";
-import api from "../../../api/api"; // axios 인스턴스 import
+import api from "../../../api/api";
 
 interface FormData {
     position: string;
@@ -59,8 +59,8 @@ function SignUp() {
             return;
         }
         try {
-            const res = await api.get<boolean>(`/users/check-id?loginId=${id}`);
-            // API가 true면 중복, false면 사용 가능이라고 가정
+            const res = await api.get(`/users/check-id?loginId=${id}`);
+            console.log("중복 체크 응답:", res.data);  // 이걸로 응답값 확인
             setUserIdValid(res.data ? "duplicate" : "valid");
         } catch (error) {
             setUserIdValid("error");
@@ -219,8 +219,21 @@ function SignUp() {
 
                             <div className={styles.contents}>
                                 <p>이메일</p>
-                                <input type="email" name="email" value={formData.email} onChange={handleChange} onBlur={checkEmail} />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                />
+                                <div className={styles.c_bot}>
+                                    <div className={styles.inco}>
+                                        {emailValid === false && <span className={styles.red}>이미 등록된 이메일입니다.</span>}
+                                        {emailValid === true && <span className={styles.green}>사용 가능한 이메일입니다.</span>}
+                                    </div>
+                                    <button type="button" onClick={checkEmail}>중복확인</button>
+                                </div>
                             </div>
+
                         </div>
                     </div>
 
