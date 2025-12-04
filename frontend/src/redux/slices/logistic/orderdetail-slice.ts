@@ -74,9 +74,9 @@ export const fetchOrderDetail = createAsyncThunk(
     try {
       // 1) 주문 헤더 조회
       const tryUrls = [
-        `/agencyorder/${orKey}`,
+        // `/agencyorder/${orKey}`,
         `/agencyorder/full/${orKey}`,
-        `/agencyorder?id=${orKey}`,
+        // `/agencyorder?id=${orKey}`,
       ];
 
       let headerData: any = null;

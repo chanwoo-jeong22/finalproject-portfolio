@@ -48,7 +48,7 @@ const initialState: OrderCheckState = {
     orderNo: "",
     productName: "",
     agency: "",
-    status: "",
+    status: "승인 대기중",
     orderDateFrom: "",
     orderDateTo: "",
     deliveryDateFrom: "",
@@ -69,8 +69,10 @@ export const fetchOrders = createAsyncThunk<
   { state: { ordercheck: OrderCheckState } }
 >("ordercheck/fetchOrders", async (_, thunkAPI) => {
   const state = thunkAPI.getState().ordercheck;
+  console.log(state)
   try {
     const response = await api.get("/agencyorder/search", { params: state.searchParams });
+    console.log(response)
     // 서버에서 받은 데이터 가공
     const mappedOrders: Order[] = response.data.map((order: any) => ({
       ...order,

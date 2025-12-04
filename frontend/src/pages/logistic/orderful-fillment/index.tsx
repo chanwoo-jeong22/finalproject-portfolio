@@ -118,13 +118,15 @@ export default function OrderfulFillment() {
       alert("주문 키(orKey)가 없습니다!");
       return;
     }
-    const url = `${window.location.origin}/logistic-orderdetail/${row.orKey}`;
+    const token = localStorage.getItem("token");
+    const url = `${window.location.origin}/logistic-orderdetail/${row.orKey}?token=${encodeURIComponent(token ?? "")}`;
     window.open(
       url,
       "order-detail-popup",
       "width=1400,height=600,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes"
     );
   };
+
 
 
 

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
 import {
   fetchOrderDetail,
@@ -9,8 +9,17 @@ import {
 import styles from "../../../styles/logistic/logistic-order-detail.module.css";
 
 export default function LogisticOrderDetail() {
+  const location = useLocation();
   const { orKey } = useParams<{ orKey: string }>();
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
+    if (token) {
+      localStorage.setItem("token", token);
+    }
+  }, [location.search]);
 
   const {
     header,
@@ -39,7 +48,7 @@ export default function LogisticOrderDetail() {
 
   // 상태 변경 + 기사 저장
   const handleStartDelivery = () => {
-  if (!header) return; 
+    if (!header) return;
 
 
     if (!driverName) {

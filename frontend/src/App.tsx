@@ -57,6 +57,8 @@ function AppWithAuth() {
   const agId = useSelector((state: RootState) => state.auth.agId);
   const lgId = useSelector((state: RootState) => state.auth.lgId);
 
+  
+
   useEffect(() => {
     if (token && hdId) {
       dispatch(reloadUserInfo({ token, userId: hdId, role: "head_office" }));

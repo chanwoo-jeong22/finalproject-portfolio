@@ -13,6 +13,10 @@ interface UserInfo {
   agPhone: string;
   agPw: string;
   agZip: string;
+
+  // 물류
+  lgName?: string;
+  lgCeo?: string;
 }
 
 interface AuthState {
