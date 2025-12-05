@@ -52,12 +52,15 @@ export default function OrderfulFillment() {
 
     const fetchData = async () => {
       try {
-        const authHeader = { headers: { Authorization: `Bearer ${token}` } };
-
-        // 주문 목록
         const ordersRes = await api.get("/agencyorder/full/mine", {
-          params: { status: "배송 준비중" }
+          params: {
+            status: ["배송 준비중", "배송중", "배송완료"],
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
+
         const rawOrders: OrderItem[] = ordersRes.data?.data ?? ordersRes.data ?? [];
         const list = rawOrders.map((o) => {
           const items = o.items ?? o.orderItems ?? [];
@@ -78,17 +81,6 @@ export default function OrderfulFillment() {
 
         dispatch(setAllOrders(list));
         dispatch(setOrders(list));
-
-        // 제품, 대리점, 배송지 데이터
-        const [productsRes, agenciesRes, deliveriesRes] = await Promise.all([
-          api.get("/products"),
-          api.get("/agency-items"),
-          api.get("/deliveries"),
-        ]);
-
-        dispatch(setProducts(productsRes.data ?? []));
-        dispatch(setAgencies(agenciesRes.data ?? []));
-        dispatch(setDeliveries(deliveriesRes.data ?? []));
       } catch (err) {
         console.error("OrderfulFillment fetch error:", err);
       }
@@ -96,6 +88,7 @@ export default function OrderfulFillment() {
 
     fetchData();
   }, [token, dispatch]);
+
 
   // input, select 등 변경 핸들러
   const onAgencyOrderChange = (
