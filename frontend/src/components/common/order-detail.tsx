@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../redux/hooks";  // redux hooks (useDispatch, useSelector 래핑)
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
   fetchOrderItems,
   fetchOrderInfo,
@@ -9,14 +9,22 @@ import {
 } from "../../redux/slices/common/orderdetail-slice";
 import styles from "../../styles/logistic/order-detail.module.css";
 
+type OrderItem = {
+  oiKey: string;
+  pdNum: string;
+  pdCategory: string;
+  oiProducts: string;
+  oiQuantity: number;
+  oiPrice: number;
+  oiTotal: number;
+};
+
 export default function OrderDetail() {
   const { orKey } = useParams<{ orKey: string }>();
   const dispatch = useAppDispatch();
 
-  // 예: auth에서 token을 가져오는 부분 (본인 프로젝트 구조에 맞게 수정)
   const token = useAppSelector((state) => state.auth.token);
 
-  // 슬라이스 상태 선택
   const {
     items,
     orderInfo,
@@ -26,7 +34,6 @@ export default function OrderDetail() {
     sortOrder,
   } = useAppSelector((state) => state.orderDetail);
 
-  // 데이터 불러오기: orKey, token, sortField, sortOrder 변경 시 재호출
   useEffect(() => {
     if (!orKey || !token) return;
 
@@ -34,23 +41,29 @@ export default function OrderDetail() {
     dispatch(fetchOrderInfo({ orKey, token }));
   }, [dispatch, orKey, token]);
 
-  // 정렬 로직: redux 상태 변경시 정렬 재적용
   const sortedItems = React.useMemo(() => {
     if (!items) return [];
 
+    const field = sortField || "pdNum";
     return [...items].sort((a, b) => {
-      const field = sortField || "pdNum";
-
       if (a[field] < b[field]) return sortOrder === "asc" ? -1 : 1;
       if (a[field] > b[field]) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
   }, [items, sortField, sortOrder]);
 
-  // 정렬 필드 변경 핸들러
-  const handleSort = (field: keyof typeof items[0]) => {
+  const handleSort = (field: keyof OrderItem) => {
     dispatch(setSortField(field));
   };
+
+  const columns: { title: string; field: keyof OrderItem }[] = [
+    { title: "품번", field: "pdNum" },
+    { title: "카테고리", field: "pdCategory" },
+    { title: "제품명", field: "oiProducts" },
+    { title: "수량", field: "oiQuantity" },
+    { title: "단가", field: "oiPrice" },
+    { title: "총액", field: "oiTotal" },
+  ];
 
   return (
     <div className={styles.fixedRoot}>
@@ -113,25 +126,20 @@ export default function OrderDetail() {
           <table className={styles.table}>
             <thead>
               <tr>
-                {[
-                  { title: "품번", field: "pdNum" },
-                  { title: "카테고리", field: "pdCategory" },
-                  { title: "제품명", field: "oiProducts" },
-                  { title: "수량", field: "oiQuantity" },
-                  { title: "단가", field: "oiPrice" },
-                  { title: "총액", field: "oiTotal" },
-                ].map(({ title, field }) => {
+                {columns.map(({ title, field }) => {
                   const isActive = sortField === field;
                   return (
                     <th
                       key={field}
                       className={styles.ta}
-                      onClick={() => handleSort(field as any)}
+                      onClick={() => handleSort(field)}
                       style={{ cursor: "pointer" }}
                     >
                       <div>
                         {title}
-                        <button>{isActive ? (sortOrder === "asc" ? "▲" : "▼") : "▼"}</button>
+                        <button>
+                          {isActive ? (sortOrder === "asc" ? "▲" : "▼") : "▼"}
+                        </button>
                       </div>
                     </th>
                   );
