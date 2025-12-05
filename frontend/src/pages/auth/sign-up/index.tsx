@@ -133,10 +133,15 @@ function SignUp() {
             } else {
                 alert("회원가입에 실패했습니다.");
             }
-        } catch (error: any) {
-            alert("회원가입 실패: " + (error.response?.data?.error || error.message));
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                alert("회원가입 실패: " + (error.message || "알 수 없는 오류"));
+            } else {
+                alert("회원가입 실패: 알 수 없는 오류가 발생했습니다.");
+            }
         }
     };
+
 
     return (
         <div className={styles.auth}>

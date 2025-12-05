@@ -10,7 +10,7 @@ export interface StatusItem {
   dvPhone: string;
   orDate: string;
   orReserve: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface Filters {
@@ -56,17 +56,25 @@ const initialState: StatusState = {
 };
 
 // API 호출용 thunk
-export const fetchStatusList = createAsyncThunk(
+export const fetchStatusList = createAsyncThunk<
+  StatusItem[],
+  void,
+  { rejectValue: string }
+>(
   'status/fetchStatusList',
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/status');
       return response.data as StatusItem[];
-    } catch (err: any) {
-      return rejectWithValue(err.message || 'Failed to fetch');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue('Failed to fetch');
     }
   }
 );
+
 
 const statusSlice = createSlice({
   name: 'status',

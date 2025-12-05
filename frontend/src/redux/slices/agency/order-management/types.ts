@@ -10,13 +10,14 @@ export interface LineItem {
 
 // 임시 저장 드래프트 품목 정보 (서버에서 받는 데이터, UI 용도)
 export interface Draft {
-  id: string;
+  rdKey: number;   // 임시 저장 키, 컴포넌트에서 rdKey로 접근
   pdKey: string;
-  qty: number;
-  price: number;
-  name: string;
-  // 필요하면 백엔드 DTO 주요 필드 일부 추가 가능
+  rdProducts: string;  // 제품명 필드 추가
+  rdQuantity: number;
+  rdPrice: number;
+  rdTotal: number;
 }
+
 
 // 임시 저장 API 요청용 타입 (서버에 보내는 데이터)
 export interface DraftRequest {
@@ -54,7 +55,7 @@ export interface Order {
   orStatus?: string;        // 처리 상태
   orReserve?: string;       // 도착 예정일 (ISO 문자열)
   dvName?: string;          // 배송 기사 이름
-  delivery?: any; 
+  delivery?: unknown; 
 
 }
 
@@ -81,6 +82,7 @@ export interface AgencyState {
   registeredItems: LineItem[];   // 확정 전 저장된 주문 품목들
   selectedForAdd: string[];      // 추가할 품목 선택 체크박스 id 목록
   selectedRegistered: string[];  // 확정 주문 품목 선택 체크박스 id 목록
+  selectedDrafts: number[];      // 임시 저장 주문 체크박스 선택 상태 (rdKey 배열)
   expectedDate: string;          // 주문 확정 시 도착 예정일
   loading: boolean;              // API 요청 상태 로딩 플래그
   error: string | null;          // 에러 메시지 저장

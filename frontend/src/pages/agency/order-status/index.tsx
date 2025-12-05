@@ -33,7 +33,7 @@ interface Order {
   orderNumberUI?: string;
   items?: OrderItem[];
   totalAmount?: number;
-  delivery?: any;
+  delivery?: unknown;
 }
 
 export default function OrderStatus() {
@@ -160,30 +160,33 @@ export default function OrderStatus() {
 
   // 선택된 주문 삭제 시 thunk 호출
   const handleDeleteSelected = async () => {
-    if (selected.length === 0) return;
+  if (selected.length === 0) return;
 
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      return;
+  if (!token) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
+  try {
+    await dispatch(deleteOrders(selected)).unwrap();
+
+    alert("선택된 주문이 삭제되었습니다.");
+    setSelected([]);
+
+    if (userInfo?.agKey) {
+      dispatch(fetchAgencyOrders(userInfo.agKey));
+    } else {
+      console.warn("agencyId가 없어 주문 리스트 갱신을 할 수 없습니다.");
     }
-
-    try {
-      await dispatch(deleteOrders(selected)).unwrap();
-
-      alert("선택된 주문이 삭제되었습니다.");
-      setSelected([]);
-
-      if (userInfo?.agKey) {
-        dispatch(fetchAgencyOrders(userInfo?.agKey));
-      } else {
-        console.warn("agencyId가 없어 주문 리스트 갱신을 할 수 없습니다.");
-      }
-    } catch (err: any) {
-      console.error(err);
-      alert("삭제 중 오류가 발생했습니다: " + (err.message ?? "알 수 없는 오류"));
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      alert("삭제 중 오류가 발생했습니다: " + err.message);
+    } else {
+      alert("삭제 중 알 수 없는 오류가 발생했습니다.");
     }
+  }
+};
 
-  };
 
   const applyFilters = (
     statusVal = status,

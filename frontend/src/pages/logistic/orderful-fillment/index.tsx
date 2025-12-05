@@ -15,6 +15,18 @@ import {
   setIsOpen,
 } from "../../../redux/slices/logistic/orderfulfillment-slice";
 
+// 주문 내 개별 상품 항목 타입 정의
+interface OrderProductItem {
+  name?: string;
+  oiProducts?: string;
+  product?: { pdProducts?: string };
+  quantity?: number | string;
+  oiQuantity?: number | string;
+  qty?: number | string;
+  [key: string]: unknown;
+}
+
+// 주문 항목 타입 정의
 interface OrderItem {
   orKey: string;
   orProducts: string;
@@ -26,14 +38,15 @@ interface OrderItem {
   orStatus: string;
   orGu: string;
   orderNumber?: string;
-  items?: any[];
-  [key: string]: any;
+  items?: OrderProductItem[];
+  orderItems?: OrderProductItem[];
+  [key: string]: unknown;
 }
 
 export default function OrderfulFillment() {
   const dispatch = useDispatch();
 
-  // Redux 상태에서 값 읽기
+  // Redux 상태 값 가져오기
   const isOpen = useSelector((state: RootState) => state.orderfulfillment.isOpen);
   const token = useSelector((state: RootState) => state.auth.token);
   const sheet = useSelector((state: RootState) => state.orderfulfillment.sheet);
@@ -46,7 +59,9 @@ export default function OrderfulFillment() {
   const sortField = useSelector((state: RootState) => state.orderfulfillment.sortField);
   const sortOrder = useSelector((state: RootState) => state.orderfulfillment.sortOrder);
 
-  // 데이터 fetch
+  // -------------------------------------
+  // 주문 데이터 fetch 및 Redux 상태에 저장
+  // -------------------------------------
   useEffect(() => {
     if (!token) return;
 
@@ -61,16 +76,23 @@ export default function OrderfulFillment() {
           },
         });
 
+        // 서버 응답에서 주문 데이터 추출 (data가 있거나 바로 data인 경우 모두 처리)
         const rawOrders: OrderItem[] = ordersRes.data?.data ?? ordersRes.data ?? [];
+
+        // 주문 아이템의 상품명과 수량 계산하여 보완
         const list = rawOrders.map((o) => {
-          const items = o.items ?? o.orderItems ?? [];
+          const items: OrderProductItem[] = o.items ?? o.orderItems ?? [];
+
+          // 상품명 리스트를 배열로 얻어 연결
           const names = items
-            .map((i: any) => i.name ?? i.oiProducts ?? i.product?.pdProducts)
+            .map((i) => i.name ?? i.oiProducts ?? i.product?.pdProducts ?? "")
             .filter(Boolean);
-          const qtyFromItems = items.reduce(
-            (sum: number, i: any) => sum + (Number(i.quantity ?? i.oiQuantity ?? i.qty ?? 0) || 0),
-            0
-          );
+
+          // 상품 수량 합산 (숫자 변환 후 합계)
+          const qtyFromItems = items.reduce((sum, i) => {
+            const val = Number(i.quantity ?? i.oiQuantity ?? i.qty ?? 0) || 0;
+            return sum + val;
+          }, 0);
 
           return {
             ...o,
@@ -89,8 +111,9 @@ export default function OrderfulFillment() {
     fetchData();
   }, [token, dispatch]);
 
-
-  // input, select 등 변경 핸들러
+  // -------------------------------------
+  // input, select 등 폼 변경 처리 함수
+  // -------------------------------------
   const onAgencyOrderChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -99,12 +122,15 @@ export default function OrderfulFillment() {
     dispatch(
       setAgencyorderForm({
         ...agencyorderForm,
+        // type이 number면 숫자로 변환, 아니면 문자열 유지
         [name]: type === "number" && value !== "" ? Number(value) : value,
       })
     );
   };
 
-  // 팝업 열기
+  // -------------------------------------
+  // 주문 상세 팝업 열기 함수
+  // -------------------------------------
   const openOrderPopup = (row: OrderItem) => {
     console.log("팝업 열기 - orKey:", row.orKey);
     if (!row.orKey) {
@@ -120,10 +146,11 @@ export default function OrderfulFillment() {
     );
   };
 
-
-
-
-  // 유틸 함수
+  // -------------------------------------
+  // 문자열 날짜를 Date 객체로 변환
+  // asEnd가 true면 23:59:59 시각으로 변환
+  // 변환 실패 시 null 반환
+  // -------------------------------------
   const toDate = (v: string | null | undefined, asEnd = false): Date | null => {
     if (!v) return null;
     const s = String(v).slice(0, 10);
@@ -132,7 +159,10 @@ export default function OrderfulFillment() {
     return isNaN(d.getTime()) ? null : d;
   };
 
-  const inRange = (target: string, start?: string, end?: string) => {
+  // -------------------------------------
+  // target 날짜가 start~end 사이인지 체크
+  // -------------------------------------
+  const inRange = (target: string, start?: string, end?: string): boolean => {
     const T = toDate(target);
     if (!T) return false;
     const S = toDate(start);
@@ -142,10 +172,20 @@ export default function OrderfulFillment() {
     return true;
   };
 
+  // -------------------------------------
+  // 숫자 변환: 빈 문자열, null, undefined면 null 반환
+  // -------------------------------------
   const toNum = (v: string | number | null | undefined): number | null =>
     v === "" || v == null ? null : Number(v);
 
-  const inRangeNum = (target: string | number, start?: string | number, end?: string | number) => {
+  // -------------------------------------
+  // 숫자 범위 체크: target이 start~end 범위 내에 있는지 확인
+  // -------------------------------------
+  const inRangeNum = (
+    target: string | number,
+    start?: string | number,
+    end?: string | number
+  ): boolean => {
     const T = toNum(target);
     if (T === null || Number.isNaN(T)) return false;
     const S = toNum(start);
@@ -155,10 +195,14 @@ export default function OrderfulFillment() {
     return true;
   };
 
-  // 필터 함수
+  // -------------------------------------
+  // 필터링 함수: form 상태에 따라 주문 목록 필터링 후 상태 저장
+  // -------------------------------------
   const Filter = () => {
     const f = agencyorderForm;
-    const like = (v: any, q: any) =>
+
+    // 문자열 포함 여부 검사 함수 (q가 없으면 항상 true)
+    const like = (v: string | number | null | undefined, q: string | number | null | undefined): boolean =>
       !q || String(v ?? "").toLowerCase().includes(String(q).toLowerCase());
 
     const filtered = allOrders.filter((o) => {
@@ -195,33 +239,51 @@ export default function OrderfulFillment() {
     dispatch(setOrders(filtered));
   };
 
-  // 정렬 함수
+  // -------------------------------------
+  // 정렬 필드 변경 및 방향 토글 함수
+  // -------------------------------------
   const handleSort = (field: keyof OrderItem) => {
     const next = sortField === field && sortOrder === "asc" ? "desc" : "asc";
     dispatch(setSortField(field));
     dispatch(setSortOrder(next));
   };
 
-  // 정렬 아이콘 표시 함수
-  const getSortArrow = (field: keyof OrderItem) => {
+  // -------------------------------------
+  // 정렬 아이콘 표시 함수 (현재 정렬 필드 기준)
+  // -------------------------------------
+  const getSortArrow = (field: keyof OrderItem): string => {
     if (sortField === field) return sortOrder === "asc" ? "▲" : "▼";
     return "▼";
   };
 
-  // 정렬된 rows
+  // -------------------------------------
+  // 정렬된 주문 목록 계산
+  // useMemo로 의존값 변경 시 재계산 최적화
+  // -------------------------------------
   const rows = useMemo(() => {
-    const read = (o: OrderItem, f: keyof OrderItem | "orderNumber") => {
+    // 특정 필드 값 읽기 (orderNumber는 orKey 대체 가능)
+    const read = (
+      o: OrderItem,
+      f: keyof OrderItem | "orderNumber"
+    ): string | number | undefined => {
       if (f === "orderNumber") return o.orderNumber ?? o.orKey;
-      return o[f];
+      return o[f] as string | number | undefined;
     };
 
-    const isNumber = (f: keyof OrderItem | any) =>
-      ["orTotal", "orQuantity", "orPrice", "orKey"].includes(f);
+    // 숫자 필드 판별
+    const isNumber = (f: keyof OrderItem): boolean => {
+      const numberFields = new Set(["orTotal", "orQuantity", "orPrice", "orKey"]);
+      return numberFields.has(f as string);
+    };
 
-    const isDate = (f: keyof OrderItem | any) =>
-      ["orDate", "orReserve"].includes(f);
+    // 날짜 필드 판별
+    const isDate = (f: keyof OrderItem): boolean => {
+      const dateFields = new Set(["orDate", "orReserve"]);
+      return dateFields.has(f as string);
+    };
 
-    const cmp = (a: OrderItem, b: OrderItem) => {
+    // 비교 함수 (정렬 기준에 따라 다르게 비교)
+    const cmp = (a: OrderItem, b: OrderItem): number => {
       const A = read(a, sortField);
       const B = read(b, sortField);
 
@@ -230,12 +292,16 @@ export default function OrderfulFillment() {
       if (B == null) return -1;
 
       if (isNumber(sortField)) {
-        return sortOrder === "asc" ? (A as number) - (B as number) : (B as number) - (A as number);
+        return sortOrder === "asc"
+          ? (A as number) - (B as number)
+          : (B as number) - (A as number);
       }
       if (isDate(sortField)) {
         const da = new Date(String(A));
         const db = new Date(String(B));
-        return sortOrder === "asc" ? da.getTime() - db.getTime() : db.getTime() - da.getTime();
+        return sortOrder === "asc"
+          ? da.getTime() - db.getTime()
+          : db.getTime() - da.getTime();
       }
 
       return sortOrder === "asc"

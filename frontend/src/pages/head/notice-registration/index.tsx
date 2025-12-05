@@ -23,6 +23,28 @@ interface Notice {
     isChecked?: boolean;
 }
 
+// 에러 메시지 안전 추출 함수 (unknown 타입 기반)
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "response" in error &&
+    typeof (error as { response?: unknown }).response === "object" &&
+    (error as { response?: unknown }).response !== null &&
+    "data" in (error as { response: { data?: unknown } }).response! &&
+    typeof (error as { response: { data?: unknown } }).response.data === "object" &&
+    (error as { response: { data: Record<string, unknown> } }).response.data !== null &&
+    "message" in (error as { response: { data: Record<string, unknown> } }).response.data &&
+    typeof (error as { response: { data: Record<string, unknown> } }).response.data.message === "string"
+  ) {
+    return (error as { response: { data: { message: string } } }).response.data.message;
+  }
+
+  return "알 수 없는 오류가 발생했습니다.";
+}
+
 function NoticeRegistration() {
     // Redux에서 토큰 조회
     const token = useSelector((state: RootState) => state.auth.token);
@@ -54,7 +76,6 @@ function NoticeRegistration() {
         3: '대리점',
     };
 
-
     const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({ key: null, direction: 'asc' });
 
     const isAllChecked = notices.length > 0 && notices.every(item => item.isChecked);
@@ -81,7 +102,8 @@ function NoticeRegistration() {
 
         setNotices((prev) => {
             return [...prev].sort((a, b) => {
-                let aValue: any, bValue: any;
+                let aValue: string | number | Date = "";
+                let bValue: string | number | Date = "";
 
                 if (key === 'atCreated') {
                     aValue = (a.atCreated ?? a.at_created) || '';
@@ -90,8 +112,8 @@ function NoticeRegistration() {
                     aValue = a.startDate || '';
                     bValue = b.startDate || '';
                 } else if (key === 'ntCode') {
-                    aValue = a.ntCode ?? a.code;
-                    bValue = b.ntCode ?? b.code;
+                    aValue = a.ntCode ?? a.code ?? 0;
+                    bValue = b.ntCode ?? b.code ?? 0;
                 } else if (key === 'ntCategory') {
                     aValue = a.ntCategory ?? a.category2 ?? '';
                     bValue = b.ntCategory ?? b.category2 ?? '';
@@ -139,25 +161,25 @@ function NoticeRegistration() {
 
     // 공지사항 조회 함수 (api.ts 사용, 토큰 자동 헤더 포함 가정)
     const fetchNotices = async (params: { category1?: string; category2?: string; searchDate?: string } = {}) => {
-    if (!token) return;
+        if (!token) return;
 
-    setIsLoading(true);
-    setError(null);
+        setIsLoading(true);
+        setError(null);
 
-    try {
-        let codes: number[] = [];
-        if (!params.category1 || params.category1 === "0") {
-            codes = [0, 1, 2, 3]; // 전체
-        } else {
-            codes = [Number(params.category1), 0];
-        }
+        try {
+            let codes: number[] = [];
+            if (!params.category1 || params.category1 === "0") {
+                codes = [0, 1, 2, 3]; // 전체
+            } else {
+                codes = [Number(params.category1), 0];
+            }
 
-        console.log("fetchNotices params.category1:", params.category1, "codes:", codes);
+            console.log("fetchNotices params.category1:", params.category1, "codes:", codes);
 
-        const response = await api.get<Notice[]>('/notices', {
-            params: { codes: codes.join(",") }, // 배열 → 문자열 변환
-            headers: { Authorization: `Bearer ${token}` }
-        });
+            const response = await api.get<Notice[]>('/notices', {
+                params: { codes: codes.join(",") }, // 배열 → 문자열 변환
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
             let data = response.data;
 
@@ -185,8 +207,8 @@ function NoticeRegistration() {
                 endDate: item.endDate,
                 atCreated: item.atCreated
             })));
-        } catch (err: any) {
-            setError(err.message || "공지사항 조회 중 오류가 발생했습니다.");
+        } catch (error: unknown) {
+            setError(getErrorMessage(error));
         } finally {
             setIsLoading(false);
         }
@@ -269,8 +291,8 @@ function NoticeRegistration() {
             setEndDate('');
             fetchNotices();
 
-        } catch (err: any) {
-            alert("공지사항 등록 실패: " + (err.response?.data?.message || err.message));
+        } catch (error: unknown) {
+            alert("공지사항 등록 실패: " + getErrorMessage(error));
         }
     };
 
@@ -279,7 +301,7 @@ function NoticeRegistration() {
         const selectedIds = notices
             .filter(item => item.isChecked)
             .map(item => (item.ntKey ?? item.nt_key ?? item.id))
-            .filter(Boolean) as number[];
+            .filter((id): id is number => typeof id === "number");
 
         if (selectedIds.length === 0) {
             alert("삭제할 공지사항을 선택해주세요!");
@@ -295,8 +317,8 @@ function NoticeRegistration() {
             });
             alert(`${selectedIds.length}개의 공지사항이 삭제되었습니다.`);
             fetchNotices();
-        } catch (err: any) {
-            alert("공지사항 삭제 실패: " + (err.response?.data?.message || err.message));
+        } catch (error: unknown) {
+            alert("공지사항 삭제 실패: " + getErrorMessage(error));
         } finally {
             setIsLoading(false);
         }
@@ -320,8 +342,8 @@ function NoticeRegistration() {
             alert('삭제되었습니다.');
             closeNoticeDetail();
             fetchNotices();
-        } catch (err: any) {
-            alert('공지사항 삭제 실패: ' + (err.response?.data?.message || err.message));
+        } catch (error: unknown) {
+            alert('공지사항 삭제 실패: ' + getErrorMessage(error));
         } finally {
             setIsLoading(false);
         }
@@ -344,8 +366,8 @@ function NoticeRegistration() {
             alert('수정되었습니다.');
             closeNoticeDetail();
             fetchNotices();
-        } catch (err: any) {
-            alert('공지사항 수정 실패: ' + (err.response?.data?.message || err.message));
+        } catch (error: unknown) {
+            alert('공지사항 수정 실패: ' + getErrorMessage(error));
         } finally {
             setIsLoading(false);
         }

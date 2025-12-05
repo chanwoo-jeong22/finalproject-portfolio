@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "../../../styles/main.module.css";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../../redux/store";
+import { RootState, AppDispatch } from "../../../redux/store";
 import { fetchLogisticProducts } from "../../../redux/slices/head/logisticproductstatus-slice";
 
 // 물류 제품 타입
@@ -15,7 +15,7 @@ interface LogisticProduct {
 }
 
 const LogisticProductStatus: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   // Redux 데이터
   const { products, loading } = useSelector(
@@ -31,13 +31,12 @@ const LogisticProductStatus: React.FC = () => {
   const [searchLgName, setSearchLgName] = useState("");
   const [searchPdNum, setSearchPdNum] = useState("");
   const [searchPdProducts, setSearchPdProducts] = useState("");
-
   const [searchDateFrom, setSearchDateFrom] = useState("");
   const [searchDateTo, setSearchDateTo] = useState("");
 
   // 1. 최초 API 호출
   useEffect(() => {
-    dispatch(fetchLogisticProducts() as any);
+    dispatch(fetchLogisticProducts());
   }, [dispatch]);
 
   // 2. Redux 데이터 들어오면 초기화
@@ -179,16 +178,16 @@ const LogisticProductStatus: React.FC = () => {
                         {field === "lgName"
                           ? "업체명"
                           : field === "pdNum"
-                          ? "품번"
-                          : field === "pdProducts"
-                          ? "제품명"
-                          : field === "pdPrice"
-                          ? "가격"
-                          : field === "stock"
-                          ? "재고"
-                          : field === "lpStore"
-                          ? "최신 입고일"
-                          : ""}
+                            ? "품번"
+                            : field === "pdProducts"
+                              ? "제품명"
+                              : field === "pdPrice"
+                                ? "가격"
+                                : field === "stock"
+                                  ? "재고"
+                                  : field === "lpStore"
+                                    ? "최신 입고일"
+                                    : ""}
                       </p>
                       <button className={styles.sort} onClick={() => handleSort(field)}>
                         {getSortArrow(field)}

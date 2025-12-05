@@ -58,8 +58,11 @@ export const fetchMonthlyData = createAsyncThunk<
       };
     });
     return formatted;
-  } catch (error: any) {
-    return rejectWithValue(error.message || "Failed to fetch monthly data");
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return rejectWithValue(error.message);
+    }
+    return rejectWithValue("Failed to fetch monthly data");
   }
 });
 
@@ -72,10 +75,14 @@ export const fetchAgencies = createAsyncThunk<
   try {
     const response = await api.get<AgencyType[]>("/dashboard/agencies");
     return response.data;
-  } catch (error: any) {
-    return rejectWithValue(error.message || "Failed to fetch agencies");
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return rejectWithValue(error.message);
+    }
+    return rejectWithValue("Failed to fetch agencies");
   }
 });
+
 
 const headGraphSlice = createSlice({
   name: "headGraph",

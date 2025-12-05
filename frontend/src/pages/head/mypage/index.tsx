@@ -18,17 +18,36 @@ interface FormData {
   profile: File | null;
 }
 
+interface HeadOfficeData {
+  hdName: string;
+  hdPw: string | null;
+  hdEmail: string;
+  hdPhone: string;
+  hdAuth: string;
+}
+
+interface AgencyData {
+  agName: string;
+  agPw: string | null;
+  agEmail: string;
+  agPhone: string;
+}
+
+interface LogisticData {
+  lgName: string;
+  lgPw: string | null;
+  lgEmail: string;
+  lgPhone: string;
+}
+
 function MyPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  // Redux에서 인증 토큰과 역할별 userId (hdId, agId, lgId) 가져오기
   const token = useSelector((state: RootState) => state.auth.token);
   const hdId = useSelector((state: RootState) => state.auth.hdId);
   const agId = useSelector((state: RootState) => state.auth.agId);
   const lgId = useSelector((state: RootState) => state.auth.lgId);
-
-  // 유저 상세 정보는 userInfo에서 가져와서 폼 초기화에 씀
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
 
   const [loading, setLoading] = useState(true);
@@ -46,17 +65,16 @@ function MyPage() {
   const [pwMatch, setPwMatch] = useState<boolean | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
-  // userInfo가 바뀔 때마다 폼 데이터를 초기화
   useEffect(() => {
     if (userInfo && Object.keys(userInfo).length > 0) {
       setFormData({
         position: userInfo.hdAuth || "",
-        userName: userInfo.hdName || "",
-        userId: userInfo.hdId || "",
+        userName: userInfo.hdName || userInfo.agName || userInfo.lgName || "",
+        userId: userInfo.hdId || userInfo.agId || userInfo.lgId || "",
         userPw: "",
         confirmUserPw: "",
-        phone: userInfo.hdPhone || "",
-        email: userInfo.hdEmail || "",
+        phone: userInfo.hdPhone || userInfo.agPhone || "",
+        email: userInfo.hdEmail || userInfo.agEmail || "",
         profile: null,
       });
 
@@ -70,7 +88,6 @@ function MyPage() {
     }
   }, [userInfo]);
 
-  // 컴포넌트 마운트 시 유저 정보를 다시 불러옴
   useEffect(() => {
     if (!token) {
       alert("로그인이 필요합니다.");
@@ -78,7 +95,6 @@ function MyPage() {
       return;
     }
 
-    // 역할과 userId를 token과 함께 reloadUserInfo 액션에 넘겨서 호출
     let userId: string | null = null;
     let role: string | null = null;
 
@@ -99,27 +115,23 @@ function MyPage() {
       return;
     }
 
-    // thunk 호출 시 인자(token, userId, role)를 꼭 넘겨야 오류가 안남
     dispatch(reloadUserInfo({ token, userId, role }))
       .unwrap()
       .catch(() => {
-        // reloadUserInfo 실패 시는 slice에서 로그아웃 처리함
+        // 실패시 slice에서 로그아웃 처리함
       });
   }, [dispatch, token, hdId, agId, lgId, navigate]);
 
-  // 비밀번호 일치 여부 체크
   useEffect(() => {
     if (!formData.confirmUserPw) setPwMatch(null);
     else setPwMatch(formData.userPw === formData.confirmUserPw);
   }, [formData.userPw, formData.confirmUserPw]);
 
-  // 입력 폼 상태 업데이트 핸들러
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 프로필 이미지 파일 선택 핸들러
   const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setFormData((prev) => ({ ...prev, profile: file }));
@@ -129,7 +141,6 @@ function MyPage() {
     }
   };
 
-  // 이메일 중복 체크
   const checkEmail = async () => {
     if (!formData.email.trim()) return;
     try {
@@ -143,7 +154,6 @@ function MyPage() {
     }
   };
 
-  // 폼 제출 처리 핸들러
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -159,38 +169,67 @@ function MyPage() {
       return;
     }
 
-    // 서버 전송용 FormData 객체 생성 (jsonBlob과 프로필 이미지 포함)
     const sendData = new FormData();
-    const jsonBlob = new Blob(
-      [
-        JSON.stringify({
-          hdName: userName,
-          hdPw: userPw || null,
-          hdEmail: email,
-          hdPhone: phone,
-          hdAuth: position,
-        }),
-      ],
-      { type: "application/json" }
-    );
+
+    let jsonData: HeadOfficeData | AgencyData | LogisticData;
+
+    if (hdId) {
+      jsonData = {
+        hdName: userName,
+        hdPw: userPw || null,
+        hdEmail: email,
+        hdPhone: phone,
+        hdAuth: position,
+      };
+    } else if (agId) {
+      jsonData = {
+        agName: userName,
+        agPw: userPw || null,
+        agEmail: email,
+        agPhone: phone,
+      };
+    } else {
+      // lgId인 경우
+      jsonData = {
+        lgName: userName,
+        lgPw: userPw || null,
+        lgEmail: email,
+        lgPhone: phone,
+      };
+    }
+
+    const jsonBlob = new Blob([JSON.stringify(jsonData)], { type: "application/json" });
     sendData.append("data", jsonBlob);
     if (formData.profile) sendData.append("profile", formData.profile);
 
     try {
-      // userId는 Redux에서 역할별 id중 하나가 존재해야 함
-      let userId = userInfo.hdId || userInfo.agId || userInfo.lgId;
+      let userId = hdId || agId || lgId;
       if (!userId) throw new Error("유저 ID 정보가 없습니다.");
 
-      await api.put(`/head/mypage/${userId}`, sendData, {
+      let url = "";
+      if (hdId) {
+        url = `/head/mypage/${userId}`;
+      } else if (agId) {
+        url = `/agency/mypage/${userId}`;
+      } else {
+        url = `/logistic/mypage/${userId}`;
+      }
+
+      await api.put(url, sendData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
       alert("회원 정보가 수정되었습니다.");
-      navigate("/head");
-    } catch (err: any) {
-      alert("수정 실패: " + (err.response?.data?.error || err.message));
+      navigate("/");
+    } catch (err) {
+      // 에러 타입 좁히기
+      if (err instanceof Error) {
+        alert("수정 실패: " + err.message);
+      } else {
+        alert("수정 실패: 알 수 없는 오류가 발생했습니다.");
+      }
       console.error(err);
     }
   };

@@ -10,16 +10,33 @@ import {
 
 import styles from "../../../styles/logistic/logistic-order.module.css";
 
+// 재고 항목 타입 정의
+interface InventoryItem {
+  id: number | string;
+  type: string;
+  sku: string;
+  name: string;
+  price: number;
+  stock: number;
+}
+
 export default function LogisticInventory() {
   const dispatch = useDispatch<AppDispatch>();
 
-  const { rows, originalRows, loading, error, sortField, sortOrder } =
-    useSelector((state: RootState) => state.logisticInventory);
+  const {
+    rows,
+    originalRows,
+    loading,
+    error,
+    sortField,
+    sortOrder,
+  } = useSelector((state: RootState) => state.logisticInventory);
+
   const token = useSelector((state: RootState) => state.auth.token);
 
   // 🔎 검색 상태
-  const [sku, setSku] = useState("");
-  const [name, setName] = useState("");
+  const [sku, setSku] = useState<string>("");
+  const [name, setName] = useState<string>("");
 
   // 📌 최초 1회만 서버에서 전체 재고 로드
   useEffect(() => {
@@ -32,10 +49,10 @@ export default function LogisticInventory() {
   useEffect(() => {
     let list = [...originalRows];
 
-    const like = (v: any, q: any) =>
-      !q || String(v ?? "").toLowerCase().includes(String(q).toLowerCase());
+    const like = (v: string | number | null | undefined, q: string) =>
+      !q || String(v ?? "").toLowerCase().includes(q.toLowerCase());
 
-    list = list.filter((r) => {
+    list = list.filter((r: InventoryItem) => {
       if (!like(r.sku, sku)) return false;
       if (!like(r.name, name)) return false;
       return true;
@@ -44,12 +61,15 @@ export default function LogisticInventory() {
     dispatch(setRows(list));
   }, [sku, name, originalRows, dispatch]);
 
-  const handleSort = (field: string) => {
+  const handleSort = (field: keyof InventoryItem) => {
     const next = sortField === field && sortOrder === "asc" ? "desc" : "asc";
-    dispatch({ type: "logisticInventory/setSort", payload: { field, order: next } });
+    dispatch({
+      type: "logisticInventory/setSort",
+      payload: { field, order: next },
+    });
   };
 
-  const getSortArrow = (field: string) => {
+  const getSortArrow = (field: keyof InventoryItem) => {
     if (sortField === field) return sortOrder === "asc" ? "▲" : "▼";
     return "▼";
   };
@@ -57,15 +77,20 @@ export default function LogisticInventory() {
   const data = useMemo(() => {
     const sorted = [...rows];
 
-    sorted.sort((a: any, b: any) => {
-      const A = a[sortField];
-      const B = b[sortField];
+    sorted.sort((a: InventoryItem, b: InventoryItem) => {
+      const A = a[sortField as keyof InventoryItem];
+      const B = b[sortField as keyof InventoryItem];
+
       if (A == null || B == null) return 0;
 
-      const numeric = ["price", "stock"];
-      if (numeric.includes(sortField)) {
-        return sortOrder === "asc" ? A - B : B - A;
+      const numericFields: (keyof InventoryItem)[] = ["price", "stock"];
+
+      if (numericFields.includes(sortField as keyof InventoryItem)) {
+        return sortOrder === "asc"
+          ? (A as number) - (B as number)
+          : (B as number) - (A as number);
       }
+
       return sortOrder === "asc"
         ? String(A).localeCompare(String(B))
         : String(B).localeCompare(String(A));
@@ -88,18 +113,12 @@ export default function LogisticInventory() {
             <div className={styles.row}>
               <div className={styles.field}>
                 <label>품번</label>
-                <input
-                  value={sku}
-                  onChange={(e) => setSku(e.target.value)}
-                />
+                <input value={sku} onChange={(e) => setSku(e.target.value)} />
               </div>
 
               <div className={styles.field}>
                 <label>제품명</label>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
+                <input value={name} onChange={(e) => setName(e.target.value)} />
               </div>
 
               <button

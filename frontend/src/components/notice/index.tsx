@@ -1,4 +1,4 @@
-import  {
+import {
     useEffect,
     useMemo,
     useState,
@@ -78,9 +78,15 @@ const Notice = forwardRef<NoticeHandle, NoticeProps>(function Notice(
 
             setItems(mappedItems);
             setError(null);
-        } catch (e: any) {
-            setError(e);
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                setError(e);
+            } else {
+                // Error 객체가 아닐 때 처리 (예: 문자열이나 다른 타입이 던져졌을 때)
+                setError(new Error("알 수 없는 에러가 발생했습니다."));
+            }
         }
+
     };
 
     useEffect(() => {

@@ -12,7 +12,7 @@ export interface NoticeType {
   atCreated?: string;
   at_created?: string;
   category2?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // API 상대 경로

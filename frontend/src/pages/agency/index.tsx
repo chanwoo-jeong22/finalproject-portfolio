@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
-import axios from "axios";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../redux/store";
 import style from "../../styles/agency/agency-indexpage.module.css";
@@ -8,176 +7,207 @@ import HeadPopup from "../../components/head/head-popup";
 import NoticeDetail from "../../components/common/notice-detail";
 import { toIsoDate } from "../../func/parse";
 import { getNextBizDays } from "../../func/common";
+import api from "../../api/api";
 
 const KOR_DOW = ["일", "월", "화", "수", "목", "금", "토"];
 
 interface ScheduleItem {
-    title: string;
+  title: string;
 }
 
 interface SchedulesByDate {
-    [date: string]: ScheduleItem[];
+  [date: string]: ScheduleItem[];
+}
+
+interface ScheduleRow {
+  orderNumber: string;
+  orReserve?: string;
+  or_reserve?: string;
+  orStatus?: string;
+  agKey?: number;
+  items?: Array<{
+    name?: string;
+    oiProducts?: string;
+  }>;
+  orProducts?: string;
 }
 
 export default function Index() {
-    // Redux에서 인증 토큰 조회
-    const token = useSelector((state: RootState) => state.auth.token);
-    const userInfo = useSelector((state: RootState) => state.auth.userInfo);
+  // Redux에서 인증 토큰 조회
+  const token = useSelector((state: RootState) => state.auth.token);
+  const userInfo = useSelector((state: RootState) => state.auth.userInfo);
 
+  // 선택된 공지사항과 상세보기 상태 (NoticeData 타입 추정)
+  // Notice 컴포넌트에서 NoticeData 타입 export하고 있다면 가져와 쓰는 걸 권장
+  // 없으면 아래처럼 구조 추정해도 됨
+  interface NoticeData {
+    ntKey: number;
+    ntCategory: string;
+    atCreated?: string;
+    ntContent: string;
+  }
 
-    // 선택된 공지사항과 상세보기 상태
-    const [selectedNotice, setSelectedNotice] = useState<any | null>(null);
-    const [showDetail, setShowDetail] = useState(false);
+  const [selectedNotice, setSelectedNotice] = useState<NoticeData | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
 
-    // Notice 컴포넌트 리프레시용 ref
-    const noticeRef = useRef<{ refresh: () => void } | null>(null);
+  // Notice 컴포넌트 리프레시용 ref
+  const noticeRef = useRef<{ refresh: () => void } | null>(null);
 
-    // 오늘 포함 다음 7 영업일 중 앞 5일 날짜 배열 (useMemo 최적화)
-    const days = useMemo(() => getNextBizDays(7).slice(0, 5), []);
+  // 오늘 포함 다음 7 영업일 중 앞 5일 날짜 배열 (useMemo 최적화)
+  const days = useMemo(() => getNextBizDays(7).slice(0, 5), []);
 
-    // 날짜별 입고 예정 일정 저장 상태
-    const [schedulesByDate, setSchedulesByDate] = useState<SchedulesByDate>({});
+  // 날짜별 입고 예정 일정 저장 상태
+  const [schedulesByDate, setSchedulesByDate] = useState<SchedulesByDate>({});
 
-    // 입고 예정 일정 API 호출 및 상태 업데이트
-    useEffect(() => {
-        if (!token || !userInfo?.agKey) return;
+  // 입고 예정 일정 API 호출 및 상태 업데이트
+  useEffect(() => {
+    if (!token || !userInfo?.agKey) return;
 
-        console.log("입고예정일 API 호출 - agKey:", userInfo.agKey);
+    console.log("입고예정일 API 호출 - agKey:", userInfo.agKey);
 
-        const from = toIsoDate(days[0]);
-        const to = toIsoDate(days[days.length - 1]);
+    const from = toIsoDate(days[0]);
+    const to = toIsoDate(days[days.length - 1]);
 
-        axios
-            .get("/api/agencyorder/schedule", {
-                params: { from, to, agKey: userInfo.agKey },
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            .then((res) => {
-                // 1) API 응답 전체 데이터 확인
-                console.log("schedule API response:", res.data);
+    api
+      .get("/agencyorder/schedule", {
+        params: { from, to, agKey: userInfo.agKey },
+        // Authorization 헤더는 api.ts 인터셉터에서 자동 처리됨
+      })
+      .then((res) => {
+        // API 응답 데이터 추출
+        const rows: ScheduleRow[] = res.data?.data ?? res.data ?? [];
 
-                // 데이터가 어디에 담겨 있는지 구조 확인 (data, data.data 등)
-                const rows = res.data?.data ?? res.data ?? [];
+        console.log("schedule API response:", rows);
+        console.log("rows length:", rows.length);
+        console.log(
+          "rows 주문번호 및 예약일:",
+          rows.map((r) => ({
+            orderNumber: r.orderNumber,
+            orReserve: r.orReserve ?? r.or_reserve,
+          }))
+        );
 
-                // 2) rows 배열 길이와 주요 키값들 로그로 찍기
-                console.log("rows length:", rows.length);
-                console.log(
-                    "rows 주문번호 및 예약일:",
-                    rows.map((r: any) => ({
-                        orderNumber: r.orderNumber,
-                        orReserve: r.orReserve ?? r.or_reserve,
-                    }))
-                );
+        const byDate: SchedulesByDate = {};
 
-                const byDate: SchedulesByDate = {};
+        rows.forEach((r) => {
+          if (r.orStatus === "배송완료") return;
 
-                rows.forEach((r: any) => {
-                    if (r.orStatus === "배송완료") return;
+          // if (r.agKey !== userInfo.agKey) return; // 필요시 활성화
 
-                    // 일단 필터링 제거하고 확인
-                    // if (r.agKey !== userInfo.agKey) return;
+          const iso = String(r.orReserve ?? r.or_reserve ?? "").slice(0, 10);
+          if (!iso) return;
 
-                    const iso = String(r.orReserve ?? r.or_reserve ?? "").slice(0, 10);
-                    if (!iso) return;
+          const key = iso.replace(/-/g, ".");
 
-                    const key = iso.replace(/-/g, ".");
+          if (!byDate[key]) byDate[key] = [];
 
-                    if (!byDate[key]) byDate[key] = [];
+          const items = r.items ?? [];
+          const firstItemName =
+            items.length > 0
+              ? items[0].name ?? items[0].oiProducts ?? "미정"
+              : r.orProducts?.split(",")[0] ?? "미정";
 
-                    const items = r.items ?? [];
-                    const firstItemName = items.length > 0
-                        ? items[0].name ?? items[0].oiProducts ?? "미정"
-                        : r.orProducts?.split(",")[0] ?? "미정";
+          const extraCount = Math.max(
+            (items.length || r.orProducts?.split(",").length || 1) - 1,
+            0
+          );
 
-                    const extraCount = Math.max(
-                        (items.length || r.orProducts?.split(",").length || 1) - 1,
-                        0
-                    );
+          const title =
+            extraCount > 0
+              ? `📦 ${firstItemName} 외 ${extraCount}건 입고 예정 (주문번호 ${r.orderNumber})`
+              : `📦 ${firstItemName} 입고 예정 (주문번호 ${r.orderNumber})`;
 
-                    const title = extraCount > 0
-                        ? `📦 ${firstItemName} 외 ${extraCount}건 입고 예정 (주문번호 ${r.orderNumber})`
-                        : `📦 ${firstItemName} 입고 예정 (주문번호 ${r.orderNumber})`;
+          byDate[key].push({ title });
+        });
 
-                    byDate[key].push({ title });
-                });
+        setSchedulesByDate(byDate);
+      })
+      .catch((err: unknown) => {
+        if (err instanceof Error) {
+          console.error("입고예정일 API 호출 오류:", err.message);
+        } else {
+          console.error("입고예정일 API 호출 오류: 알 수 없는 에러");
+        }
+      });
+  }, [days, token, userInfo]);
 
+  // 공지사항 클릭 시 상세보기 열기
+  const handleNoticeClick = (notice: NoticeData) => {
+    setSelectedNotice(notice);
+    setShowDetail(true);
+  };
 
-                setSchedulesByDate(byDate);
-            })
-            .catch((err) => {
-                console.error("입고예정일 API 호출 오류:", err);
-            });
-    }, [days, token, userInfo]);
+  // 상세보기 닫기 및 리프레시
+  const handleCloseDetail = () => {
+    if (noticeRef.current) noticeRef.current.refresh();
+    setShowDetail(false);
+    setSelectedNotice(null);
+  };
 
+  return (
+    <div className={style.container}>
+      {/* 입고 예정일 일정표 섹션 */}
+      <section className={style.schedule}>
+        <h2 className={style.scheduleTitle}>입고 예정일</h2>
+        <div className={style.scheduleGrid}>
+          {days.map((d) => {
+            const key = d.toISOString().slice(0, 10).replace(/-/g, ".");
+            console.log(
+              "렌더링 날짜 key:",
+              key,
+              "일정 수:",
+              (schedulesByDate[key] || []).length
+            );
 
-    // 공지사항 클릭 시 상세보기 열기
-    const handleNoticeClick = (notice: any) => {
-        setSelectedNotice(notice);
-        setShowDetail(true);
-    };
+            const items = schedulesByDate[key] || [];
+            const dow = KOR_DOW[d.getDay()];
 
-    // 상세보기 닫기 및 리프레시
-    const handleCloseDetail = () => {
-        if (noticeRef.current) noticeRef.current.refresh();
-        setShowDetail(false);
-        setSelectedNotice(null);
-    };
-
-    return (
-        <div className={style.container}>
-            {/* 입고 예정일 일정표 섹션 */}
-            <section className={style.schedule}>
-                <h2 className={style.scheduleTitle}>입고 예정일</h2>
-                <div className={style.scheduleGrid}>
-                    {days.map((d) => {
-                        const key = d.toISOString().slice(0, 10).replace(/-/g, ".");
-                        console.log("렌더링 날짜 key:", key, "일정 수:", (schedulesByDate[key] || []).length);
-
-                        const items = schedulesByDate[key] || [];
-                        const dow = KOR_DOW[d.getDay()];
-
-                        return (
-                            <article key={key} className={style.scheduleCard}>
-                                <div className={style.scheduleDate}>
-                                    {key} <span className={style.scheduleDow}>({dow})</span>
-                                </div>
-                                <ul className={style.scheduleList}>
-                                    {items.length === 0 ? (
-                                        <li className={style.empty}>일정이 없습니다.</li>
-                                    ) : (
-                                        items.map((it, i) => (
-                                            <li key={i}>
-                                                <span className={style.scheduleText}>{it.title}</span>
-                                            </li>
-                                        ))
-                                    )}
-                                </ul>
-                            </article>
-                        );
-                    })}
+            return (
+              <article key={key} className={style.scheduleCard}>
+                <div className={style.scheduleDate}>
+                  {key} <span className={style.scheduleDow}>({dow})</span>
                 </div>
-            </section>
-
-            {/* 공지사항 섹션 */}
-            <section className={style.notice}>
-                <h3 className={style.noticetitle}>공지사항</h3>
-                {token ? (
-                    <Notice ref={noticeRef} role="agency" onNoticeClick={handleNoticeClick} />
-                ) : (
-                    <div>현재 공지사항이 없습니다.</div>
-                )}
-
-                {/* 공지사항 상세 팝업 */}
-                {showDetail && selectedNotice && (
-                    <HeadPopup isOpen={showDetail} onClose={handleCloseDetail}>
-                        <NoticeDetail
-                            noticeDetail={selectedNotice}
-                            readOnly={true}
-                            onClose={handleCloseDetail}
-                        />
-                    </HeadPopup>
-                )}
-            </section>
+                <ul className={style.scheduleList}>
+                  {items.length === 0 ? (
+                    <li className={style.empty}>일정이 없습니다.</li>
+                  ) : (
+                    items.map((it, i) => (
+                      <li key={i}>
+                        <span className={style.scheduleText}>{it.title}</span>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </article>
+            );
+          })}
         </div>
-    );
+      </section>
+
+      {/* 공지사항 섹션 */}
+      <section className={style.notice}>
+        <h3 className={style.noticetitle}>공지사항</h3>
+        {token ? (
+          <Notice
+            ref={noticeRef}
+            role="agency"
+            onNoticeClick={handleNoticeClick}
+          />
+        ) : (
+          <div>현재 공지사항이 없습니다.</div>
+        )}
+
+        {/* 공지사항 상세 팝업 */}
+        {showDetail && selectedNotice && (
+          <HeadPopup isOpen={showDetail} onClose={handleCloseDetail}>
+            <NoticeDetail
+              noticeDetail={selectedNotice}
+              readOnly={true}
+              onClose={handleCloseDetail}
+            />
+          </HeadPopup>
+        )}
+      </section>
+    </div>
+  );
 }

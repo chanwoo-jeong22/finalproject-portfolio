@@ -38,15 +38,15 @@ export default function OrderManagement() {
     } = useSelector((state: RootState) => state.agencyOrders);
 
     // Local UI state
-    const [sku, setSku] = useState("");
-    const [name, setName] = useState("");
-    const [filteredLineItems, setFilteredLineItems] = useState(lineItems);
-    const [isSaving, setIsSaving] = useState(false);
+    const [sku, setSku] = useState<string>("");
+    const [name, setName] = useState<string>("");
+    const [filteredLineItems, setFilteredLineItems] = useState<typeof lineItems>(lineItems);
+    const [isSaving, setIsSaving] = useState<boolean>(false);
 
     // 초기 데이터 로드 및 주문 리스트 자동 갱신
     useEffect(() => {
         if (agencyId && token) {
-            dispatch(fetchAgencyProducts(agencyId));
+            dispatch(fetchAgencyProducts(String(agencyId)));
             // dispatch(fetchOrders());
             // // 5초마다 주문 목록 갱신
             // const interval = setInterval(() => {
@@ -71,9 +71,6 @@ export default function OrderManagement() {
         setFilteredLineItems(filtered);
         dispatch(clearSelectForAdd());
     };
-
-
-
 
     // 선택 토글 핸들러들
     const onToggleSelectForAdd = (id: string) => {
@@ -145,8 +142,12 @@ export default function OrderManagement() {
 
             await dispatch(saveDraft(itemsToSave)).unwrap();
             alert("임시 저장 완료!");
-        } catch (err: any) {
-            alert("임시 저장 중 오류 발생: " + (err.message ?? err));
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                alert("임시 저장 중 오류 발생: " + err.message);
+            } else {
+                alert("임시 저장 중 알 수 없는 오류가 발생했습니다.");
+            }
         } finally {
             setIsSaving(false);
         }
@@ -165,7 +166,7 @@ export default function OrderManagement() {
             if (!agencyId) throw new Error("Agency ID가 없습니다.");
             await dispatch(
                 confirmOrder({
-                    agKey: agencyId,
+                    agKey: String(agencyId),
                     items: selectedItems.map((item) => ({
                         pdKey: item.pdKey,
                         rdQuantity: item.qty,
@@ -180,8 +181,12 @@ export default function OrderManagement() {
                 })
             ).unwrap();
             alert("주문이 확정되었습니다!");
-        } catch (err: any) {
-            alert("주문 확정 중 오류 발생: " + (err.message ?? err));
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                alert("주문 확정 중 오류 발생: " + err.message);
+            } else {
+                alert("주문 확정 중 알 수 없는 오류가 발생했습니다.");
+            }
         }
     };
 

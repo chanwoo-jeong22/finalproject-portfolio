@@ -28,18 +28,22 @@ const initialState: LogisticState = {
 };
 
 // 비동기 thunk: 상품 리스트 조회
-export const fetchProducts = createAsyncThunk(
+export const fetchProducts = createAsyncThunk<
+  Product[],
+  void,
+  { rejectValue: string }
+>(
   'logistic/fetchProducts',
   async (_, thunkAPI) => {
     try {
-      const response = await api.get('/logisticproducts');
+      const response = await api.get<Product[]>('/logisticproducts');
       // 입고수량 초기화 필드 추가
-      const dataWithStore = response.data.map((p: any) => ({
+      const dataWithStore = response.data.map((p) => ({
         ...p,
         lpStoreInput: 0,
       }));
       return dataWithStore;
-    } catch (err) {
+    } catch (error: unknown) {
       return thunkAPI.rejectWithValue('데이터를 불러오는데 실패했습니다.');
     }
   }
@@ -58,7 +62,7 @@ export const updateProductStock = createAsyncThunk<
         params: { quantity },
       });
       return { lpKey, quantity };
-    } catch (err) {
+    } catch (error: unknown) {
       return thunkAPI.rejectWithValue('입고 등록 중 오류가 발생했습니다.');
     }
   }
@@ -88,7 +92,7 @@ export const bulkUpdateStock = createAsyncThunk<
         )
       );
       return updates.map(p => p.lpKey);
-    } catch (err) {
+    } catch (error: unknown) {
       return thunkAPI.rejectWithValue('일괄 입고 등록 중 오류가 발생했습니다.');
     }
   }
@@ -137,7 +141,7 @@ const logisticSlice = createSlice({
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload ?? '알 수 없는 오류';
       })
       .addCase(updateProductStock.fulfilled, (state, action) => {
         const { lpKey, quantity } = action.payload;
