@@ -2,14 +2,10 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../../api/api";
 import type { RootState } from "../../store";
 
-// NoticeData 타입 정의 (Notice 컴포넌트에서 기대하는 타입에 맞춤)
 export interface NoticeData {
   ntKey: number;
   ntCategory: string;
   ntContent: string;
-  // 필요 시 아래 주석 해제
-  // ntCode?: number;
-  // startDate?: string;
 }
 
 interface ScheduleItem {
@@ -19,18 +15,21 @@ interface ScheduleItem {
 interface LogisticState {
   notices: NoticeData[];
   schedulesByDate: Record<string, ScheduleItem[]>;
-  loading: boolean;
-  error: string | null;
+  noticesLoading: boolean;
+  noticesError: string | null;
+  schedulesLoading: boolean;
+  schedulesError: string | null;
 }
 
 const initialState: LogisticState = {
   notices: [],
   schedulesByDate: {},
-  loading: false,
-  error: null,
+  noticesLoading: false,
+  noticesError: null,
+  schedulesLoading: false,
+  schedulesError: null,
 };
 
-// 공지사항 조회 Thunk
 export const fetchNotices = createAsyncThunk<
   NoticeData[],
   void,
@@ -39,20 +38,16 @@ export const fetchNotices = createAsyncThunk<
   try {
     const response = await api.get("/notices", { params: { codes: [0, 2] } });
     const data = response.data?.data ?? response.data ?? [];
-    // NoticeData 타입에 맞게 매핑
     return data.map((n: any) => ({
       ntKey: n.ntKey,
       ntCategory: n.ntCategory,
       ntContent: n.ntContent,
-      // ntCode: n.ntCode,         // 필요하면 추가
-      // startDate: n.startDate,   // 필요하면 추가
     }));
   } catch (error: any) {
     return thunkAPI.rejectWithValue(error.message || "공지사항 불러오기 실패");
   }
 });
 
-// 일정표 조회 Thunk
 export const fetchSchedules = createAsyncThunk<
   Record<string, ScheduleItem[]>,
   { from: string; to: string },
@@ -87,30 +82,32 @@ const logisticSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      // fetchNotices
       .addCase(fetchNotices.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.noticesLoading = true;
+        state.noticesError = null;
       })
       .addCase(fetchNotices.fulfilled, (state, action) => {
-        state.loading = false;
+        state.noticesLoading = false;
         state.notices = action.payload;
       })
       .addCase(fetchNotices.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload ?? "공지사항 불러오기 실패";
+        state.noticesLoading = false;
+        state.noticesError = action.payload ?? "공지사항 불러오기 실패";
       })
 
+      // fetchSchedules
       .addCase(fetchSchedules.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.schedulesLoading = true;
+        state.schedulesError = null;
       })
       .addCase(fetchSchedules.fulfilled, (state, action) => {
-        state.loading = false;
+        state.schedulesLoading = false;
         state.schedulesByDate = action.payload;
       })
       .addCase(fetchSchedules.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload ?? "일정표 불러오기 실패";
+        state.schedulesLoading = false;
+        state.schedulesError = action.payload ?? "일정표 불러오기 실패";
       });
   },
 });

@@ -24,8 +24,10 @@ function LogisticNotice() {
   const days = useMemo(() => getNextBizDays(5), []);
 
   useEffect(() => {
+    if (!token) return;
     dispatch(fetchNotices());
-  }, [dispatch]);
+  }, [token, dispatch]);
+
 
   useEffect(() => {
     if (!token) return;
@@ -35,7 +37,7 @@ function LogisticNotice() {
         to: toIsoDate(days[days.length - 1]),
       })
     );
-  }, [dispatch, token, days]);
+  }, [dispatch, token]);
 
   const handleNoticeClick = (notice: typeof notices[0]) => {
     setSelectedNotice(notice);
