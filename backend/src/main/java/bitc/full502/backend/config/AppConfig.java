@@ -86,10 +86,10 @@ public class AppConfig implements WebMvcConfigurer {
                 .requestMatchers("/api/head_office/**").hasRole("HEAD")
 
                 // 대리점 권한 필요 경로
-                .requestMatchers("/api/agency/**").hasRole("AGENCY")
+                .requestMatchers("/api/agency/**").hasAnyRole("AGENCY", "HEAD")
 
                 // 물류 업체 권한 필요 경로
-                .requestMatchers("/api/logistic/**").hasRole("LOGISTIC")
+                .requestMatchers("/api/logistic/**").hasAnyRole("LOGISTIC", "HEAD")
 
                 // 디테일 페이지 때문에 추가
                  .requestMatchers("/api/agencyorder/**").hasAnyRole("AGENCY", "LOGISTIC", "HEAD")
