@@ -562,24 +562,22 @@ private List<AgencyOrderDTO> toDTOList(List<AgencyOrderEntity> entities) {
         .toList();
 }
 
-    public List<AgencyOrderDTO> findMineByLoginId(String loginId, boolean isHQ, String status) {
+    public List<AgencyOrderDTO> findMineByLoginId(String loginId, boolean isHQ, List<String> statusList) {
 
     List<AgencyOrderEntity> list;
 
     if (isHQ) {
-        // 본사면 전체 조회 → status 있으면 필터링 적용
-        if (status == null || status.isBlank()) {
+        if (statusList == null || statusList.isEmpty()) {
             list = repo.findAll();
         } else {
-            list = repo.findByOrStatus(status);
+            list = repo.findByOrStatusIn(statusList);  // 다중 상태 메서드 호출
         }
     }
     else {
-        // 대리점 또는 물류 담당자
-        if (status == null || status.isBlank()) {
+        if (statusList == null || statusList.isEmpty()) {
             list = repo.findForLogisticByLoginId(loginId);
         } else {
-            list = repo.findForLogisticByLoginIdAndStatus(loginId, status);
+            list = repo.findForLogisticByLoginIdAndStatusIn(loginId, statusList);  // 다중 상태 메서드 호출
         }
     }
 

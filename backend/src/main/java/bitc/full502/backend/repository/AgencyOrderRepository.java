@@ -24,8 +24,8 @@ public interface AgencyOrderRepository extends JpaRepository<AgencyOrderEntity, 
                                                   @Param("status") String status);
 
     // 3️⃣ 단순 상태 기준 조회
-    @Query("SELECT ao FROM AgencyOrderEntity ao WHERE ao.orStatus = :status")
-    List<AgencyOrderEntity> findByOrStatus(@Param("status") String status);
+    @Query("SELECT ao FROM AgencyOrderEntity ao WHERE ao.orStatus IN :statuses")
+List<AgencyOrderEntity> findByOrStatusIn(@Param("statuses") List<String> statuses);
 
     // 4️⃣ 오늘 날짜 prefix로 시작하는 order_number 개수 조회
     long countByOrderNumberStartingWith(String todayPrefix);
@@ -87,17 +87,16 @@ public interface AgencyOrderRepository extends JpaRepository<AgencyOrderEntity, 
     //  ⭐⭐⭐ [추가됨] 물류 로그인 사용자 + 상태 조건으로 주문 가져오기
     // ============================================================
     @Query("""
-        SELECT ao
-        FROM AgencyOrderEntity ao
-        JOIN LogisticEntity lg
-          ON SUBSTRING(ao.orGu,1,2) = SUBSTRING(lg.lgName,1,2)
-        WHERE lg.lgId = :loginId
-          AND ao.orStatus = :status
-        ORDER BY ao.orDate DESC, ao.orKey DESC
-    """)
-    List<AgencyOrderEntity> findForLogisticByLoginIdAndStatus(
-            @Param("loginId") String loginId,
-            @Param("status") String status
-    );
+    SELECT ao
+    FROM AgencyOrderEntity ao
+    JOIN LogisticEntity lg
+      ON SUBSTRING(ao.orGu,1,2) = SUBSTRING(lg.lgName,1,2)
+    WHERE lg.lgId = :loginId
+      AND ao.orStatus IN :statuses
+    ORDER BY ao.orDate DESC, ao.orKey DESC
+""")
+List<AgencyOrderEntity> findForLogisticByLoginIdAndStatusIn(
+        @Param("loginId") String loginId,
+        @Param("statuses") List<String> statuses);
 
 }

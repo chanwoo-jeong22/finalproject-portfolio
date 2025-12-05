@@ -48,20 +48,15 @@ public class AgencyOrderController {
     @GetMapping("/full/mine")
 public List<AgencyOrderDTO> getMine(
         Authentication auth,
-        @RequestParam(required = false) String status
+        @RequestParam(required = false) List<String> status  // String → List<String>
 ) {
     String loginId = (auth != null) ? auth.getName() : null;
     boolean isHQ = auth != null && auth.getAuthorities().stream()
             .anyMatch(a -> a.getAuthority().equals("ROLE_HQ"));
 
-    System.out.println("===== /agencyorder/full/mine 요청 =====");
-    System.out.println("loginId = " + loginId);
-    System.out.println("roles = " + auth.getAuthorities());
-    System.out.println("isHQ = " + isHQ);
-    System.out.println("status = " + status);
-
     return service.findMineByLoginId(loginId, isHQ, status);
 }
+
 
 
 
