@@ -147,6 +147,7 @@ export const reloadUserInfo = createAsyncThunk<
  * - FormData를 받아서 회원가입 API 호출 (multipart/form-data)
  */
 export const signUp = createAsyncThunk<
+  unknown,  // API 반환 타입이 뭔지 모를 때는 unknown 권장
   FormData,
   { rejectValue: string }
 >(
@@ -164,6 +165,7 @@ export const signUp = createAsyncThunk<
     }
   }
 );
+
 
 const authSlice = createSlice({
   name: "auth",

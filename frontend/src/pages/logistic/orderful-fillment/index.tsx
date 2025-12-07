@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import api from "../../../api/api";
 import styles from "../../../styles/logistic/logistic-order.module.css";
@@ -14,34 +14,7 @@ import {
   setSortOrder,
   setIsOpen,
 } from "../../../redux/slices/logistic/orderfulfillment-slice";
-
-// 주문 내 개별 상품 항목 타입 정의
-interface OrderProductItem {
-  name?: string;
-  oiProducts?: string;
-  product?: { pdProducts?: string };
-  quantity?: number | string;
-  oiQuantity?: number | string;
-  qty?: number | string;
-  [key: string]: unknown;
-}
-
-// 주문 항목 타입 정의
-interface OrderItem {
-  orKey: string;
-  orProducts: string;
-  orQuantity: number;
-  orDate: string;
-  orReserve: string;
-  orTotal: number;
-  orPrice: number;
-  orStatus: string;
-  orGu: string;
-  orderNumber?: string;
-  items?: OrderProductItem[];
-  orderItems?: OrderProductItem[];
-  [key: string]: unknown;
-}
+import { AgencyOrder } from "../../../types/entity";
 
 export default function OrderfulFillment() {
   const dispatch = useDispatch();
@@ -52,12 +25,11 @@ export default function OrderfulFillment() {
   const sheet = useSelector((state: RootState) => state.orderfulfillment.sheet);
   const allOrders = useSelector((state: RootState) => state.orderfulfillment.allOrders);
   const orders = useSelector((state: RootState) => state.orderfulfillment.orders);
-  const products = useSelector((state: RootState) => state.orderfulfillment.products);
-  const agencies = useSelector((state: RootState) => state.orderfulfillment.agencies);
-  const deliveries = useSelector((state: RootState) => state.orderfulfillment.deliveries);
   const agencyorderForm = useSelector((state: RootState) => state.orderfulfillment.agencyorderForm);
   const sortField = useSelector((state: RootState) => state.orderfulfillment.sortField);
   const sortOrder = useSelector((state: RootState) => state.orderfulfillment.sortOrder);
+  
+  const [names , setNames] = useState<string[]>([]);
 
   // -------------------------------------
   // 주문 데이터 fetch 및 Redux 상태에 저장
@@ -77,27 +49,16 @@ export default function OrderfulFillment() {
         });
 
         // 서버 응답에서 주문 데이터 추출 (data가 있거나 바로 data인 경우 모두 처리)
-        const rawOrders: OrderItem[] = ordersRes.data?.data ?? ordersRes.data ?? [];
+        const rawOrders: AgencyOrder[] = ordersRes.data?.data ?? ordersRes.data ?? [];
 
         // 주문 아이템의 상품명과 수량 계산하여 보완
         const list = rawOrders.map((o) => {
-          const items: OrderProductItem[] = o.items ?? o.orderItems ?? [];
-
-          // 상품명 리스트를 배열로 얻어 연결
-          const names = items
-            .map((i) => i.name ?? i.oiProducts ?? i.product?.pdProducts ?? "")
-            .filter(Boolean);
-
-          // 상품 수량 합산 (숫자 변환 후 합계)
-          const qtyFromItems = items.reduce((sum, i) => {
-            const val = Number(i.quantity ?? i.oiQuantity ?? i.qty ?? 0) || 0;
-            return sum + val;
-          }, 0);
+          setNames(prevName => [...prevName, o.orProducts])
 
           return {
             ...o,
-            orProducts: o.orProducts ?? o.or_products ?? names.join(", "),
-            orQuantity: o.orQuantity ?? o.or_quantity ?? qtyFromItems,
+            orProducts: o.orProducts ?? names.join(", "),
+            orQuantity: o.orQuantity,
           };
         });
 
@@ -131,7 +92,7 @@ export default function OrderfulFillment() {
   // -------------------------------------
   // 주문 상세 팝업 열기 함수
   // -------------------------------------
-  const openOrderPopup = (row: OrderItem) => {
+  const openOrderPopup = (row: AgencyOrder) => {
     console.log("팝업 열기 - orKey:", row.orKey);
     if (!row.orKey) {
       alert("주문 키(orKey)가 없습니다!");
@@ -242,7 +203,7 @@ export default function OrderfulFillment() {
   // -------------------------------------
   // 정렬 필드 변경 및 방향 토글 함수
   // -------------------------------------
-  const handleSort = (field: keyof OrderItem) => {
+  const handleSort = (field: keyof AgencyOrder) => {
     const next = sortField === field && sortOrder === "asc" ? "desc" : "asc";
     dispatch(setSortField(field));
     dispatch(setSortOrder(next));
@@ -251,7 +212,7 @@ export default function OrderfulFillment() {
   // -------------------------------------
   // 정렬 아이콘 표시 함수 (현재 정렬 필드 기준)
   // -------------------------------------
-  const getSortArrow = (field: keyof OrderItem): string => {
+  const getSortArrow = (field: keyof AgencyOrder): string => {
     if (sortField === field) return sortOrder === "asc" ? "▲" : "▼";
     return "▼";
   };
@@ -263,27 +224,27 @@ export default function OrderfulFillment() {
   const rows = useMemo(() => {
     // 특정 필드 값 읽기 (orderNumber는 orKey 대체 가능)
     const read = (
-      o: OrderItem,
-      f: keyof OrderItem | "orderNumber"
+      o: AgencyOrder,
+      f: keyof AgencyOrder | "orderNumber"
     ): string | number | undefined => {
       if (f === "orderNumber") return o.orderNumber ?? o.orKey;
       return o[f] as string | number | undefined;
     };
 
     // 숫자 필드 판별
-    const isNumber = (f: keyof OrderItem): boolean => {
+    const isNumber = (f: keyof AgencyOrder): boolean => {
       const numberFields = new Set(["orTotal", "orQuantity", "orPrice", "orKey"]);
       return numberFields.has(f as string);
     };
 
     // 날짜 필드 판별
-    const isDate = (f: keyof OrderItem): boolean => {
+    const isDate = (f: keyof AgencyOrder): boolean => {
       const dateFields = new Set(["orDate", "orReserve"]);
       return dateFields.has(f as string);
     };
 
     // 비교 함수 (정렬 기준에 따라 다르게 비교)
-    const cmp = (a: OrderItem, b: OrderItem): number => {
+    const cmp = (a: AgencyOrder, b: AgencyOrder): number => {
       const A = read(a, sortField);
       const B = read(b, sortField);
 
@@ -446,7 +407,7 @@ export default function OrderfulFillment() {
               </div></th>
 
               <th><div><p>대리점</p>
-                <button onClick={() => handleSort("agName")}>{getSortArrow("agName")}</button>
+                <button onClick={() => handleSort("orProducts")}>{getSortArrow("orProducts")}</button>
               </div></th>
 
               <th><div><p>처리 상태</p>
@@ -485,7 +446,7 @@ export default function OrderfulFillment() {
               rows.map((r) => (
                 <tr key={r.orKey}>
                   <td>{r.orderNumber}</td>
-                  <td>{r.agName}</td>
+                  <td>{r.orProducts}</td>
                   <td>{r.orStatus}</td>
                   <td className={styles.left}>{r.orProducts}</td>
                   <td>{r.orQuantity}</td>
@@ -516,7 +477,7 @@ export default function OrderfulFillment() {
                 <div className={styles.modalMeta}>
                   <span>주문번호: {sheet.orderNumber}</span>
                   <span>주문일: {sheet.orDate}</span>
-                  <span>대리점: {sheet.agName}</span>
+                  <span>대리점: {sheet.orProducts}</span>
                   <span>도착예정일: {sheet.orReserve}</span>
                 </div>
               </div>
