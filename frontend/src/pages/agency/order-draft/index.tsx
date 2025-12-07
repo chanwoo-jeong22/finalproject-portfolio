@@ -2,16 +2,17 @@ import React, { useState, useEffect } from "react";
 import styles from "../../../styles/agency/orders.module.css";
 import api from "../../../api/api";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { useSelector } from "react-redux"; // redux state 접근용
+import { useSelector } from "react-redux";
 
-// Redux store의 auth slice에서 token 꺼내기 (예시 경로/구조에 맞게 수정 필요)
+// Redux RootState 타입
 interface RootState {
   auth: {
     token: string | null;
   };
 }
 
-interface DraftItem {
+// DraftItem 타입
+export interface DraftItem {
   rdKey: number;
   pdKey: string;
   rdProducts: string;
@@ -20,47 +21,58 @@ interface DraftItem {
   rdTotal: number;
 }
 
+// 부모에서 OutletContext 로 전달받는 orders 아이템 타입
+interface ParentOrderItem {
+  orKey: number | string;
+  orDate: string;
+  [key: string]: any;
+}
+
+// OutletContext 타입
+interface OutletContextType {
+  orders: ParentOrderItem[];
+  setOrders: React.Dispatch<React.SetStateAction<ParentOrderItem[]>>;
+}
+
 export default function OrderDraft() {
-  // 부모에서 내려준 orders 상태와 변경 함수
-  const { orders, setOrders } = useOutletContext<{ orders: any[]; setOrders: React.Dispatch<React.SetStateAction<any[]>> }>();
+  const { orders, setOrders } = useOutletContext<OutletContextType>();
 
   const navigate = useNavigate();
   const token = useSelector((state: RootState) => state.auth.token);
 
-  // 임시 저장 주문 목록 상태
+  // 임시 저장 목록
   const [drafts, setDrafts] = useState<DraftItem[]>([]);
-  // 선택된 항목들 상태 (rdKey 배열)
+  // 선택된 항목들 (rdKey 배열)
   const [selected, setSelected] = useState<number[]>([]);
-  // 도착 예정일 상태 (YYYY-MM-DD)
+  // 도착 예정일
   const [expectedDate, setExpectedDate] = useState<string>("");
 
-  // 토큰이 바뀌면 임시 저장 목록 다시 불러오기
+  // 임시 저장 불러오기
   useEffect(() => {
-  if (!token) return;
+    if (!token) return;
 
-  const userInfoStr = localStorage.getItem("userInfo");
-  const agKey = userInfoStr ? JSON.parse(userInfoStr).agKey : null;
-  if (!agKey) {
-    console.error("대리점 키(agKey)가 없습니다.");
-    return;
-  }
-
-  const fetchDrafts = async () => {
-    try {
-      const res = await api.get<DraftItem[]>(`/agencyorder/draft?agKey=${agKey}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setDrafts(res.data);
-    } catch (err) {
-      console.error("임시 저장 데이터 불러오기 실패", err);
+    const userInfoStr = localStorage.getItem("userInfo");
+    const agKey = userInfoStr ? JSON.parse(userInfoStr).agKey : null;
+    if (!agKey) {
+      console.error("대리점 키(agKey)가 없습니다.");
+      return;
     }
-  };
 
-  fetchDrafts();
-}, [token]);
+    const fetchDrafts = async () => {
+      try {
+        const res = await api.get<DraftItem[]>(`/agencyorder/draft?agKey=${agKey}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setDrafts(res.data);
+      } catch (err) {
+        console.error("임시 저장 데이터 불러오기 실패", err);
+      }
+    };
 
+    fetchDrafts();
+  }, [token]);
 
-  // 체크박스 토글 (개별)
+  // 개별 선택 토글
   const toggleSelect = (rdKey: number) => {
     setSelected(prev =>
       prev.includes(rdKey) ? prev.filter(x => x !== rdKey) : [...prev, rdKey]
@@ -76,7 +88,7 @@ export default function OrderDraft() {
     }
   };
 
-  // 선택 항목 삭제 (API 호출 후 상태 반영)
+  // 선택 항목 삭제
   const handleDeleteSelected = async () => {
     if (selected.length === 0) return;
 
@@ -90,42 +102,47 @@ export default function OrderDraft() {
         data: { rdKeys: selected },
         headers: { Authorization: `Bearer ${token}` },
       });
+
       setDrafts(prev => prev.filter(item => !selected.includes(item.rdKey)));
       setSelected([]);
       alert("선택 항목이 삭제되었습니다.");
-    } catch (err: any) {
+    } catch (err) {
       console.error("삭제 실패", err);
-      alert("삭제 중 오류 발생: " + err.message);
+      alert("삭제 중 오류 발생");
     }
   };
 
-  // 수량 1 증가
+  // 수량 증가
   const incrementQty = (rdKey: number) => {
     setDrafts(prev =>
-      prev.map(item => {
-        if (item.rdKey === rdKey) {
-          const newQty = item.rdQuantity + 1;
-          return { ...item, rdQuantity: newQty, rdTotal: newQty * item.rdPrice };
-        }
-        return item;
-      })
+      prev.map(item =>
+        item.rdKey === rdKey
+          ? {
+              ...item,
+              rdQuantity: item.rdQuantity + 1,
+              rdTotal: (item.rdQuantity + 1) * item.rdPrice,
+            }
+          : item
+      )
     );
   };
 
-  // 수량 1 감소 (최소 1)
+  // 수량 감소 (최소 1)
   const decrementQty = (rdKey: number) => {
     setDrafts(prev =>
-      prev.map(item => {
-        if (item.rdKey === rdKey) {
-          const newQty = Math.max(item.rdQuantity - 1, 1);
-          return { ...item, rdQuantity: newQty, rdTotal: newQty * item.rdPrice };
-        }
-        return item;
-      })
+      prev.map(item =>
+        item.rdKey === rdKey
+          ? {
+              ...item,
+              rdQuantity: Math.max(item.rdQuantity - 1, 1),
+              rdTotal: Math.max(item.rdQuantity - 1, 1) * item.rdPrice,
+            }
+          : item
+      )
     );
   };
 
-  // 주문 확정 API 호출 및 상태 업데이트
+  // 주문 확정
   const handleConfirmOrder = async () => {
     if (selected.length === 0) {
       alert("확정할 품목을 선택해주세요.");
@@ -138,7 +155,6 @@ export default function OrderDraft() {
     }
 
     try {
-      // 로컬스토리지에서 대리점 키 가져오기 (필요하면 redux state로 관리해도 됨)
       const userInfoStr = localStorage.getItem("userInfo");
       const agKey = userInfoStr ? JSON.parse(userInfoStr).agKey : null;
       if (!agKey) {
@@ -147,14 +163,18 @@ export default function OrderDraft() {
       }
 
       const selectedItems = drafts.filter(item => selected.includes(item.rdKey));
-      // 기본 도착 예정일: 오늘 + 4일
+
+      // 기본 도착 예정일 = 오늘 + 4일
       const today = new Date();
       const defaultArrival = new Date(today);
       defaultArrival.setDate(today.getDate() + 4);
-      const arrivalDate = expectedDate || defaultArrival.toISOString().slice(0, 10);
+
+      const arrivalDate =
+        expectedDate || defaultArrival.toISOString().slice(0, 10);
 
       // 주문 확정 요청
-      const res = await api.post("/agencyorder/confirm",
+      const res = await api.post(
+        "/agencyorder/confirm",
         {
           agKey,
           items: selectedItems,
@@ -167,17 +187,16 @@ export default function OrderDraft() {
 
       const savedOrder = res.data;
 
-      // 임시 저장 항목 삭제
+      // 임시 저장 삭제
       await api.delete("/agencyorder/draft", {
         data: { rdKeys: selected },
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // 상태 업데이트
       setDrafts(prev => prev.filter(item => !selected.includes(item.rdKey)));
       setSelected([]);
 
-      // UI용 주문 항목 및 금액 계산
+      // UI용 주문 데이터 구성
       const items = selectedItems.map(item => ({
         sku: item.pdKey,
         name: item.rdProducts,
@@ -185,23 +204,32 @@ export default function OrderDraft() {
         price: item.rdPrice,
       }));
 
-      const totalAmount = items.reduce((sum, item) => sum + item.qty * item.price, 0);
+      const totalAmount = items.reduce(
+        (sum, item) => sum + item.qty * item.price,
+        0
+      );
 
-      // 주문번호 UI용 포맷팅
+      // 주문번호 UI 포맷
       const date = new Date(savedOrder.orDate);
       const yy = String(date.getFullYear()).slice(2);
       const mm = String(date.getMonth() + 1).padStart(2, "0");
       const dd = String(date.getDate()).padStart(2, "0");
-      const seq = String(Number(savedOrder.orKey) % 100).padStart(2, "0"); // YYMMDD00 형식
+      const seq = String(Number(savedOrder.orKey) % 100).padStart(2, "0");
+
       const orderNumberUI = `${yy}${mm}${dd}${seq}`;
 
-      const formattedOrder = { ...savedOrder, items, totalAmount, orderNumberUI };
+      const formattedOrder = {
+        ...savedOrder,
+        items,
+        totalAmount,
+        orderNumberUI,
+      };
 
-      // 부모 orders 상태에 새 주문 추가 (navigate 없이)
+      // 부모 상태에 추가
       setOrders(prev => [...prev, formattedOrder]);
 
       alert("주문이 확정되었습니다.");
-    } catch (err: any) {
+    } catch (err) {
       console.error("주문 확정 실패:", err);
       alert("주문 확정 중 오류 발생");
     }
