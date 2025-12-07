@@ -142,7 +142,7 @@ export default function OrderManagement() {
 
             await dispatch(saveDraft(itemsToSave)).unwrap();
             alert("임시 저장 완료!");
-        } catch (err: unknown) {
+        } catch (err: string) {
             if (err instanceof Error) {
                 alert("임시 저장 중 오류 발생: " + err.message);
             } else {
@@ -181,7 +181,7 @@ export default function OrderManagement() {
                 })
             ).unwrap();
             alert("주문이 확정되었습니다!");
-        } catch (err: unknown) {
+        } catch (err: string) {
             if (err instanceof Error) {
                 alert("주문 확정 중 오류 발생: " + err.message);
             } else {

@@ -32,7 +32,7 @@ export interface AgencyOrderForm {
 export interface BasicInfo {
   id: number | string;
   name: string;
-  [key: string]: unknown;
+  
 }
 
 interface OrderFulfillmentState {
@@ -131,7 +131,7 @@ const orderfulfillmentSlice = createSlice({
     },
     updateAgencyorderFormField(
       state,
-      action: PayloadAction<{ field: keyof AgencyOrderForm; value: unknown }>
+      action: PayloadAction<{ field: keyof AgencyOrderForm; value: string }>
     ) {
       const { field, value } = action.payload;
       // 타입 안전을 위해 아래와 같이 타입 단언 권장

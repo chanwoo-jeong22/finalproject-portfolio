@@ -10,8 +10,6 @@ interface OrderItem {
   oiQuantity: number;      // 수량
   oiPrice: number;         // 단가
   oiTotal: number;         // 총액
-  // 추가적인 임의 필드도 받을 수 있음 (가급적 최소화 권장)
-  [key: string]: unknown;
 }
 
 // 주문 정보 타입 정의
@@ -20,7 +18,7 @@ interface OrderInfo {
   agencyName: string;      // 대리점명
   orDate: string;          // 주문 날짜
   orReserve: string;       // 예약 날짜
-  [key: string]: unknown;
+  
 }
 
 // 슬라이스 상태 타입 정의

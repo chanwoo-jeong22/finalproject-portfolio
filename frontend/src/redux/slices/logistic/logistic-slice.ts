@@ -23,7 +23,7 @@ interface ScheduleItem {
  * --------------------------- */
 interface AxiosErrorShape {
   response?: {
-    data?: unknown;
+    data?: string;
   };
 }
 
@@ -51,12 +51,12 @@ const initialState: LogisticState = {
 /* ----------------------------------------------------
  * 🔥 타입가드: 에러가 AxiosError 형태인지 판별
  * ---------------------------------------------------- */
-function isAxiosError(error: unknown): error is AxiosErrorShape {
+function isAxiosError(error: string): error is AxiosErrorShape {
   return (
     typeof error === "object" &&
     error !== null &&
     "response" in error &&
-    typeof (error as Record<string, unknown>).response === "object"
+    typeof (error as Record<string, string>).response === "object"
   );
 }
 
@@ -70,13 +70,13 @@ export const fetchNotices = createAsyncThunk<
 >("logistic/fetchNotices", async (_, { rejectWithValue }) => {
   try {
     const response = await api.get("/notices", { params: { codes: [0, 2] } });
-    const list: unknown = response.data?.data ?? response.data ?? [];
+    const list: string = response.data?.data ?? response.data ?? [];
 
-    // 안전한 매핑을 위해 unknown 배열 검사
+    // 안전한 매핑을 위해 string 배열 검사
     if (!Array.isArray(list)) return [];
 
     return list
-      .filter((n): n is Record<string, unknown> => typeof n === "object" && n !== null)
+      .filter((n): n is Record<string, string> => typeof n === "object" && n !== null)
       .map((n) => ({
         ntKey: Number(n.ntKey ?? 0),
         ntCategory: String(n.ntCategory ?? ""),
@@ -97,7 +97,7 @@ export const fetchNotices = createAsyncThunk<
         typeof data === "object" &&
         data !== null &&
         "message" in data &&
-        typeof (data as { message: unknown }).message === "string"
+        typeof (data as { message: string }).message === "string"
       ) {
         message = (data as { message: string }).message;
       }
@@ -124,15 +124,15 @@ export const fetchSchedules = createAsyncThunk<
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    const rawList: unknown = response.data?.data ?? response.data ?? [];
+    const rawList: string = response.data?.data ?? response.data ?? [];
 
-    // unknown → safe array check
+    // string → safe array check
     if (!Array.isArray(rawList)) return {};
 
     const schedules: Record<string, ScheduleItem[]> = {};
 
     rawList
-      .filter((r): r is Record<string, unknown> => typeof r === "object" && r !== null)
+      .filter((r): r is Record<string, string> => typeof r === "object" && r !== null)
       .forEach((r) => {
         // 날짜 필드 통합 처리
         const rawDate = String(r.orReserve ?? r.or_reserve ?? "");
@@ -165,7 +165,7 @@ export const fetchSchedules = createAsyncThunk<
         typeof data === "object" &&
         data !== null &&
         "message" in data &&
-        typeof (data as { message: unknown }).message === "string"
+        typeof (data as { message: string }).message === "string"
       ) {
         message = (data as { message: string }).message;
       }

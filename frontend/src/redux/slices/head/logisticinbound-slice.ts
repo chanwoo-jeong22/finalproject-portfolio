@@ -43,7 +43,7 @@ export const fetchProducts = createAsyncThunk<
         lpStoreInput: 0,
       }));
       return dataWithStore;
-    } catch (error: unknown) {
+    } catch (error: string) {
       return thunkAPI.rejectWithValue('데이터를 불러오는데 실패했습니다.');
     }
   }
@@ -62,7 +62,7 @@ export const updateProductStock = createAsyncThunk<
         params: { quantity },
       });
       return { lpKey, quantity };
-    } catch (error: unknown) {
+    } catch (error: string) {
       return thunkAPI.rejectWithValue('입고 등록 중 오류가 발생했습니다.');
     }
   }
@@ -92,7 +92,7 @@ export const bulkUpdateStock = createAsyncThunk<
         )
       );
       return updates.map(p => p.lpKey);
-    } catch (error: unknown) {
+    } catch (error: string) {
       return thunkAPI.rejectWithValue('일괄 입고 등록 중 오류가 발생했습니다.');
     }
   }

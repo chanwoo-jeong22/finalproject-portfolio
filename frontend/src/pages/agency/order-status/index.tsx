@@ -33,7 +33,7 @@ interface Order {
   orderNumberUI?: string;
   items?: OrderItem[];
   totalAmount?: number;
-  delivery?: unknown;
+  delivery?: string;
 }
 
 export default function OrderStatus() {
@@ -178,7 +178,7 @@ export default function OrderStatus() {
     } else {
       console.warn("agencyId가 없어 주문 리스트 갱신을 할 수 없습니다.");
     }
-  } catch (err: unknown) {
+  } catch (err: string) {
     if (err instanceof Error) {
       alert("삭제 중 오류가 발생했습니다: " + err.message);
     } else {

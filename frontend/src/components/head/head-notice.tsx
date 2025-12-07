@@ -21,7 +21,7 @@ export interface NoticeType {
   atCreated?: string; // 생성 시간 (옵션)
   at_created?: string; // 생성 시간 (옵션, 다른 이름 가능성 대비)
   category2?: string; // 대체 카테고리명 (옵션)
-  [key: string]: unknown; // 기타 알 수 없는 프로퍼티 허용
+   // 기타 알 수 없는 프로퍼티 허용
 }
 
 const HeadMain: React.FC = () => {

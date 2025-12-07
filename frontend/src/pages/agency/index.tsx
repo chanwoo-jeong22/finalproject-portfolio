@@ -122,7 +122,7 @@ export default function Index() {
 
         setSchedulesByDate(byDate);
       })
-      .catch((err: unknown) => {
+      .catch((err: string) => {
         if (err instanceof Error) {
           console.error("입고예정일 API 호출 오류:", err.message);
         } else {

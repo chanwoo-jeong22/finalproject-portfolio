@@ -23,21 +23,21 @@ interface Notice {
     isChecked?: boolean;
 }
 
-// 에러 메시지 안전 추출 함수 (unknown 타입 기반)
-function getErrorMessage(error: unknown): string {
+// 에러 메시지 안전 추출 함수 (string 타입 기반)
+function getErrorMessage(error: string): string {
   if (error instanceof Error) return error.message;
 
   if (
     typeof error === "object" &&
     error !== null &&
     "response" in error &&
-    typeof (error as { response?: unknown }).response === "object" &&
-    (error as { response?: unknown }).response !== null &&
-    "data" in (error as { response: { data?: unknown } }).response! &&
-    typeof (error as { response: { data?: unknown } }).response.data === "object" &&
-    (error as { response: { data: Record<string, unknown> } }).response.data !== null &&
-    "message" in (error as { response: { data: Record<string, unknown> } }).response.data &&
-    typeof (error as { response: { data: Record<string, unknown> } }).response.data.message === "string"
+    typeof (error as { response?: string }).response === "object" &&
+    (error as { response?: string }).response !== null &&
+    "data" in (error as { response: { data?: string } }).response! &&
+    typeof (error as { response: { data?: string } }).response.data === "object" &&
+    (error as { response: { data: Record<string, string> } }).response.data !== null &&
+    "message" in (error as { response: { data: Record<string, string> } }).response.data &&
+    typeof (error as { response: { data: Record<string, string> } }).response.data.message === "string"
   ) {
     return (error as { response: { data: { message: string } } }).response.data.message;
   }
@@ -207,7 +207,7 @@ function NoticeRegistration() {
                 endDate: item.endDate,
                 atCreated: item.atCreated
             })));
-        } catch (error: unknown) {
+        } catch (error: string) {
             setError(getErrorMessage(error));
         } finally {
             setIsLoading(false);
@@ -291,7 +291,7 @@ function NoticeRegistration() {
             setEndDate('');
             fetchNotices();
 
-        } catch (error: unknown) {
+        } catch (error: string) {
             alert("공지사항 등록 실패: " + getErrorMessage(error));
         }
     };
@@ -317,7 +317,7 @@ function NoticeRegistration() {
             });
             alert(`${selectedIds.length}개의 공지사항이 삭제되었습니다.`);
             fetchNotices();
-        } catch (error: unknown) {
+        } catch (error: string) {
             alert("공지사항 삭제 실패: " + getErrorMessage(error));
         } finally {
             setIsLoading(false);
@@ -342,7 +342,7 @@ function NoticeRegistration() {
             alert('삭제되었습니다.');
             closeNoticeDetail();
             fetchNotices();
-        } catch (error: unknown) {
+        } catch (error: string) {
             alert('공지사항 삭제 실패: ' + getErrorMessage(error));
         } finally {
             setIsLoading(false);
@@ -366,7 +366,7 @@ function NoticeRegistration() {
             alert('수정되었습니다.');
             closeNoticeDetail();
             fetchNotices();
-        } catch (error: unknown) {
+        } catch (error: string) {
             alert('공지사항 수정 실패: ' + getErrorMessage(error));
         } finally {
             setIsLoading(false);

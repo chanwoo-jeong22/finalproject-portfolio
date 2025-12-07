@@ -12,7 +12,7 @@ import { logout } from "../redux/slices/auth/auth-slice";
  */
 interface JwtPayload {
   sub?: string; // 사용자 식별 ID (subject)
-  [key: string]: unknown; // 그 외 임의 키-값 쌍
+   // 그 외 임의 키-값 쌍
 }
 
 /**

@@ -58,7 +58,7 @@ export const fetchMonthlyData = createAsyncThunk<
       };
     });
     return formatted;
-  } catch (error: unknown) {
+  } catch (error: string) {
     if (error instanceof Error) {
       return rejectWithValue(error.message);
     }
@@ -75,7 +75,7 @@ export const fetchAgencies = createAsyncThunk<
   try {
     const response = await api.get<AgencyType[]>("/dashboard/agencies");
     return response.data;
-  } catch (error: unknown) {
+  } catch (error: string) {
     if (error instanceof Error) {
       return rejectWithValue(error.message);
     }

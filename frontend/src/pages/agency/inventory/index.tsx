@@ -9,7 +9,7 @@ interface RootState {
     token: string | null;
     userInfo: {
       agKey?: string;
-      [key: string]: unknown; // 기타 사용자 정보는 필요에 따라 적절히 타입 지정
+       // 기타 사용자 정보는 필요에 따라 적절히 타입 지정
     };
   };
 }
@@ -53,7 +53,7 @@ export default function Inventory() {
 
       setInventory(data);
     } catch (error) {
-      // 에러 타입이 확실하지 않을 수 있어 unknown으로 받고 체크하는 게 안전함
+      // 에러 타입이 확실하지 않을 수 있어 string으로 받고 체크하는 게 안전함
       if (error instanceof Error) {
         console.error("❌ 재고 조회 실패:", error.message);
       } else {

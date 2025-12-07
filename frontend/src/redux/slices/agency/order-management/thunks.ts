@@ -36,7 +36,7 @@ export const fetchAgencyProducts = createAsyncThunk<
         price: p.pdPrice,
       }));
       return normalized;
-    } catch (error: unknown) {
+    } catch (error: string) {
       const message =
         error instanceof Error ? error.message : "대리점 품목 불러오기 실패";
       return thunkAPI.rejectWithValue(message);
@@ -57,7 +57,7 @@ export const saveDraft = createAsyncThunk<
     try {
       const response = await api.post(`/agencyorder/draft`, items);
       return response.data as Draft[];
-    } catch (error: unknown) {
+    } catch (error: string) {
       const message =
         error instanceof Error ? error.message : "임시 저장 실패";
       return thunkAPI.rejectWithValue(message);
@@ -92,7 +92,7 @@ export const fetchDrafts = createAsyncThunk<
       });
 
       return response.data as Draft[];
-    } catch (error: unknown) {
+    } catch (error: string) {
       const message =
         error instanceof Error ? error.message : "임시 저장 목록 불러오기 실패";
       return thunkAPI.rejectWithValue(message);
@@ -113,7 +113,7 @@ export const confirmOrder = createAsyncThunk<
     try {
       const response = await api.post("/agencyorder/confirm", payload);
       return response.data as Order;
-    } catch (error: unknown) {
+    } catch (error: string) {
       const message =
         error instanceof Error ? error.message : "주문 확정 실패";
       return thunkAPI.rejectWithValue(message);
@@ -144,7 +144,7 @@ export const fetchAgencyOrders = createAsyncThunk<
       });
 
       return response.data as Order[];
-    } catch (error: unknown) {
+    } catch (error: string) {
       const message =
         error instanceof Error ? error.message : "주문 리스트 불러오기 실패";
       return thunkAPI.rejectWithValue(message);
@@ -179,7 +179,7 @@ export const deleteOrders = createAsyncThunk<
       );
 
       return orderKeys;
-    } catch (error: unknown) {
+    } catch (error: string) {
       const message =
         error instanceof Error ? error.message : "주문 삭제 실패";
       return thunkAPI.rejectWithValue(message);
@@ -214,7 +214,7 @@ export const deleteDrafts = createAsyncThunk<
       );
 
       return draftIds;
-    } catch (error: unknown) {
+    } catch (error: string) {
       const message =
         error instanceof Error ? error.message : "임시 저장 삭제 실패";
       return thunkAPI.rejectWithValue(message);

@@ -14,7 +14,7 @@ export interface LogisticProduct {
 /** AxiosError 형태 타입을 직접 정의  */
 interface AxiosErrorShape {
     response?: {
-        data?: unknown;
+        data?: string;
     };
 }
 
@@ -61,7 +61,7 @@ export const fetchLogisticProducts = createAsyncThunk<
                     typeof data === "object" &&
                     data !== null &&
                     "message" in data &&
-                    typeof (data as { message: unknown }).message === "string"
+                    typeof (data as { message: string }).message === "string"
                 ) {
                     message = (data as { message: string }).message;
                 }
@@ -72,12 +72,12 @@ export const fetchLogisticProducts = createAsyncThunk<
     }
 );
 
-function isAxiosError(error: unknown): error is AxiosErrorShape {
+function isAxiosError(error: string): error is AxiosErrorShape {
     return (
         typeof error === "object" &&
         error !== null &&
         "response" in error &&
-        typeof (error as Record<string, unknown>).response === "object"
+        typeof (error as Record<string, string>).response === "object"
     );
 }
 

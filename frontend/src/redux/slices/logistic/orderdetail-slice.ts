@@ -84,19 +84,19 @@ export const fetchOrderDetail = createAsyncThunk(
         `/agencyorder/full/${orKey}`,
       ];
 
-      // headerData 를 Unknown → 안전한 객체로 좁히기
-      let headerData: Record<string, unknown> | null = null;
+      // headerData 를 string → 안전한 객체로 좁히기
+      let headerData: Record<string, string> | null = null;
 
       for (const url of tryUrls) {
         try {
           const res = await api.get(url);
 
-          // 응답 데이터가 객체 or 배열로 올 수 있기 때문에 Unknown 처리 → 좁히기
-          const data: unknown = res.data?.data ?? res.data;
+          // 응답 데이터가 객체 or 배열로 올 수 있기 때문에 string 처리 → 좁히기
+          const data: string = res.data?.data ?? res.data;
 
           if (data && typeof data === "object") {
             // 배열이면 첫 번째 요소, 아니면 객체 그대로 사용
-            headerData = Array.isArray(data) ? (data[0] as Record<string, unknown>) : (data as Record<string, unknown>);
+            headerData = Array.isArray(data) ? (data[0] as Record<string, string>) : (data as Record<string, string>);
             break;
           }
         } catch {
@@ -116,12 +116,12 @@ export const fetchOrderDetail = createAsyncThunk(
         `/agencyorder/${orKey}/items`,
       ];
 
-      let itemData: unknown[] = [];
+      let itemData: string[] = [];
 
       for (const url of tryItemUrls) {
         try {
           const res = await api.get(url);
-          const data: unknown = res.data?.data ?? res.data ?? [];
+          const data: string = res.data?.data ?? res.data ?? [];
 
           // 배열인지 확인 후 대입
           if (Array.isArray(data)) {
@@ -136,12 +136,12 @@ export const fetchOrderDetail = createAsyncThunk(
       /* ---------------------- 기사 목록 조회 ---------------------- */
 
       const resDrivers = await api.get("/deliveries");
-      const driverListRaw: unknown = resDrivers.data?.data ?? resDrivers.data ?? [];
+      const driverListRaw: string = resDrivers.data?.data ?? resDrivers.data ?? [];
 
       // 배열인지 확인 후 map 실행
       const driverList: Driver[] = Array.isArray(driverListRaw)
-        ? driverListRaw.map((x: unknown, i: number) => {
-            const d = x as Record<string, unknown>;
+        ? driverListRaw.map((x: string, i: number) => {
+            const d = x as Record<string, string>;
             return {
               id: (d.dvKey ?? d.dv_key ?? i + 1) as number | string,
               name: (d.dvName ?? d.dv_name ?? "") as string,
@@ -154,8 +154,8 @@ export const fetchOrderDetail = createAsyncThunk(
 
       /* ---------------------- 헤더 매핑 ---------------------- */
 
-      // headerData 는 Record<string, unknown> 타입이므로 안전하게 값 추출
-      const h = headerData as Record<string, unknown>;
+      // headerData 는 Record<string, string> 타입이므로 안전하게 값 추출
+      const h = headerData as Record<string, string>;
 
       const mappedHeader: Header = {
         orKey: (h.orKey ?? "") as string,
@@ -177,8 +177,8 @@ export const fetchOrderDetail = createAsyncThunk(
 
       /* ---------------------- 품목 매핑 ---------------------- */
 
-      const mappedItems: Item[] = itemData.map((raw: unknown, idx: number) => {
-        const it = raw as Record<string, unknown>;
+      const mappedItems: Item[] = itemData.map((raw: string, idx: number) => {
+        const it = raw as Record<string, string>;
 
         const qty = Number(it.oiQuantity ?? 0);
         const price = Number(it.oiPrice ?? 0);

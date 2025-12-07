@@ -30,7 +30,7 @@ interface OrderItem {
   }[];
   totalAmount: number;
   orderNumberUI: string;
-  [key: string]: unknown;
+  
 }
 
 export default function OrderDraft() {

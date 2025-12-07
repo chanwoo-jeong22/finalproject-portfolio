@@ -42,7 +42,7 @@ export const findPassword = createAsyncThunk<
     try {
       const response = await api.post("/auth/findPw", { userId, email });
       return response.data; // { success: true/false }
-    } catch (error: unknown) {
+    } catch (error: string) {
       // 에러가 Error 인스턴스인지 체크 후 메시지 추출
       if (error instanceof Error) {
         return rejectWithValue(error.message);
@@ -70,7 +70,7 @@ export const resetPassword = createAsyncThunk<
     try {
       const response = await api.post("/auth/resetPw", { token, newPassword });
       return response.data; // { success, message }
-    } catch (error: unknown) {
+    } catch (error: string) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);
       }

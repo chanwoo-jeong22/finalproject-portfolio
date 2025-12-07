@@ -10,7 +10,7 @@ export interface StatusItem {
   dvPhone: string;
   orDate: string;
   orReserve: string;
-  [key: string]: unknown;
+  
 }
 
 export interface Filters {
@@ -66,7 +66,7 @@ export const fetchStatusList = createAsyncThunk<
     try {
       const response = await api.get('/status');
       return response.data as StatusItem[];
-    } catch (error: unknown) {
+    } catch (error: string) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);
       }

@@ -55,7 +55,7 @@ export interface Order {
   orStatus?: string;        // 처리 상태
   orReserve?: string;       // 도착 예정일 (ISO 문자열)
   dvName?: string;          // 배송 기사 이름
-  delivery?: unknown; 
+  delivery?: string; 
 
 }
 

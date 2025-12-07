@@ -92,7 +92,7 @@ export const login = createAsyncThunk<
 
       // 반환값은 fulfilled 액션 payload로 사용됨
       return { token, userId: loggedUserId, role, userInfo };
-    } catch (error: unknown) {
+    } catch (error: string) {
       // 에러 타입 체크 후 rejectWithValue로 에러 메시지 전달
       const message =
         error instanceof Error ? error.message : "로그인 실패";
@@ -134,7 +134,7 @@ export const reloadUserInfo = createAsyncThunk<
       });
 
       return res.data;
-    } catch (error: unknown) {
+    } catch (error: string) {
       const message =
         error instanceof Error ? error.message : "유저 정보 조회 실패";
       return rejectWithValue(message);
@@ -147,7 +147,7 @@ export const reloadUserInfo = createAsyncThunk<
  * - FormData를 받아서 회원가입 API 호출 (multipart/form-data)
  */
 export const signUp = createAsyncThunk<
-  unknown,  // API 반환 타입이 뭔지 모를 때는 unknown 권장
+  string,  // API 반환 타입이 뭔지 모를 때는 string 권장
   FormData,
   { rejectValue: string }
 >(
@@ -158,7 +158,7 @@ export const signUp = createAsyncThunk<
         headers: { "Content-Type": "multipart/form-data" },
       });
       return response.data;
-    } catch (error: unknown) {
+    } catch (error: string) {
       const message =
         error instanceof Error ? error.message : "회원가입 실패";
       return rejectWithValue(message);

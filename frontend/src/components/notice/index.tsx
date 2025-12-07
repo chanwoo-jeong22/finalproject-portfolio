@@ -78,7 +78,7 @@ const Notice = forwardRef<NoticeHandle, NoticeProps>(function Notice(
 
             setItems(mappedItems);
             setError(null);
-        } catch (e: unknown) {
+        } catch (e: string) {
             if (e instanceof Error) {
                 setError(e);
             } else {

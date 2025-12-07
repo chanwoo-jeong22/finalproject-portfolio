@@ -45,15 +45,15 @@ export const fetchInventory = createAsyncThunk<
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    // res.data 의 정체가 불명확하므로 unknown → 안전한 narrowing
-    const raw: unknown = res.data;
+    // res.data 의 정체가 불명확하므로 string → 안전한 narrowing
+    const raw: string = res.data;
 
     // raw가 객체인지 배열인지 안전하게 판별
-    let list: unknown = [];
+    let list: string = [];
 
     if (raw && typeof raw === "object") {
       // raw.data 또는 raw.content 를 우선 사용
-      const r = raw as Record<string, unknown>;
+      const r = raw as Record<string, string>;
       list =
         r.data ??
         r.content ??
@@ -61,7 +61,7 @@ export const fetchInventory = createAsyncThunk<
     }
 
     // list는 마지막에만 배열이라고 단언 (검증 완료 상태)
-    const mapped: InventoryRow[] = (list as Array<Record<string, unknown>>).map(
+    const mapped: InventoryRow[] = (list as Array<Record<string, string>>).map(
       (r, i) => ({
         id: (r.lpKey ??
           r.pdKey ??

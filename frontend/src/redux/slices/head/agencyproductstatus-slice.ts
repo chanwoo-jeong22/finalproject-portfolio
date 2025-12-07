@@ -11,7 +11,7 @@ export interface Product {
   pdProducts: string;        // 상품명
   pdPrice: number | string;  // 상품 가격 (숫자 또는 문자열)
   apStore: string;           // 입고 날짜 등 저장용 문자열
-  [key: string]: unknown;    // 추가 필드 허용, 타입 안정성을 위해 unknown 권장
+      // 추가 필드 허용, 타입 안정성을 위해 string 권장
 }
 
 /**
@@ -53,7 +53,7 @@ const initialState: AgencyProductStatusState = {
 /**
  * Axios 에러 여부 타입 가드
  */
-function isAxiosError(error: unknown): error is { response?: { data?: { message?: string } } } {
+function isAxiosError(error: string): error is { response?: { data?: { message?: string } } } {
   // 먼저 error가 object인지 확인하고, null이 아님을 체크
   if (typeof error !== 'object' || error === null) return false;
 
@@ -61,7 +61,7 @@ function isAxiosError(error: unknown): error is { response?: { data?: { message?
   if (!('response' in error)) return false;
 
   // response도 object 타입인지 체크
-  const response = (error as Record<string, unknown>).response;
+  const response = (error as Record<string, string>).response;
   if (typeof response !== 'object' || response === null) return false;
 
   // response.data가 있는지 확인
@@ -85,7 +85,7 @@ export const fetchAgencyProducts = createAsyncThunk<
       const res = await api.get<Product[]>(`/agency-items/products`);
       console.log("fetchAgencyProducts 응답 데이터 예시:", res.data[0]);
       return res.data;
-    } catch (error: unknown) {
+    } catch (error: string) {
       if (isAxiosError(error)) {
         return rejectWithValue(
           error.response?.data?.message ?? JSON.stringify(error.response?.data) ?? '알 수 없는 에러'

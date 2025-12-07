@@ -59,14 +59,14 @@ export const fetchMyPageData = createAsyncThunk<
   try {
     const response = await api.get(`/logistic/mypage/${lgId}`);
 
-    // response.data 타입을 unknown → 안전하게 변환
-    const raw: unknown = response.data;
+    // response.data 타입을 string → 안전하게 변환
+    const raw: string = response.data;
 
     if (!raw || typeof raw !== "object") {
       return thunkAPI.rejectWithValue("유효하지 않은 응답입니다.");
     }
 
-    const data = raw as Record<string, unknown>;
+    const data = raw as Record<string, string>;
 
     return {
       logisticName: (data.lgName as string) || "",
@@ -103,7 +103,7 @@ export const updateMyPageData = createAsyncThunk<
   if (!lgId) return thunkAPI.rejectWithValue("잘못된 토큰입니다.");
 
   try {
-    const bodyData: Record<string, unknown> = {
+    const bodyData: Record<string, string> = {
       lgCeo: updateData.userName,
       lgPhone: updateData.phone,
       lgEmail: updateData.email,
