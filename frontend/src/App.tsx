@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useRef } from "react";
+
 
 // Redux 관련
 import { Provider, useDispatch, useSelector } from "react-redux";
@@ -51,23 +53,28 @@ import AgencyLayout from "./layouts/agency-layout";
  */
 function AppWithAuth() {
   const dispatch = useDispatch<AppDispatch>();
-
   const token = useSelector((state: RootState) => state.auth.token);
   const hdId = useSelector((state: RootState) => state.auth.hdId);
   const agId = useSelector((state: RootState) => state.auth.agId);
   const lgId = useSelector((state: RootState) => state.auth.lgId);
+  const userInfo = useSelector((state: RootState) => state.auth.userInfo);
 
-  
+  const calledRef = useRef(false);
 
   useEffect(() => {
-    if (token && hdId) {
-      dispatch(reloadUserInfo({ token, userId: hdId, role: "head_office" }));
-    } else if (token && agId) {
-      dispatch(reloadUserInfo({ token, userId: agId, role: "agency" }));
-    } else if (token && lgId) {
-      dispatch(reloadUserInfo({ token, userId: lgId, role: "logistic" }));
+    if (!calledRef.current && token && !userInfo) {  // userInfo 없을 때만 호출
+      if (hdId) {
+        dispatch(reloadUserInfo({ token, userId: hdId, role: "head_office" }));
+        calledRef.current = true;
+      } else if (agId) {
+        dispatch(reloadUserInfo({ token, userId: agId, role: "agency" }));
+        calledRef.current = true;
+      } else if (lgId) {
+        dispatch(reloadUserInfo({ token, userId: lgId, role: "logistic" }));
+        calledRef.current = true;
+      }
     }
-  }, [token, hdId, agId, lgId, dispatch]);
+  }, [token, hdId, agId, lgId, userInfo, dispatch]);
 
   return (
     <BrowserRouter>

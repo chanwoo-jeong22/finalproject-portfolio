@@ -1,4 +1,4 @@
-import Header from "../../layouts/header.js";
+import Header from "../../layouts/header";
 import HeadMenu from "../../components/head/head-menu.jsx";
 import Router from "../../components/head/router/index.jsx";
 import layoutStyles from "../../styles/layout.module.css";

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../redux/hooks"; // hooks.ts 경로 맞게
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
   updateNotice,
   deleteNotices,
@@ -26,7 +26,7 @@ const NoticeDetail: React.FC<NoticeDetailProps> = ({
 }) => {
   const dispatch = useAppDispatch();
 
-  // Redux 상태 (loading, error) 가져오기
+  // Redux 상태 (loading, error)
   const loading = useAppSelector((state) => state.notice.loading);
   const error = useAppSelector((state) => state.notice.error);
 

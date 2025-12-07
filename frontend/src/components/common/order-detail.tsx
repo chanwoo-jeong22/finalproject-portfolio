@@ -9,8 +9,9 @@ import {
 } from "../../redux/slices/common/orderdetail-slice";
 import styles from "../../styles/logistic/order-detail.module.css";
 
+// 슬라이스에 맞게 OrderItem 타입 선언 (필요한 필드만)
 type OrderItem = {
-  oiKey: string;
+  oiKey: number;
   pdNum: string;
   pdCategory: string;
   oiProducts: string;
@@ -41,22 +42,54 @@ export default function OrderDetail() {
     dispatch(fetchOrderInfo({ orKey, token }));
   }, [dispatch, orKey, token]);
 
+  // OrderItem의 키 리스트 (슬라이스와 동일)
+  const orderItemKeys = [
+    "oiKey",
+    "pdNum",
+    "pdCategory",
+    "oiProducts",
+    "oiQuantity",
+    "oiPrice",
+    "oiTotal",
+  ] as const;
+
+  type OrderItemKey = typeof orderItemKeys[number];
+
+  // sortField가 유효한 키인지 검사하는 타입 가드
+  function isOrderItemKey(field: unknown): field is OrderItemKey {
+    return typeof field === "string" && orderItemKeys.includes(field as OrderItemKey);
+  }
+
+
+  // 정렬 필드 유효성 검사 및 기본값 설정
+  const field: OrderItemKey = isOrderItemKey(sortField) ? sortField : "pdNum";
+
   const sortedItems = React.useMemo(() => {
     if (!items) return [];
 
-    const field = sortField || "pdNum";
     return [...items].sort((a, b) => {
-      if (a[field] < b[field]) return sortOrder === "asc" ? -1 : 1;
-      if (a[field] > b[field]) return sortOrder === "asc" ? 1 : -1;
+      const aVal = a[field];
+      const bVal = b[field];
+
+      // 문자열일 경우 localeCompare 사용
+      if (typeof aVal === "string" && typeof bVal === "string") {
+        return sortOrder === "asc"
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal);
+      }
+
+      // 숫자 혹은 기타 비교
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
-  }, [items, sortField, sortOrder]);
+  }, [items, field, sortOrder]);
 
-  const handleSort = (field: keyof OrderItem) => {
+  const handleSort = (field: OrderItemKey) => {
     dispatch(setSortField(field));
   };
 
-  const columns: { title: string; field: keyof OrderItem }[] = [
+  const columns: { title: string; field: OrderItemKey }[] = [
     { title: "품번", field: "pdNum" },
     { title: "카테고리", field: "pdCategory" },
     { title: "제품명", field: "oiProducts" },

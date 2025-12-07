@@ -2,21 +2,19 @@ import axios, { InternalAxiosRequestConfig, AxiosError, AxiosResponse } from "ax
 import { store } from "../redux/store";
 import { logout } from "../redux/slices/auth/auth-slice";
 
-/**
- * Axios 인스턴스 생성
- */
+
+ // Axios 인스턴스 생성
 const api = axios.create({
   baseURL: "http://localhost:8080/api",
 });
 
-/**
+/*
  * 요청 인터셉터
- * - 로그인, 회원가입, 중복체크 등은 Authorization 헤더를 제외
  * - 그 외 요청은 Redux 또는 localStorage에서 토큰을 가져와 Authorization에 추가
  */
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // ✔ 토큰이 필요 없는 공개 API 목록
+    // 토큰이 필요 없는 공개 API
     const publicPaths = [
       "/login",
       "/auth/signup",
@@ -27,7 +25,7 @@ api.interceptors.request.use(
 
     ];
 
-    // 🔥 공개 API라면 Authorization 제거
+    // 공개 API라면 Authorization 제거
     if (publicPaths.some((p) => config.url?.includes(p))) {
       if (config.headers) {
         delete config.headers.Authorization;
@@ -36,7 +34,7 @@ api.interceptors.request.use(
       return config;
     }
 
-    // ✔ 기존 토큰 로직 그대로 유지 (여기부터 기존 코드)
+    // 기존 토큰 로직 그대로 유지
     let token: string | null = store.getState().auth.token ?? null;
 
     if (!token) {
@@ -61,10 +59,9 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-/**
- * 응답 인터셉터
- * - 401 / 403 발생 시 자동 로그아웃 처리
- */
+
+//  응답 인터셉터
+//  - 401 / 403 발생 시 자동 로그아웃 처리
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
