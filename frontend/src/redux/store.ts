@@ -16,6 +16,8 @@ import mypageReducer from "./slices/logistic/mypage-slice";
 import orderFulfillmentReducer from "./slices/logistic/orderfulfillment-slice";
 import orderdetailReducer from "./slices/logistic/orderdetail-slice";
 import logisticInventoryReducer from "./slices/logistic/logisticinventory-slice";
+import orderdraftReducer from "./slices/agency/orderdraft-slice";
+
 
 
 
@@ -45,8 +47,7 @@ export const store = configureStore({
     orderfulfillment: orderFulfillmentReducer,
     orderdetail: orderdetailReducer,
     logisticInventory: logisticInventoryReducer,
-
-
+    orderdraft: orderdraftReducer,
 
   },
 });

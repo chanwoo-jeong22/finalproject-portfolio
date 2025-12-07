@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import styles from "../../../styles/agency/orders.module.css";
 import api from "../../../api/api";
-import { useNavigate, useOutletContext } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState, AppDispatch } from "../../../redux/store";
+import { addOrder } from "../../../redux/slices/agency/orderdraft-slice";
 
-// Redux RootState 타입
-interface RootState {
-  auth: {
-    token: string | null;
-  };
-}
+// Redux RootState 타입은 store에서 import했으므로 따로 선언하지 않아도 됨
 
 // DraftItem 타입
 export interface DraftItem {
@@ -21,24 +18,27 @@ export interface DraftItem {
   rdTotal: number;
 }
 
-// 부모에서 OutletContext 로 전달받는 orders 아이템 타입
-interface ParentOrderItem {
+// OrderItem 타입 (Redux slice에 맞게 필요한 최소한만 선언, 필요시 확장)
+interface OrderItem {
   orKey: number | string;
   orDate: string;
-  [key: string]: any;
-}
-
-// OutletContext 타입
-interface OutletContextType {
-  orders: ParentOrderItem[];
-  setOrders: React.Dispatch<React.SetStateAction<ParentOrderItem[]>>;
+  items: {
+    sku: string;
+    name: string;
+    qty: number;
+    price: number;
+  }[];
+  totalAmount: number;
+  orderNumberUI: string;
+  [key: string]: unknown;
 }
 
 export default function OrderDraft() {
-  const { orders, setOrders } = useOutletContext<OutletContextType>();
-
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+
   const token = useSelector((state: RootState) => state.auth.token);
+  const orders = useSelector((state: RootState) => state.orderdraft.orders);
 
   // 임시 저장 목록
   const [drafts, setDrafts] = useState<DraftItem[]>([]);
@@ -169,8 +169,7 @@ export default function OrderDraft() {
       const defaultArrival = new Date(today);
       defaultArrival.setDate(today.getDate() + 4);
 
-      const arrivalDate =
-        expectedDate || defaultArrival.toISOString().slice(0, 10);
+      const arrivalDate = expectedDate || defaultArrival.toISOString().slice(0, 10);
 
       // 주문 확정 요청
       const res = await api.post(
@@ -185,7 +184,7 @@ export default function OrderDraft() {
         }
       );
 
-      const savedOrder = res.data;
+      const savedOrder: OrderItem = res.data;
 
       // 임시 저장 삭제
       await api.delete("/agencyorder/draft", {
@@ -218,15 +217,15 @@ export default function OrderDraft() {
 
       const orderNumberUI = `${yy}${mm}${dd}${seq}`;
 
-      const formattedOrder = {
+      const formattedOrder: OrderItem = {
         ...savedOrder,
         items,
         totalAmount,
         orderNumberUI,
       };
 
-      // 부모 상태에 추가
-      setOrders(prev => [...prev, formattedOrder]);
+      // Redux 상태에 추가
+      dispatch(addOrder(formattedOrder));
 
       alert("주문이 확정되었습니다.");
     } catch (err) {
