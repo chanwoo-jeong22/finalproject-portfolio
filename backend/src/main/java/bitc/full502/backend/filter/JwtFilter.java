@@ -30,16 +30,18 @@ public class JwtFilter extends OncePerRequestFilter {
   private final JwtUtil jwtUtil;
 
   private static final List<String> EXCLUDE_URLS = List.of(
-      "/api/login",
-      "/api/users/register",
-      "/api/users/check-id", 
-      "/api/users/check-email",   
-      "/api/agencyorder/draft",
-      "/api/head/signup",
-      "/api/head/checkEmail",
-      "/api/auth/findPw",
-      "/api/auth/resetPw"
-  );
+    "/api/login",
+    "/api/users/register",
+    "/api/users/check-id", 
+    "/api/users/check-email",   
+    "/api/agencyorder/draft",
+    "/api/head/signup",
+    "/api/head/checkEmail",
+    "/api/auth/findPw",
+    "/api/auth/resetPw",
+    "/uploads/"
+);
+
 
   @Override
   protected void doFilterInternal(HttpServletRequest request,
