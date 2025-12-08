@@ -14,6 +14,6 @@ public interface NoticeService {
 
     NoticeEntity updateNotice(Integer id, NoticeDto dto);
 
-    // 공지사항 게시글 기간 설정 (시작일, 종료일, 2개월 후 자동삭제) : jin 추가
+    // 공지사항 게시글 기간 설정 (시작일, 종료일, 2개월 후 자동삭제)
     void deleteExpiredNotices();
 }

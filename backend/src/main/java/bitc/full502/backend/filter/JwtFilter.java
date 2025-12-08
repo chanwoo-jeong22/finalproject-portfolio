@@ -72,7 +72,7 @@ public class JwtFilter extends OncePerRequestFilter {
         if (claims.getSubject() != null && SecurityContextHolder.getContext().getAuthentication() == null) {
           String userId = claims.getSubject();
           String role = claims.get("role", String.class);
-          logger.debug("JWT role: {}", role);  // 이 줄 추가!
+          logger.debug("JWT role: {}", role);
 
           String springRole;
           switch (role) {

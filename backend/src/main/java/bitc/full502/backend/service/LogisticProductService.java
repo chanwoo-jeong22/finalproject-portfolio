@@ -27,14 +27,13 @@ public class LogisticProductService {
         return entities.stream()
                 .map(e -> {
                     LogisticProductDTO dto = new LogisticProductDTO();
-                    dto.setLpKey(e.getLpKey()); // 진경 추가
+                    dto.setLpKey(e.getLpKey());
                     dto.setLgName(e.getLogistic().getLgName());
                     dto.setPdNum(e.getProduct().getPdNum());
                     dto.setPdProducts(e.getProduct().getPdProducts());
                     dto.setPdPrice(e.getProduct().getPdPrice());
                     dto.setStock(e.getStock());
 
-                    // 진경 추가, 수정
                     // ProductEntity의 생성일과 lpStore 중 최신 날짜 계산
                     LocalDate productCreated = Optional.ofNullable(e.getProduct().getCreatedDate())
                             .map(LocalDateTime::toLocalDate)
@@ -51,7 +50,6 @@ public class LogisticProductService {
 
                     dto.setLpDelivery(e.getLpDelivery());
                     return dto;
-                    // 진경 추가, 수정
 
                 })
                 .sorted((a, b) -> {

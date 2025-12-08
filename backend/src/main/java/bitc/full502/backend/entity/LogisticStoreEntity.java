@@ -34,7 +34,7 @@ public class LogisticStoreEntity {
     @Column(name = "st_store", nullable = false)
     private int stStore; // 입고 신청 수량
 
-    // 입고일 추가 : 진경 추가
+    // 입고일 추가
     @Column(name = "store_date", nullable = true)
     private LocalDateTime storeDate;
 

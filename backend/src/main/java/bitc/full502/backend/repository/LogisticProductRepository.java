@@ -14,10 +14,9 @@ import java.util.Optional;
 @Repository
 public interface LogisticProductRepository extends JpaRepository<LogisticProductEntity, Integer> {
 
-    // 재고 증가 : jin 추가
+    // 재고 증가
     @Modifying
     @Transactional
-    // 진경 수정
     @Query("UPDATE LogisticProductEntity lp SET lp.stock = lp.stock + :quantity, lp.lpStore = CURRENT_DATE WHERE lp.lpKey = :lpKey")
     void increaseStock(@Param("lpKey") Integer lpKey, @Param("quantity") Integer quantity);
 

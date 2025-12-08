@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class ReadyOrderService {
 
     private final ReadyOrderRepository repo;
-    private final AgencyRepository agencyRepo; // 추가
+    private final AgencyRepository agencyRepo;
     private final AgencyOrderRepository agencyOrderRepository;
     private final AgencyOrderItemRepository agencyOrderItemRepository;
 

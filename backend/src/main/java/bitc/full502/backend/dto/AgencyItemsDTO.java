@@ -1,6 +1,6 @@
 package bitc.full502.backend.dto;
 
-// 진경 : AgencyItemsDTO 파일 추가
+// AgencyItemsDTO 파일 추가
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

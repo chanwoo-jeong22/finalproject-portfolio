@@ -39,7 +39,7 @@ public class NoticeEntity {
     public void prePersist() {
         this.atCreated = LocalDateTime.now();
         this.atUpdated = LocalDateTime.now();
-        // 공지사항 시작일, 종료일 추가 : jin 추가
+        // 공지사항 시작일, 종료일 추가
         // 새로운 엔티티일 때만 기본값 설정
         if (ntKey == null) {  // 새 엔티티인 경우에만
             if (startDate == null) {
@@ -58,7 +58,7 @@ public class NoticeEntity {
         this.atUpdated = LocalDateTime.now();
     }
 
-    // 공지사항 게시글 기간 설정 (시작일, 종료일, 2개월 후 자동삭제) : jin 추가
+    // 공지사항 게시글 기간 설정 (시작일, 종료일, 2개월 후 자동삭제)
     @Column(name = "start_date", nullable = true)
     private LocalDate startDate;
 

@@ -86,7 +86,7 @@ public class AgencyService {
     private AgencyDTO toDto(AgencyEntity e) {
         AgencyDTO dto = new AgencyDTO();
         dto.setAgKey(e.getAgKey());
-        dto.setAgName(e.getAgName()); // 진경 추가
+        dto.setAgName(e.getAgName());
         dto.setAgAddress(e.getAgAddress());
         dto.setAgCeo(e.getAgCeo());
         dto.setAgPhone(e.getAgPhone());

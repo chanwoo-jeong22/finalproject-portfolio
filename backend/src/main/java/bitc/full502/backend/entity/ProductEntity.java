@@ -33,7 +33,7 @@ public class ProductEntity {
     @Column(nullable = false, length = 500 , name = "pd_image")
     private String pdImage;
 
-    // 제품 등록일 (자동 저장) : 진경 추가
+    // 제품 등록일 (자동 저장)
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
