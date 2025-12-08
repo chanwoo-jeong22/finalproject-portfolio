@@ -454,7 +454,7 @@ export default function OrderfulFillment() {
                   <td>{r.orDate}</td>
                   <td>{r.orReserve}</td>
                   <td>{r.dvName}</td>
-                  {/*상세보기로 수정 : 진경*/}
+                  {/*상세보기로 수정*/}
                   <td className={styles.viewCell}><button className={styles.viewBtn} onClick={() => openOrderPopup(r)}>상세보기</button></td>
                 </tr>
               ))

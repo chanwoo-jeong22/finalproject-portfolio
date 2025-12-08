@@ -29,7 +29,7 @@
     padding: 15px 0 30px;
     grid-template-columns: repeat(auto-fit, 15.65em);
     gap: 15px;
-    /*overflow-x: auto;    !* ← 스크롤은 여기서 진경 수정 : 스크롤 없이 모두 출력되게 *!*/
+    /*overflow-x: auto;    !* ← 스크롤은 여기서 : 스크롤 없이 모두 출력되게 *!*/
 }
 
 .scheduleCard {

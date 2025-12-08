@@ -127,7 +127,6 @@
     max-width : 150px;
 }
 
-/* 진경 추가 */
 .tableWrap .table tr th,
 .tableWrap .table tr td {
     font-size: 12px;
@@ -165,7 +164,6 @@
 .tableWrap .table tr th div > button {
     right: 0;
 }
-/* // 진경 추가 */
 
 .formScroll {
     width: 100%;

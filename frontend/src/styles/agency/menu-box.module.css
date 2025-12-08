@@ -179,7 +179,6 @@
     border-radius: 50%;
 }
 
-/*진경 추가*/
 .wrap {
     display: grid;
     grid-template-columns: auto 1fr; /* SideBar, TopBar Main */

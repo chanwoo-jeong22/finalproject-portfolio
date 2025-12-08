@@ -1101,7 +1101,7 @@ select {
     transition: background-color 1s ease;
 }
 
-/* 업체등록 팝업으로 변경 모달 css: 진경 추가 */
+/* 업체등록 팝업으로 변경 모달 */
 .modalBackdrop {
     position: fixed;
     top: 0;

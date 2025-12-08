@@ -30,7 +30,6 @@ header {
     background: var(--header_bgcolor);
 }
 
-/* 진경 수정 */
 .logo {
     width: var(--nav-width);
     height: 100%;
@@ -248,6 +247,4 @@ nav .bottomMenu {
     padding: 30px 0;
 }
 
-/* 정환 추가*/
 li.log {position: relative; cursor: pointer;}
-/* 정환 추가*/

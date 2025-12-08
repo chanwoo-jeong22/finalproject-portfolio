@@ -70,7 +70,7 @@ button {
     /*border-bottom: 3px solid #ffffff;*/
 }
 
-/* 로고 width 진경 수정 */
+/* 로고 width */
 .logo img {
     width: 160px;
     height: auto;
@@ -108,7 +108,7 @@ button {
     background: url("/src/assets/images/lg_nav2.svg") no-repeat center;
 }
 
-/* 마우스 누르는 순간만 굵게 (기존 동작 유지) 진경 추가 */
+/* 마우스 누르는 순간만 굵게 (기존 동작 유지) */
 .centeritem:hover {
     font-weight: 500;
     opacity: 1;
@@ -212,7 +212,6 @@ button {
     border-radius: 50%;
 }
 
-/*진경 추가*/
 .wrap {
     display: grid;
     grid-template-columns: auto 1fr; /* SideBar, TopBar Main */

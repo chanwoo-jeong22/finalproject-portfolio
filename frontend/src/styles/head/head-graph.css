@@ -74,7 +74,6 @@
     margin-top: 2px;
 }
 
-/* 진경 수정 */
 .tooltip .tool_order span:last-child {
     color: #79C0FF;
     font-weight: 600;
@@ -84,7 +83,6 @@
     color: #00F0B7;
     font-weight: 600;
 }
-/* //진경 수정 */
 
 /* recharts 스타일 오버라이드 */
 .recharts-legend-item-text {
