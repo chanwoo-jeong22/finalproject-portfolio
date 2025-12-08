@@ -1,7 +1,7 @@
 # Frontend - 주문 관리 시스템
 
 ## 프로젝트 소개
-본 프로젝트의 프론트엔드 부분으로, React와 TypeScript 기반 SPA입니다.  
+- 본 프로젝트의 프론트엔드 부분으로, React와 TypeScript 기반 SPA입니다.  
 Redux Toolkit과 React Router DOM을 사용하여 상태관리 및 라우팅을 처리하며,  
 Bootstrap 5와 커스텀 CSS로 UI를 구성하였습니다.
 
@@ -26,6 +26,7 @@ Bootstrap 5와 커스텀 CSS로 UI를 구성하였습니다.
 ---
 
 ## 폴더 구조
+```plaintext
 
 src/
 ├── api/ # API 호출
@@ -38,7 +39,7 @@ src/
 ├── styles/ # 전역 및 컴포넌트별 CSS
 ├── types/ # TypeScript 타입 정의
 └── main.tsx # 앱 진입점
-
+```
 ---
 
 ## 인증 구조 요약
