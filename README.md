@@ -238,7 +238,7 @@ Axios 인터셉터로 토큰 자동 주입, 만료 시 처리, 공통 에러 핸
 cd backend
 ./gradlew bootRun
 
-- 서버는 기본적으로 http://localhost:8080 에서 동작합니다.
+- 서버는 기본적으로 http://54.116.2.82:8080 에서 동작합니다.
 
 2) Frontend (React + Vite)
 
@@ -246,4 +246,3 @@ cd frontend
 npm install
 npm run dev
 
-- 개발 환경에서는 http://localhost:5173 에서 접속할 수 있습니다.

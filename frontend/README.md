@@ -64,7 +64,7 @@ src/
 npm install       # 패키지 설치
 npm run dev       # 개발 서버 실행
 
-- 기본 서버 주소: http://localhost:5173
+- 기본 서버 주소: http://54.116.2.82:8080
 
 ---
 

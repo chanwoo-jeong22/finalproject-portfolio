@@ -60,6 +60,6 @@ cd backend
 ./gradlew bootRun           # 개발 서버 실행
 ./gradlew test              # 테스트 실행
 
-- 기본 서버 주소: http://localhost:8080
+- 기본 서버 주소: http://54.116.2.82:8080
 
 ---
