@@ -19,15 +19,6 @@ import logisticInventoryReducer from "./slices/logistic/logisticinventory-slice"
 import orderdraftReducer from "./slices/agency/orderdraft-slice";
 
 
-
-
-
-
-
-
-
-
-
 export const store = configureStore({
   reducer: {
     auth: authReducer,

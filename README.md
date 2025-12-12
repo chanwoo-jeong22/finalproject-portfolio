@@ -12,6 +12,9 @@
 
   전체 프로세스는 주문 생성 → 승인 → 출고 → 배송까지 하나의 흐름으로 정리되어 있어 업무 누락과 중복을 방지하고, 재고·상태 변화가 단계별로 자동 반영되도록 설계했습니다.
 
+## 대리점 발주 시스템 
+  전반적인 설명은 PPT는 [여기] https://docs.google.com/presentation/d/1zcEe9KEAa85HYeGfOjlPDVmb6tf-XjLH/view?usp=drive_link&ouid=101586504881783479394&rtpof=true&sd=true 에서 확인하세요!
+  
 ---
 
 ## 주요 기능 구성

@@ -18,7 +18,7 @@ public class JwtUtil {
 
   // application.properties에 등록: jwt.secret=mySuperSecretKey123
   public JwtUtil(@Value("${jwt.secret}") String secret) {
-      System.out.println("[JwtUtil] jwt.secret 값: " + secret);  // 이 부분 추가
+      System.out.println("[JwtUtil] jwt.secret 값: " + secret); 
     this.SECRET_KEY = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
   }
 
